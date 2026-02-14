@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout | Code With Pritom</title>
+    <meta name="description" content="Secure checkout and payment processing.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Auth Guard -->
+    <script src="js/ui.js"></script>
+    <script src="js/auth.js"></script>
+    <script>if (!Auth.isLoggedIn()) window.location.href = 'index.html';</script>
+
+    <style>
+        /* Override Modal Styles for Inline Display */
+        .checkout-section {
+            display: none;
+            /* Controlled by Cart.js .active class */
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .checkout-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Custom Stepper Styles (Standard CSS fallback) */
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 700;
+            transition: all 0.3s;
+        }
+
+        .step-indicator.active {
+            background-color: #ea580c;
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 10px 15px -3px rgba(234, 88, 12, 0.3);
+        }
+
+        .step-indicator.completed {
+            background-color: #22c55e;
+            color: white;
+        }
+
+        .step-indicator.pending {
+            background-color: #e2e8f0;
+            color: #64748b;
+        }
+
+        /* Disable original modal overlay behaviors if any remain */
+        #checkout-modal-overlay {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 font-['Inter'] text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Page Loader -->
+    <div id="page-loader" class="page-loader">
+        <div class="page-loader-brand">Code With <span class="text-orange-600">Pritom</span></div>
+        <div class="spinner"></div>
+    </div>
+
+    <!-- ===================== HEADER ===================== -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <a href="dashboard.html" class="flex items-center gap-2 group">
+                <div
+                    class="w-8 h-8 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center group-hover:bg-orange-100 transition">
+                    <i class="fa-solid fa-arrow-left text-sm"></i>
+                </div>
+                <span class="font-bold text-lg text-slate-700 group-hover:text-slate-900 transition">Dashboard</span>
+            </a>
+
+            <!-- Progress Stepper (Visual Only) -->
+            <div class="hidden md:flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-full border border-slate-100">
+                <div id="step-1-ind" class="step-indicator active">1</div>
+                <div class="w-8 h-0.5 bg-slate-200"></div>
+                <div id="step-2-ind" class="step-indicator pending">2</div>
+                <div class="w-8 h-0.5 bg-slate-200"></div>
+                <div id="step-3-ind" class="step-indicator pending">3</div>
+            </div>
+
+            <div
+                class="flex items-center gap-2 px-3 py-1 bg-green-50 rounded-full text-sm font-semibold text-green-700 border border-green-100">
+                <i class="fa-solid fa-lock text-xs"></i> Secure
+            </div>
+        </div>
+    </header>
+
+    <!-- ===================== MAIN FLOW ===================== -->
+    <main class="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+
+        <!-- Empty State -->
+        <div id="cart-page-empty" class="hidden flex flex-col items-center justify-center py-20 animate-fade-in-up">
+            <div class="w-32 h-32 bg-slate-100 rounded-full flex items-center justify-center mb-6">
+                <i class="fa-solid fa-cart-shopping text-5xl text-slate-300"></i>
+            </div>
+            <h2 class="text-3xl font-black text-slate-800 mb-2">Cart is Empty</h2>
+            <p class="text-slate-500 mb-8">Add some courses to get started.</p>
+            <a href="dashboard.html" class="btn btn-primary btn-lg"><i class="fa-solid fa-compass"></i> Explore</a>
+        </div>
+
+        <div id="cart-page-content" class="hidden flex flex-col lg:flex-row gap-8 xl:gap-12 animate-fade-in">
+
+            <!-- LEFT COLUMN: DYNAMIC STEPS -->
+            <div class="flex-1">
+
+                <!-- STEP 1: CART REVIEW -->
+                <div id="checkout-step-1" class="checkout-section active">
+                    <div class="flex items-center justify-between mb-6">
+                        <h1 class="text-2xl font-black text-slate-900">1. Review Cart</h1>
+                        <button onclick="Cart.clear(); renderCartList();"
+                            class="text-sm text-red-500 font-semibold hover:underline">Clear</button>
+                    </div>
+                    <!-- Items List -->
+                    <div id="custom-cart-list" class="space-y-4"></div>
+                </div>
+
+                <!-- STEP 2: BILLING INFO -->
+                <div id="checkout-step-2" class="checkout-section">
+                    <h1 class="text-2xl font-black text-slate-900 mb-6">2. Billing Details</h1>
+                    <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div class="form-group col-span-2 md:col-span-1">
+                                <label class="form-label">Full Name</label>
+                                <input type="text" id="bill-name" class="form-input" required>
+                            </div>
+                            <div class="form-group col-span-2 md:col-span-1">
+                                <label class="form-label">Phone Number</label>
+                                <input type="tel" id="bill-phone" class="form-input" placeholder="017..." required>
+                            </div>
+                            <div class="form-group col-span-2">
+                                <label class="form-label">Email Address</label>
+                                <input type="email" id="bill-email" class="form-input" required>
+                            </div>
+                            <div class="form-group col-span-2">
+                                <label class="form-label">Address</label>
+                                <input type="text" id="bill-address" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">City</label>
+                                <input type="text" id="bill-city" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Zip Code</label>
+                                <input type="text" id="bill-zip" class="form-input" required>
+                            </div>
+                            <div class="hidden">
+                                <input type="text" id="bill-country" value="Bangladesh">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 3: PAYMENT & PROMO -->
+                <div id="checkout-step-3" class="checkout-section">
+                    <h1 class="text-2xl font-black text-slate-900 mb-6">3. Payment</h1>
+
+                    <!-- Promo Code -->
+                    <div class="bg-white rounded-xl border border-slate-200 p-6 mb-6 shadow-sm">
+                        <label class="form-label mb-2">Have a Promo Code?</label>
+                        <div class="flex gap-3">
+                            <input type="text" id="promo-code-input" class="form-input flex-1" placeholder="Enter code">
+                            <button onclick="Cart.applyPromo()" class="btn btn-dark">Apply</button>
+                        </div>
+                        <div id="promo-feedback" class="mt-2 text-sm font-bold min-h-[1.5em]"></div>
+                    </div>
+
+                    <!-- Free Order Message -->
+                    <div id="free-order-section"
+                        class="hidden bg-green-100 border border-green-200 rounded-xl p-6 mb-6 text-center animate-bounce">
+                        <div
+                            class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3 text-white shadow-lg">
+                            <i class="fa-solid fa-gift text-2xl"></i>
+                        </div>
+                        <h3 class="font-black text-green-800 text-xl mb-1">Congratulations!</h3>
+                        <p class="text-green-700 font-medium">You get this course totally free!</p>
+                        <p class="text-green-600 text-sm mt-2">Click "Confirm Order" to catch this opportunity.</p>
+                    </div>
+
+                    <!-- Paid Order Section -->
+                    <div id="bkash-section">
+                        <!-- bKash Box -->
+                        <div class="bg-pink-600 rounded-xl p-6 text-white shadow-lg mb-6 relative overflow-hidden">
+                            <div class="absolute -right-4 -top-4 w-24 h-24 bg-white/20 rounded-full blur-2xl"></div>
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <h3 class="font-bold text-xl">bKash Payment</h3>
+                                    <p class="text-pink-100 text-sm">Send Money (Personal)</p>
+                                </div>
+                                <i class="fa-solid fa-mobile-screen-button text-3xl opacity-80"></i>
+                            </div>
+
+                            <div class="bg-black/20 rounded-lg p-3 flex items-center justify-between mb-2">
+                                <span class="font-mono text-xl tracking-wider font-bold">01853343176</span>
+                                <button onclick="Cart.copyBkash()"
+                                    class="bg-white text-pink-600 px-3 py-1 rounded text-xs font-bold hover:bg-gray-100 transition">COPY</button>
+                            </div>
+                            <p class="text-xs text-pink-200">* Use your Name as Reference</p>
+                        </div>
+
+                        <!-- TrxID Input -->
+                        <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+                            <label class="form-label text-slate-700">Transaction ID (TrxID)</label>
+                            <input type="text" id="bkash-txn-input"
+                                class="form-input text-center text-xl tracking-[0.2em] font-mono uppercase border-2 focus:border-pink-500"
+                                placeholder="8X20B9..." required>
+                            <p class="text-xs text-slate-500 mt-2 text-center">Enter the TrxID from your bKash SMS.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 4: SUCCESS -->
+                <div id="checkout-step-4" class="checkout-section text-center py-10">
+                    <div
+                        class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 text-green-500 animate-bounce">
+                        <i class="fa-solid fa-check text-4xl"></i>
+                    </div>
+                    <h2 class="text-3xl font-black text-slate-800 mb-4">Order Successful!</h2>
+                    <p class="text-slate-500 max-w-md mx-auto mb-8">
+                        Order ID: <span id="conf-order-id" class="font-mono font-bold text-slate-900">#...</span><br>
+                        We will check your information and add your course in 2 hours.
+                        You will receive an email shortly.
+                    </p>
+                    <a href="dashboard.html" class="btn btn-primary btn-lg shadow-xl shadow-orange-500/20">
+                        Go to Dashboard <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN: SUMMARY (Sticky) -->
+            <div id="checkout-summary-col" class="lg:w-[380px] flex-shrink-0">
+                <div class="sticky top-24 bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                    <h3 class="font-bold text-slate-800 text-lg mb-6 flex items-center gap-2">
+                        <i class="fa-solid fa-receipt text-slate-400"></i> Order Summary
+                    </h3>
+
+                    <!-- Totals -->
+                    <div class="space-y-3 mb-6">
+                        <div class="flex justify-between text-slate-500 text-sm">
+                            <span>Subtotal</span>
+                            <span class="checkout-subtotal font-semibold text-slate-800">$0.00</span>
+                        </div>
+                        <div id="cart-page-discount-row"
+                            class="flex justify-between text-green-600 text-sm font-bold hidden">
+                            <span>Discount</span>
+                            <span id="cart-page-discount-amount">-$0.00</span>
+                        </div>
+                        <div class="border-t border-slate-100 my-2"></div>
+                        <div class="flex justify-between items-baseline">
+                            <span class="text-slate-500 font-bold">Total</span>
+                            <span class="checkout-total text-2xl font-black text-slate-900 tracking-tight">$0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- Flow Buttons -->
+                    <div id="flow-buttons">
+                        <!-- Step 1 Button -->
+                        <div id="btn-step-1-group">
+                            <button onclick="validateAndNext(2)"
+                                class="btn btn-primary w-full py-4 text-base shadow-xl shadow-orange-500/20 hover:shadow-orange-500/30 transition mb-3">
+                                Checkout <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>
+                            </button>
+                        </div>
+
+                        <!-- Step 2 Button -->
+                        <div id="btn-step-2-group" class="hidden space-y-3">
+                            <button onclick="validateAndNext(3)" class="btn btn-primary w-full py-3 shadow-lg">
+                                Payment <i class="fa-solid fa-credit-card ml-2"></i>
+                            </button>
+                            <button onclick="Cart.setStep(1); updateStepper(1);"
+                                class="btn btn-outline w-full py-2">Back to Cart</button>
+                        </div>
+
+                        <!-- Step 3 Button -->
+                        <div id="btn-step-3-group" class="hidden space-y-3">
+                            <button id="btn-place-order" onclick="Cart.submitOrder()"
+                                class="btn btn-primary w-full py-3 shadow-lg hover:shadow-green-500/20 bg-green-600 hover:bg-green-700 border-green-600">
+                                Confirm Payment <i class="fa-solid fa-check ml-2"></i>
+                            </button>
+                            <button onclick="Cart.setStep(2); updateStepper(2);"
+                                class="btn btn-outline w-full py-2">Back to Details</button>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 text-center text-xs text-slate-400">
+                        <i class="fa-solid fa-lock mr-1"></i> SSL Secured Transaction
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Toast -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-[200] space-y-3"></div>
+
+    <!-- Scripts -->
+    <script src="js/cart.js"></script>
+    <script>
+        // --- Course Metadata ---
+        const coursesDB = {
+            "1": { icon: "fa-bolt", color: "bg-blue-100 text-blue-600" },
+            "2": { icon: "fa-code-branch", color: "bg-purple-100 text-purple-600" },
+            "3": { icon: "fa-rocket", color: "bg-orange-100 text-orange-600" },
+            "4": { icon: "fa-linux", color: "bg-slate-800 text-white" },
+            "5": { icon: "fa-code", color: "bg-blue-600 text-white" },
+            "6": { icon: "fa-calculator", color: "bg-purple-600 text-white" },
+            "7": { icon: "fa-java", color: "bg-red-600 text-white" },
+            "8": { icon: "fa-cubes", color: "bg-orange-600 text-white" },
+            "9": { icon: "fa-scroll", color: "bg-teal-600 text-white" }
+        };
+
+        // --- Custom Render Logic (Replaces Modal) ---
+        function renderCartList() {
+            const items = Cart.state.items;
+            const container = document.getElementById('custom-cart-list');
+            const emptyEl = document.getElementById('cart-page-empty');
+            const contentEl = document.getElementById('cart-page-content');
+
+            if (items.length === 0) {
+                emptyEl.classList.remove('hidden');
+                contentEl.classList.add('hidden');
+                return;
+            }
+
+            emptyEl.classList.add('hidden');
+            contentEl.classList.remove('hidden');
+
+            container.innerHTML = items.map((item, index) => {
+                const meta = coursesDB[item.id] || { icon: 'fa-graduation-cap', color: 'bg-slate-100 text-slate-600' };
+                return `
+                <div class="bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-4 group hover:shadow-md transition">
+                    <div class="w-14 h-14 ${meta.color} rounded-lg flex items-center justify-center text-xl shrink-0">
+                        <i class="fa-solid ${meta.icon}"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex justify-between items-start">
+                            <h3 class="font-bold text-slate-800 truncate pr-2">${item.title}</h3>
+                            <span class="font-black text-slate-900">$${item.price}</span>
+                        </div>
+                        <button onclick="Cart.remove('${item.id}'); renderCartList();" class="text-xs text-slate-400 hover:text-red-500 mt-1 font-medium flex items-center gap-1">
+                            <i class="fa-solid fa-trash-can"></i> Remove
+                        </button>
+                    </div>
+                </div>
+                `;
+            }).join('');
+
+            // Also update sidebar totals
+            updateSideSummary();
+        }
+
+        function updateSideSummary() {
+            const sub = Cart.getSubtotal();
+            const disc = Cart.getDiscountAmount();
+            const total = Cart.getTotal();
+
+            document.querySelectorAll('.checkout-subtotal').forEach(el => el.textContent = '$' + sub.toFixed(2));
+            document.querySelectorAll('.checkout-total').forEach(el => el.textContent = '$' + total.toFixed(2));
+
+            const discRow = document.getElementById('cart-page-discount-row');
+            if (discRow) {
+                if (disc > 0) {
+                    discRow.classList.remove('hidden');
+                    document.getElementById('cart-page-discount-amount').textContent = '-$' + disc.toFixed(2);
+                } else {
+                    discRow.classList.add('hidden');
+                }
+            }
+        }
+
+        // --- Stepper UI Sync ---
+        function updateStepper(step) {
+            // Update Headers Visuals
+            for (let i = 1; i <= 3; i++) {
+                const el = document.getElementById(`step-${i}-ind`);
+                if (!el) return;
+                el.className = 'step-indicator ' + (i === step ? 'active' : (i < step ? 'completed' : 'pending'));
+                if (i < step) el.innerHTML = '<i class="fa-solid fa-check"></i>';
+                else el.textContent = i;
+            }
+
+            // Sync Buttons visibility
+            document.getElementById('btn-step-1-group').classList.add('hidden');
+            document.getElementById('btn-step-2-group').classList.add('hidden');
+            document.getElementById('btn-step-3-group').classList.add('hidden');
+
+            if (step === 1) document.getElementById('btn-step-1-group').classList.remove('hidden');
+            if (step === 2) document.getElementById('btn-step-2-group').classList.remove('hidden');
+            if (step === 3) document.getElementById('btn-step-3-group').classList.remove('hidden');
+
+            // Hide Summary on Step 4
+            if (step === 4) document.getElementById('checkout-summary-col').classList.add('hidden');
+        }
+
+        function validateAndNext(nextStep) {
+            if (nextStep === 3) {
+                const required = ['bill-name', 'bill-phone', 'bill-email', 'bill-address', 'bill-city', 'bill-zip'];
+                let valid = true;
+                required.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (!el.value.trim()) {
+                        el.classList.add('border-red-500');
+                        valid = false;
+                        // Shake effect
+                        el.parentElement.classList.add('animate-pulse');
+                        setTimeout(() => el.parentElement.classList.remove('animate-pulse'), 500);
+                    } else {
+                        el.classList.remove('border-red-500');
+                    }
+                });
+
+                if (!valid) {
+                    UI.showToast('Please fill all billing fields', 'error');
+                    return;
+                }
+            }
+            Cart.setStep(nextStep);
+            updateStepper(nextStep);
+        }
+
+        // --- Init ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Dismiss page loader
+            const loader = document.getElementById('page-loader');
+            if (loader) {
+                setTimeout(() => loader.remove(), 500);
+            }
+
+            // Pre-fill User
+            const user = Auth.getUser();
+            if (user) {
+                if (document.getElementById('bill-name')) document.getElementById('bill-name').value = user.name || '';
+                if (document.getElementById('bill-email')) document.getElementById('bill-email').value = user.email || '';
+            }
+
+            // Init Cart
+            renderCartList();
+            updateStepper(1);
+
+            // Check link source
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('step') === '2') {
+                setTimeout(() => {
+                    validateAndNext(2);
+                }, 300);
+            }
+        });
+
+        // Override Cart.updateUI to handle our custom renderer interaction
+        const originalUpdateUI = Cart.updateUI.bind(Cart);
+        Cart.updateUI = function () {
+            originalUpdateUI();
+            // Also refresh our custom list
+            if (typeof renderCartList === 'function') renderCartList();
+            // Also refresh sidebar
+            if (typeof updateSideSummary === 'function') updateSideSummary();
+        };
+
+    </script>
+</body>
+
+</html>

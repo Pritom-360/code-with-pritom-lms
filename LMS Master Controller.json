@@ -1,0 +1,921 @@
+{
+  "name": "LMS Master Controller",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "auth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "657b438e-7e71-499d-a9d4-31c45aae2690",
+      "name": "Webhook (Entry)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        128,
+        112
+      ],
+      "webhookId": "264f62e0-2739-4a06-8051-1b19cdd52e94"
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.body.action }}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "login"
+            },
+            {
+              "value2": "register",
+              "output": 1
+            },
+            {
+              "value2": "checkout",
+              "output": 2
+            },
+            {
+              "value2": "sync",
+              "output": 3
+            },
+            {
+              "value2": "contact",
+              "output": 4
+            },
+            {
+              "value2": "certificate_request",
+              "output": 5
+            }
+          ]
+        }
+      },
+      "id": "c3291fd5-1b34-4d29-9554-91c12ec23f13",
+      "name": "Action Router",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        352,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1vPtk6WUiAc9ZLMYHa6_E2ftEsVhmQBnLKyq9aoHYIF0",
+          "mode": "list",
+          "cachedResultName": "test n8n",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vPtk6WUiAc9ZLMYHa6_E2ftEsVhmQBnLKyq9aoHYIF0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vPtk6WUiAc9ZLMYHa6_E2ftEsVhmQBnLKyq9aoHYIF0/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "email",
+              "lookupValue": "={{ $json.body.email }}"
+            },
+            {
+              "lookupColumn": "password",
+              "lookupValue": "={{ $json.body.password }}"
+            }
+          ]
+        },
+        "combineFilters": "AND",
+        "options": {}
+      },
+      "id": "96cc45de-2936-40a8-aef2-cb022d18a697",
+      "name": "Get All Users",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 3,
+      "position": [
+        560,
+        -96
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "0LhwnheN62VbG6Ai",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// LOGIN LOGIC\nconst users = $input.all();\nconst req = $('Webhook (Entry)').first().json.body;\nconst user = users.find(u => u.json.email === req.email && u.json.password === req.password);\n\nif (user) {\n  return [{\n    json: {\n      success: true,\n      message: \"Login Successful\",\n      user: {\n        name: user.json.name,\n        email: user.json.email,\n        access: user.json.access\n      }\n    }\n  }];\n} else {\n  return [{ json: { success: false, message: \"Invalid Email or Password\" } }];\n}"
+      },
+      "id": "1159ea1f-21ec-4c9d-859c-0cf4e3a24b92",
+      "name": "Verify Credentials",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        768,
+        -96
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "db0a7cf6-3d83-4df2-9f40-06756646f1da",
+      "name": "Respond Login",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        960,
+        -96
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1vPtk6WUiAc9ZLMYHa6_E2ftEsVhmQBnLKyq9aoHYIF0",
+          "mode": "list",
+          "cachedResultName": "test n8n",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vPtk6WUiAc9ZLMYHa6_E2ftEsVhmQBnLKyq9aoHYIF0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vPtk6WUiAc9ZLMYHa6_E2ftEsVhmQBnLKyq9aoHYIF0/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "email",
+              "lookupValue": "={{ $json.body.email }}"
+            }
+          ]
+        },
+        "combineFilters": "AND",
+        "options": {}
+      },
+      "id": "697bea52-4e1e-4742-9e66-78c800724dcc",
+      "name": "Check Existing",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 3,
+      "position": [
+        560,
+        112
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "0LhwnheN62VbG6Ai",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// REGISTRATION LOGIC\nconst users = $input.all();\nconst req = $('Webhook (Entry)').first().json.body;\nconst exists = users.some(u => u.json.email === req.email);\n\nif (exists) {\n  return [{ json: { success: false, message: \"Email already registered! Please Login.\" } }];\n} else {\n  return [{\n    json: {\n      timestamp: new Date().toISOString(),\n      name: req.name,\n      email: req.email,\n      password: req.password,\n      access: \"1\",\n      success: true\n    }\n  }];\n}"
+      },
+      "id": "fcc95891-0a1e-4555-abb7-58acaf0ba633",
+      "name": "Validate New User",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        768,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.success }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "ccd9e7db-5e74-40ff-99c9-48bf3a7733ab",
+      "name": "Is Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        960,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "c4fa9280-7772-481f-a262-04c5a598c007",
+      "name": "Respond Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1168,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1vPtk6WUiAc9ZLMYHa6_E2ftEsVhmQBnLKyq9aoHYIF0",
+          "mode": "list",
+          "cachedResultName": "test n8n",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vPtk6WUiAc9ZLMYHa6_E2ftEsVhmQBnLKyq9aoHYIF0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vPtk6WUiAc9ZLMYHa6_E2ftEsVhmQBnLKyq9aoHYIF0/edit#gid=0"
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "timestamp",
+              "fieldValue": "={{ $json.timestamp }}"
+            },
+            {
+              "fieldId": "name",
+              "fieldValue": "={{ $json.name }}"
+            },
+            {
+              "fieldId": "email",
+              "fieldValue": "={{ $json.email }}"
+            },
+            {
+              "fieldId": "password",
+              "fieldValue": "={{ $json.password }}"
+            },
+            {
+              "fieldId": "access",
+              "fieldValue": "={{ $json.access }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f0c67601-d937-4a21-9b62-92f1802d4ac1",
+      "name": "Save to DB",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 3,
+      "position": [
+        1168,
+        96
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "0LhwnheN62VbG6Ai",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "Welcome to AutomatePro!",
+        "message": "=Hi {{ $json.name }},\n\nYour account has been created successfully.\n\nYou have free access to 'n8n Fundamentals'.\nLogin here: http://localhost:3000\n\nHappy Automating!",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "Arup Bhowmik Pritom"
+        }
+      },
+      "id": "d6ec18b9-0961-4802-9fcf-02d243f73fc0",
+      "name": "Send Welcome Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        1360,
+        96
+      ],
+      "webhookId": "69fb907b-62c3-45ee-b3f0-99b50bfab0ed",
+      "alwaysOutputData": true,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "0jOIK3V7iVG8UDyT",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Account created! Please log in.\",\n  \"user\": {\n    \"name\": \"{{ $('Save to DB').item.json.name }}\",\n    \"email\": \"{{ $('Save to DB').item.json.email }}\",\n    \"access\": \"1\"\n  }\n}",
+        "options": {}
+      },
+      "id": "316612dd-e396-452e-b023-5149b576561a",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1568,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $('Webhook (Entry)').first().json.body;\nconst isFree = body.payment.total == 0 || body.payment.method === 'free';\nreturn [{ json: { isFree } }];"
+      },
+      "id": "check-free-node",
+      "name": "Check Free",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        360,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.isFree }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "if-free-node",
+      "name": "IF Free",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        560,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1vPtk6WUiAc9ZLMYHa6_E2ftEsVhmQBnLKyq9aoHYIF0",
+          "mode": "list",
+          "cachedResultName": "test n8n",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vPtk6WUiAc9ZLMYHa6_E2ftEsVhmQBnLKyq9aoHYIF0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vPtk6WUiAc9ZLMYHa6_E2ftEsVhmQBnLKyq9aoHYIF0/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "email",
+              "lookupValue": "={{ $('Webhook (Entry)').first().json.body.billing.email }}"
+            }
+          ]
+        },
+        "combineFilters": "AND",
+        "options": {}
+      },
+      "id": "query-user-access",
+      "name": "Query User Access",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 3,
+      "position": [
+        760,
+        400
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "0LhwnheN62VbG6Ai",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $('Webhook (Entry)').first().json.body;\nconst row = $input.first().json;\nconst currentAccess = (row.access || \"\").toString().split(',').map(s => s.trim()).filter(s => s);\nconst newIds = body.items.map(i => i.id);\nconst accessSet = new Set(currentAccess);\nnewIds.forEach(id => accessSet.add(id));\nconst newAccessStr = Array.from(accessSet).join(',');\nreturn [{ json: { newAccess: newAccessStr, email: body.billing.email } }];"
+      },
+      "id": "calc-update-node",
+      "name": "Calc Update",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        960,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Placeholder: Database Update\n// Use a Google Sheets node here to update the user's access.\nreturn [{ json: { success: true } }];"
+      },
+      "id": "update-access-node",
+      "name": "Update Access Logic",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        1160,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "arupbhowmikpritom@gmail.com",
+        "message": "=New Order Received!\n\nCustomer: {{ $('Webhook (Entry)').first().json.body.billing.name }}\nEmail: {{ $('Webhook (Entry)').first().json.body.billing.email }}\nPhone: {{ $('Webhook (Entry)').first().json.body.billing.phone }}\n\nPayment: {{ $('Webhook (Entry)').first().json.body.payment.method }}\nTxnID: {{ $('Webhook (Entry)').first().json.body.payment.txnId }}\nTotal: ${{ $('Webhook (Entry)').first().json.body.payment.total }}\n\nItems:\n{{ $('Webhook (Entry)').first().json.body.items.map(i => i.title).join(', ') }}",
+        "subject": "New Order: {{ $('Webhook (Entry)').first().json.body.items[0].title }}",
+        "options": {}
+      },
+      "id": "42e322d9-868f-4cf2-a07f-c8b03913406d",
+      "name": "Notify Admin",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        1360,
+        400
+      ],
+      "webhookId": "a18f08c4-23d7-45fb-a19c-362558a93931",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "0jOIK3V7iVG8UDyT",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook (Entry)').first().json.body.billing.email }}",
+        "message": "=Hi {{ $('Webhook (Entry)').first().json.body.billing.name }},\n\nThank you for your order!\n\nWe have received your payment info (TxnID: {{ $('Webhook (Entry)').first().json.body.payment.txnId }}).\n\nWe will check your information and add your course in 2 hours.\n\nIf you have any questions, reply to this email.",
+        "subject": "Order Received: {{ $('Webhook (Entry)').first().json.body.items[0].title }}",
+        "options": {}
+      },
+      "id": "notify-user-0001",
+      "name": "Notify User",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        1560,
+        400
+      ],
+      "webhookId": "notify-user-webhook-id",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "0jOIK3V7iVG8UDyT",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": true,\n  \"message\": \"Order received! Check your email.\"\n}",
+        "options": {}
+      },
+      "id": "49d25529-cd10-4483-86c9-06c426cd6c41",
+      "name": "Respond Purchase",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1vPtk6WUiAc9ZLMYHa6_E2ftEsVhmQBnLKyq9aoHYIF0",
+          "mode": "list",
+          "cachedResultName": "test n8n",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vPtk6WUiAc9ZLMYHa6_E2ftEsVhmQBnLKyq9aoHYIF0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vPtk6WUiAc9ZLMYHa6_E2ftEsVhmQBnLKyq9aoHYIF0/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "email",
+              "lookupValue": "={{ $json.body.email }}"
+            }
+          ]
+        },
+        "combineFilters": "AND",
+        "options": {}
+      },
+      "id": "sync-lookup-node",
+      "name": "Sync Lookup",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 3,
+      "position": [
+        560,
+        700
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "0LhwnheN62VbG6Ai",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// SYNC LOGIC\nconst users = $input.all();\nconst req = $('Webhook (Entry)').first().json.body;\nconst user = users.find(u => u.json.email === req.email);\nif (user) {\n  return [{ json: { success: true, user: { name: user.json.name, email: user.json.email, access: user.json.access } } }];\n} else {\n  return [{ json: { success: false, message: \"User not found\" } }];\n}"
+      },
+      "id": "sync-logic-node",
+      "name": "Sync Response Logic",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        760,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "respond-sync-node",
+      "name": "Respond Sync",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        960,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": true,\n  \"message\": \"Message received. We will get back to you soon.\"\n}",
+        "options": {}
+      },
+      "id": "respond-contact-node",
+      "name": "Respond Contact",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        560,
+        800
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "arupbhowmikpritom@gmail.com",
+        "subject": "Certificate Request: {{ $json.body.courseTitle }}",
+        "message": "=User {{ $json.body.user.name }} requested a certificate for {{ $json.body.courseTitle }}.\n\nDetails:\nName: {{ $json.body.user.name }}\nEmail: {{ $json.body.user.email }}\nPassword: {{ $json.body.user.password || 'N/A' }}\nAccess: {{ $json.body.user.access }}",
+        "options": {}
+      },
+      "id": "cert-admin-001",
+      "name": "Notify Admin (Cert)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        560,
+        900
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "0jOIK3V7iVG8UDyT",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.body.user.email }}",
+        "subject": "Certificate Request Received: {{ $json.body.courseTitle }}",
+        "message": "=Hi {{ $json.body.user.name }},\n\nWe have received your request for the {{ $json.body.courseTitle }} certificate.\n\nYour certificate is currently under development. You will receive it as soon as possible.\n\nBest regards,\nCode With Pritom Team",
+        "options": {}
+      },
+      "id": "cert-user-001",
+      "name": "Notify User (Cert)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        760,
+        900
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "0jOIK3V7iVG8UDyT",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": true,\n  \"message\": \"Certificate request sent!\"\n}",
+        "options": {}
+      },
+      "id": "cert-resp-001",
+      "name": "Respond Certificate",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        960,
+        900
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook (Entry)": {
+      "main": [
+        [
+          {
+            "node": "Action Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Action Router": {
+      "main": [
+        [
+          {
+            "node": "Get All Users",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Existing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Free",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sync Lookup",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Contact",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notify Admin (Cert)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get All Users": {
+      "main": [
+        [
+          {
+            "node": "Verify Credentials",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Credentials": {
+      "main": [
+        [
+          {
+            "node": "Respond Login",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Existing": {
+      "main": [
+        [
+          {
+            "node": "Validate New User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate New User": {
+      "main": [
+        [
+          {
+            "node": "Is Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Valid?": {
+      "main": [
+        [
+          {
+            "node": "Save to DB",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to DB": {
+      "main": [
+        [
+          {
+            "node": "Send Welcome Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Welcome Email": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Free": {
+      "main": [
+        [
+          {
+            "node": "IF Free",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Free": {
+      "main": [
+        [
+          {
+            "node": "Query User Access",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notify Admin",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query User Access": {
+      "main": [
+        [
+          {
+            "node": "Calc Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calc Update": {
+      "main": [
+        [
+          {
+            "node": "Update Access",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Access": {
+      "main": [
+        [
+          {
+            "node": "Notify Admin",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Admin": {
+      "main": [
+        [
+          {
+            "node": "Notify User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify User": {
+      "main": [
+        [
+          {
+            "node": "Respond Purchase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sync Lookup": {
+      "main": [
+        [
+          {
+            "node": "Sync Response Logic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sync Response Logic": {
+      "main": [
+        [
+          {
+            "node": "Respond Sync",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Admin (Cert)": {
+      "main": [
+        [
+          {
+            "node": "Notify User (Cert)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify User (Cert)": {
+      "main": [
+        [
+          {
+            "node": "Respond Certificate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "ca4e6d3d-8304-4f98-b572-a8463809be32",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "06620af26bfdfe2c2571de833429de50760a60a839f0d1425bed5bb3cdf2d56a"
+  },
+  "id": "vuEDYMjdGBMAGA6O8mNgZ",
+  "tags": []
+}

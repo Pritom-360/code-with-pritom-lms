@@ -1,0 +1,26 @@
+{
+  "name": "code-with-pritom-lms",
+  "version": "2.1.0",
+  "description": "Code With Pritom LMS — Learn Automation with n8n",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": [
+    "lms",
+    "automation",
+    "n8n"
+  ],
+  "author": "Arup Bhowmik Pritom",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "axios": "^1.13.5",
+    "body-parser": "^2.2.2",
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.4",
+    "express": "^5.2.1"
+  }
+}

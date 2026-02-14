@@ -1,0 +1,733 @@
+{
+    "name": "LMS Complete Flow (Test)",
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "auth",
+                "responseMode": "responseNode",
+                "options": {}
+            },
+            "id": "webhook-node",
+            "name": "Webhook (Entry)",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 1,
+            "position": [
+                128,
+                112
+            ],
+            "webhookId": "264f62e0-2739-4a06-8051-1b19cdd52e94"
+        },
+        {
+            "parameters": {
+                "dataType": "string",
+                "value1": "={{ $json.body.action }}",
+                "rules": {
+                    "rules": [
+                        {
+                            "value2": "login"
+                        },
+                        {
+                            "value2": "register",
+                            "output": 1
+                        },
+                        {
+                            "value2": "checkout",
+                            "output": 2
+                        },
+                        {
+                            "value2": "sync",
+                            "output": 3
+                        },
+                        {
+                            "value2": "contact",
+                            "output": 4
+                        },
+                        {
+                            "value2": "certificate_request",
+                            "output": 5
+                        }
+                    ]
+                }
+            },
+            "id": "action-router",
+            "name": "Action Router",
+            "type": "n8n-nodes-base.switch",
+            "typeVersion": 1,
+            "position": [
+                352,
+                112
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// MOCK: Get All Users\n// Replace with Google Sheets 'Get Many Rows'\nreturn [{ json: { email: 'test@example.com', password: '123', name: 'Test User', access: '1' } }];"
+            },
+            "id": "mock-get-users",
+            "name": "Get All Users (Mock)",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 1,
+            "position": [
+                560,
+                -96
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// LOGIN LOGIC\nconst users = $input.all();\nconst req = $('Webhook (Entry)').first().json.body;\nconst user = users.find(u => u.json.email === req.email && u.json.password === req.password);\nif (user) return [{ json: { success: true, message: 'Login Successful', user: user.json } }];\nelse return [{ json: { success: false, message: 'Invalid Email' } }];"
+            },
+            "id": "verify-creds",
+            "name": "Verify Credentials",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 1,
+            "position": [
+                768,
+                -96
+            ]
+        },
+        {
+            "parameters": {
+                "respondWith": "json",
+                "responseBody": "={{ JSON.stringify($json) }}",
+                "options": {}
+            },
+            "id": "respond-login",
+            "name": "Respond Login",
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1,
+            "position": [
+                960,
+                -96
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// MOCK: Check Existing\n// Replace with Google Sheets 'Get Rows' (Filter by Email)\nreturn []; // Return empty if new user"
+            },
+            "id": "mock-check-exist",
+            "name": "Check Existing (Mock)",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 1,
+            "position": [
+                560,
+                112
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// REGISTRATION VALIDATION\nconst users = $input.all();\nconst req = $('Webhook (Entry)').first().json.body;\nif (users.length > 0 && users[0].json.email) return [{ json: { success: false, message: 'Exists' } }];\nreturn [{ json: { success: true, name: req.name, email: req.email, password: req.password, access: '1' } }];"
+            },
+            "id": "validate-new",
+            "name": "Validate New User",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 1,
+            "position": [
+                768,
+                112
+            ]
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "boolean": [
+                        {
+                            "value1": "={{ $json.success }}",
+                            "value2": true
+                        }
+                    ]
+                }
+            },
+            "id": "is-valid",
+            "name": "Is Valid?",
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 1,
+            "position": [
+                960,
+                112
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// MOCK: Save to DB\n// Replace with Google Sheets 'Append'\nreturn [{ json: $input.first().json }];"
+            },
+            "id": "mock-save-db",
+            "name": "Save to DB (Mock)",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 1,
+            "position": [
+                1168,
+                96
+            ]
+        },
+        {
+            "parameters": {
+                "sendTo": "={{ $json.email }}",
+                "subject": "Welcome!",
+                "message": "Hi {{ $json.name }}, Account created!",
+                "options": {}
+            },
+            "id": "welcome-email",
+            "name": "Send Welcome Email",
+            "type": "n8n-nodes-base.gmail",
+            "typeVersion": 2,
+            "position": [
+                1360,
+                96
+            ],
+            "webhookId": "69fb907b-62c3-45ee-b3f0-99b50bfab0ed",
+            "credentials": {
+                "gmailOAuth2": {
+                    "id": "0jOIK3V7iVG8UDyT",
+                    "name": "Gmail account 2"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "respondWith": "json",
+                "responseBody": "{ \"success\": true }",
+                "options": {}
+            },
+            "id": "respond-success",
+            "name": "Respond Success",
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1,
+            "position": [
+                1568,
+                96
+            ]
+        },
+        {
+            "parameters": {
+                "respondWith": "json",
+                "responseBody": "={{ JSON.stringify($json) }}",
+                "options": {}
+            },
+            "id": "respond-error",
+            "name": "Respond Error",
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1,
+            "position": [
+                1168,
+                304
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "const body = $('Webhook (Entry)').first().json.body;\nconst isFree = body.payment.total == 0 || body.payment.method === 'free';\nreturn [{ json: { isFree } }];"
+            },
+            "id": "check-free",
+            "name": "Check Free",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 1,
+            "position": [
+                360,
+                500
+            ]
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "boolean": [
+                        {
+                            "value1": "={{ $json.isFree }}",
+                            "value2": true
+                        }
+                    ]
+                }
+            },
+            "id": "if-free",
+            "name": "IF Free",
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 1,
+            "position": [
+                560,
+                500
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// MOCK: Query Access\n// Replace with Google Sheets 'Get Rows'\nreturn [{ json: { access: '1', email: 'test@example.com' } }];"
+            },
+            "id": "mock-query-access",
+            "name": "Query User Access (Mock)",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 1,
+            "position": [
+                760,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "const body = $('Webhook (Entry)').first().json.body;\nreturn [{ json: { newAccess: '1,2,3' } }];"
+            },
+            "id": "calc-update",
+            "name": "Calc Update",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 1,
+            "position": [
+                960,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// MOCK: Update Access\n// Replace with Google Sheets 'Update Row'\nreturn [{ json: { success: true } }];"
+            },
+            "id": "mock-update-access",
+            "name": "Update Access (Mock)",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 1,
+            "position": [
+                1160,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "sendTo": "admin@example.com",
+                "subject": "New Order",
+                "message": "New Order Received",
+                "options": {}
+            },
+            "id": "notify-admin",
+            "name": "Notify Admin",
+            "type": "n8n-nodes-base.gmail",
+            "typeVersion": 2,
+            "position": [
+                1360,
+                400
+            ],
+            "credentials": {
+                "gmailOAuth2": {
+                    "id": "0jOIK3V7iVG8UDyT",
+                    "name": "Gmail account 2"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "sendTo": "user@example.com",
+                "subject": "Order Confirmed",
+                "message": "Thanks for order",
+                "options": {}
+            },
+            "id": "notify-user",
+            "name": "Notify User",
+            "type": "n8n-nodes-base.gmail",
+            "typeVersion": 2,
+            "position": [
+                1560,
+                400
+            ],
+            "credentials": {
+                "gmailOAuth2": {
+                    "id": "0jOIK3V7iVG8UDyT",
+                    "name": "Gmail account 2"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "respondWith": "json",
+                "responseBody": "{ \"success\": true }",
+                "options": {}
+            },
+            "id": "respond-purchase",
+            "name": "Respond Purchase",
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1,
+            "position": [
+                1760,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// MOCK: Sync Lookup\nreturn [{ json: { email: 'test@example.com', access: '1' } }];"
+            },
+            "id": "mock-sync-lookup",
+            "name": "Sync Lookup (Mock)",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 1,
+            "position": [
+                560,
+                700
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "return [{ json: { success: true } }];"
+            },
+            "id": "sync-logic",
+            "name": "Sync Response Logic",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 1,
+            "position": [
+                760,
+                700
+            ]
+        },
+        {
+            "parameters": {
+                "respondWith": "json",
+                "responseBody": "={{ JSON.stringify($json) }}",
+                "options": {}
+            },
+            "id": "respond-sync",
+            "name": "Respond Sync",
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1,
+            "position": [
+                960,
+                700
+            ]
+        },
+        {
+            "parameters": {
+                "respondWith": "json",
+                "responseBody": "{ \"success\": true }",
+                "options": {}
+            },
+            "id": "respond-contact",
+            "name": "Respond Contact",
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1,
+            "position": [
+                560,
+                800
+            ]
+        },
+        {
+            "parameters": {
+                "sendTo": "admin@example.com",
+                "subject": "Cert Request",
+                "message": "Cert Req",
+                "options": {}
+            },
+            "id": "notify-admin-cert",
+            "name": "Notify Admin (Cert)",
+            "type": "n8n-nodes-base.gmail",
+            "typeVersion": 2,
+            "position": [
+                560,
+                900
+            ],
+            "credentials": {
+                "gmailOAuth2": {
+                    "id": "0jOIK3V7iVG8UDyT",
+                    "name": "Gmail account 2"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "sendTo": "user@example.com",
+                "subject": "Cert Request",
+                "message": "Cert Request",
+                "options": {}
+            },
+            "id": "notify-user-cert",
+            "name": "Notify User (Cert)",
+            "type": "n8n-nodes-base.gmail",
+            "typeVersion": 2,
+            "position": [
+                760,
+                900
+            ],
+            "credentials": {
+                "gmailOAuth2": {
+                    "id": "0jOIK3V7iVG8UDyT",
+                    "name": "Gmail account 2"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "respondWith": "json",
+                "responseBody": "{ \"success\": true }",
+                "options": {}
+            },
+            "id": "respond-cert",
+            "name": "Respond Certificate",
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1,
+            "position": [
+                960,
+                900
+            ]
+        }
+    ],
+    "connections": {
+        "Webhook (Entry)": {
+            "main": [
+                [
+                    {
+                        "node": "Action Router",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Action Router": {
+            "main": [
+                [
+                    {
+                        "node": "Get All Users (Mock)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Check Existing (Mock)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Check Free",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Sync Lookup (Mock)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Respond Contact",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Notify Admin (Cert)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Get All Users (Mock)": {
+            "main": [
+                [
+                    {
+                        "node": "Verify Credentials",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Verify Credentials": {
+            "main": [
+                [
+                    {
+                        "node": "Respond Login",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Check Existing (Mock)": {
+            "main": [
+                [
+                    {
+                        "node": "Validate New User",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Validate New User": {
+            "main": [
+                [
+                    {
+                        "node": "Is Valid?",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Is Valid?": {
+            "main": [
+                [
+                    {
+                        "node": "Save to DB (Mock)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Respond Error",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Save to DB (Mock)": {
+            "main": [
+                [
+                    {
+                        "node": "Send Welcome Email",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Send Welcome Email": {
+            "main": [
+                [
+                    {
+                        "node": "Respond Success",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Check Free": {
+            "main": [
+                [
+                    {
+                        "node": "IF Free",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "IF Free": {
+            "main": [
+                [
+                    {
+                        "node": "Query User Access (Mock)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Notify Admin",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Query User Access (Mock)": {
+            "main": [
+                [
+                    {
+                        "node": "Calc Update",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Calc Update": {
+            "main": [
+                [
+                    {
+                        "node": "Update Access (Mock)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Update Access (Mock)": {
+            "main": [
+                [
+                    {
+                        "node": "Notify Admin",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Notify Admin": {
+            "main": [
+                [
+                    {
+                        "node": "Notify User",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Notify User": {
+            "main": [
+                [
+                    {
+                        "node": "Respond Purchase",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Sync Lookup (Mock)": {
+            "main": [
+                [
+                    {
+                        "node": "Sync Response Logic",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Sync Response Logic": {
+            "main": [
+                [
+                    {
+                        "node": "Respond Sync",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Notify Admin (Cert)": {
+            "main": [
+                [
+                    {
+                        "node": "Notify User (Cert)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Notify User (Cert)": {
+            "main": [
+                [
+                    {
+                        "node": "Respond Certificate",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}

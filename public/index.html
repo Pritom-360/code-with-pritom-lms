@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code With Pritom | Master the Future of Automation</title>
+    <meta name="description"
+        content="Learn to build powerful workflows, integrate APIs, and automate your business with n8n. Professional courses from beginner to advanced by Pritom.">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#ea580c',
+                        secondary: '#0f172a',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <!-- FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="bg-slate-50 font-['Inter'] text-slate-800 antialiased overflow-x-hidden">
+
+    <!-- Page Loader -->
+    <div id="page-loader" class="page-loader">
+        <div class="page-loader-brand">Code With <span class="text-orange-600">Pritom</span></div>
+        <div class="spinner"></div>
+    </div>
+
+    <!-- ===================== NAVBAR ===================== -->
+    <nav class="fixed w-full z-50 glass-nav transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 md:px-6 py-4 flex justify-between items-center">
+            <a href="#" class="text-xl md:text-2xl font-extrabold tracking-tight select-none z-50 relative">
+                Code With <span class="text-orange-600">Pritom</span>
+            </a>
+
+            <!-- Desktop Nav -->
+            <div class="hidden lg:flex items-center gap-8">
+                <a href="#courses"
+                    class="text-slate-500 hover:text-slate-800 font-medium text-sm transition">Courses</a>
+                <a href="#projects"
+                    class="text-slate-500 hover:text-slate-800 font-medium text-sm transition">Projects</a>
+                <a href="#testimonials"
+                    class="text-slate-500 hover:text-slate-800 font-medium text-sm transition">Reviews</a>
+                <a href="#faq" class="text-slate-500 hover:text-slate-800 font-medium text-sm transition">FAQ</a>
+                <button onclick="UI.openModal('login')"
+                    class="text-slate-600 hover:text-orange-600 font-semibold text-sm transition">Log In</button>
+                <button onclick="UI.openModal('register')"
+                    class="btn btn-primary btn-pill btn-sm shadow-lg hover:shadow-orange-500/25">
+                    Get Started Free
+                </button>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button
+                class="lg:hidden w-10 h-10 flex items-center justify-center rounded-full bg-slate-100/50 hover:bg-slate-200/50 transition z-50 text-slate-700"
+                onclick="UI.openMobileNav()" aria-label="Open menu">
+                <i class="fa-solid fa-bars text-lg"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Nav Panel -->
+    <div id="mobile-nav-overlay" class="mobile-nav-overlay" onclick="UI.closeMobileNav()"></div>
+    <div id="mobile-nav" class="mobile-nav">
+        <button class="mobile-nav-close" onclick="UI.closeMobileNav()" aria-label="Close menu">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="flex flex-col space-y-2 mt-4">
+            <a href="#courses" class="mobile-nav-link" onclick="UI.closeMobileNav()">Courses</a>
+            <a href="#projects" class="mobile-nav-link" onclick="UI.closeMobileNav()">Projects</a>
+            <a href="#testimonials" class="mobile-nav-link" onclick="UI.closeMobileNav()">Reviews</a>
+            <a href="#faq" class="mobile-nav-link" onclick="UI.closeMobileNav()">FAQ</a>
+        </div>
+        <div class="mt-auto space-y-4 pb-8">
+            <button onclick="UI.closeMobileNav();UI.openModal('login')"
+                class="btn btn-outline w-full justify-center">Log In</button>
+            <button onclick="UI.closeMobileNav();UI.openModal('register')"
+                class="btn btn-primary w-full justify-center shadow-lg">Get Started Free</button>
+        </div>
+    </div>
+
+    <!-- ===================== HERO SECTION ===================== -->
+    <header class="hero relative overflow-hidden pt-32 pb-16 lg:pt-48 lg:pb-32">
+        <div class="hero-bg absolute inset-0 z-0 opacity-50 pointer-events-none"></div>
+
+        <!-- Blobs -->
+        <div class="hero-blob animate-blob absolute rounded-full filter blur-3xl opacity-30"
+            style="width:300px;height:300px;background:#fb923c;top:-10%;right:50%;transform:translate(50%,0)"></div>
+        <div class="hero-blob animate-blob animation-delay-2000 absolute rounded-full filter blur-3xl opacity-30"
+            style="width:250px;height:250px;background:#a78bfa;bottom:0;left:0"></div>
+
+        <div class="max-w-7xl mx-auto px-4 md:px-6 relative z-10">
+            <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+                <!-- Text Content -->
+                <div class="text-center lg:text-left">
+                    <div
+                        class="animate-fade-in-down inline-flex items-center gap-2 py-1.5 px-3 rounded-full bg-orange-50 border border-orange-200 text-orange-700 text-xs md:text-sm font-semibold mb-6 md:mb-8 mx-auto lg:mx-0">
+                        <span class="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-orange-500 animate-pulse"></span>
+                        🚀 New: Interactive Roadmaps Available
+                    </div>
+
+                    <h1 class="text-4xl md:text-5xl lg:text-7xl font-black mb-6 leading-tight tracking-tight animate-fade-in-up text-slate-900"
+                        style="opacity:0">
+                        Stop Working Hard.<br>
+                        Start <span
+                            class="bg-clip-text text-transparent bg-gradient-to-r from-orange-600 to-red-600">Automating.</span>
+                    </h1>
+
+                    <p class="text-base md:text-xl text-slate-500 mb-8 md:mb-10 max-w-xl mx-auto lg:mx-0 leading-relaxed animate-fade-in-up delay-200 px-2 lg:px-0"
+                        style="opacity:0">
+                        Master the tools that power the modern web. From Linux & APIs to n8n Automation & Full Stack
+                        Development.
+                    </p>
+
+                    <div class="flex flex-col sm:flex-row justify-center lg:justify-start gap-4 mb-10 md:mb-12 animate-fade-in-up delay-300"
+                        style="opacity:0">
+                        <button onclick="UI.openModal('register')"
+                            class="btn btn-primary btn-lg btn-pill shadow-xl hover:shadow-2xl hover:shadow-orange-500/20 w-full sm:w-auto justify-center">
+                            <i class="fa-solid fa-play text-sm"></i>
+                            Start Learning Free
+                        </button>
+                        <a href="#courses" class="btn btn-outline btn-lg btn-pill w-full sm:w-auto justify-center">
+                            <i class="fa-solid fa-grid-2 text-sm"></i>
+                            View Roadmaps
+                        </a>
+                    </div>
+
+                    <!-- Social Proof -->
+                    <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 animate-fade-in-up delay-500"
+                        style="opacity:0">
+                        <div class="avatar-stack flex -space-x-3">
+                            <div class="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-white flex items-center justify-center text-white font-bold text-xs"
+                                style="background:linear-gradient(135deg,#f97316,#dc2626)">A</div>
+                            <div class="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-white flex items-center justify-center text-white font-bold text-xs"
+                                style="background:linear-gradient(135deg,#7c3aed,#3b82f6)">B</div>
+                            <div class="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-white flex items-center justify-center text-white font-bold text-xs"
+                                style="background:linear-gradient(135deg,#10b981,#06b6d4)">C</div>
+                            <div
+                                class="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-white flex items-center justify-center text-white font-bold text-xs bg-slate-600">
+                                +500</div>
+                        </div>
+                        <div class="text-sm text-slate-500 text-center sm:text-left">
+                            <div class="font-bold text-slate-700">500+ learners enrolled</div>
+                            <div
+                                class="text-yellow-500 text-xs mt-0.5 flex items-center justify-center sm:justify-start gap-1">
+                                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                    class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                    class="fa-solid fa-star"></i>
+                                <span class="text-slate-400 ml-1">(4.9/5 Rating)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hero Image (Hidden on Mobile) -->
+                <div class="hero-image-container hidden lg:block relative">
+                    <img src="images/brand.png" alt="Code With Pritom" class="hero-img w-full max-w-lg mx-auto">
+
+                    <!-- Floating Badge 1 -->
+                    <div class="absolute -top-6 -right-6 bg-white p-4 rounded-2xl shadow-xl animate-bounce-slow hidden xl:block"
+                        style="animation-delay:1s">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                                <i class="fa-solid fa-check"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs text-slate-500 font-medium">Courses Completed</div>
+                                <div class="text-lg font-bold text-slate-800">120+</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Floating Badge 2 -->
+                    <div class="absolute -bottom-10 left-10 bg-white p-4 rounded-2xl shadow-xl animate-bounce-slow hidden xl:block"
+                        style="animation-delay:0s">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                                <i class="fa-solid fa-code"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs text-slate-500 font-medium">Lines of Code</div>
+                                <div class="text-lg font-bold text-slate-800">1M+</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ===================== STATS BAR ===================== -->
+    <section class="bg-white border-y border-slate-100 py-8 md:py-10">
+        <div class="max-w-7xl mx-auto px-4 md:px-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                <div class="stat-item reveal">
+                    <div class="text-3xl md:text-4xl font-black text-slate-800 mb-1" data-count="9" data-suffix="+">0
+                    </div>
+                    <div class="text-xs md:text-sm text-slate-500 font-bold uppercase tracking-wider">Pro Courses</div>
+                </div>
+                <div class="stat-item reveal delay-100">
+                    <div class="text-3xl md:text-4xl font-black text-slate-800 mb-1" data-count="500" data-suffix="+">0
+                    </div>
+                    <div class="text-xs md:text-sm text-slate-500 font-bold uppercase tracking-wider">Active Learners
+                    </div>
+                </div>
+                <div class="stat-item reveal delay-200">
+                    <div class="text-3xl md:text-4xl font-black text-slate-800 mb-1" data-count="120" data-suffix="+">0
+                    </div>
+                    <div class="text-xs md:text-sm text-slate-500 font-bold uppercase tracking-wider">Video Lessons
+                    </div>
+                </div>
+                <div class="stat-item reveal delay-300">
+                    <div class="text-3xl md:text-4xl font-black text-slate-800 mb-1" data-count="98" data-suffix="%">0
+                    </div>
+                    <div class="text-xs md:text-sm text-slate-500 font-bold uppercase tracking-wider">Satisfaction Rate
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================== COURSES SECTION ===================== -->
+    <section id="courses" class="section-padding bg-white py-16 md:py-24">
+        <div class="max-w-7xl mx-auto px-4 md:px-6">
+            <div class="text-center mb-12 md:mb-16 reveal">
+                <span class="badge badge-paid mb-4">Curriculum</span>
+                <h2 class="text-3xl md:text-4xl font-extrabold mb-4 tracking-tight">Master Modern Skills</h2>
+                <p class="text-slate-500 max-w-lg mx-auto">Comprehensive roadmaps designed to take you from beginner to
+                    expert.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                <!-- 1. n8n Fundamentals -->
+                <div class="card card-glow reveal delay-100 relative group cursor-pointer"
+                    onclick="openCourseModal('1')">
+                    <div class="absolute top-4 right-4"><span class="badge badge-free">FREE</span></div>
+                    <div
+                        class="mb-6 w-14 h-14 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-bolt"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">n8n Fundamentals</h3>
+                    <p class="text-slate-500 mb-6 text-sm leading-relaxed line-clamp-2">Master nodes, triggers, JSON
+                        logic, and workflow basics.</p>
+                    <div class="mt-auto">
+                        <div class="flex items-center gap-4 text-xs text-slate-400 font-medium mb-4">
+                            <span><i class="fa-solid fa-list-ul mr-1"></i> 15 Lessons</span>
+                            <span><i class="fa-solid fa-clock mr-1"></i> 2h 30m</span>
+                        </div>
+                        <button class="btn btn-outline w-full text-sm">View Roadmap</button>
+                    </div>
+                </div>
+
+                <!-- 2. Linux Fundamentals -->
+                <div class="card card-glow reveal delay-200 relative group cursor-pointer"
+                    onclick="openCourseModal('4')">
+                    <div
+                        class="mb-6 w-14 h-14 rounded-xl bg-slate-800 text-white flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                        <i class="fa-brands fa-linux"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Linux Fundamentals</h3>
+                    <p class="text-slate-500 mb-6 text-sm leading-relaxed line-clamp-2">Master the command line, file
+                        systems, and server management.</p>
+                    <div class="mt-auto">
+                        <div class="flex items-center gap-4 text-xs text-slate-400 font-medium mb-4">
+                            <span><i class="fa-solid fa-list-ul mr-1"></i> 12 Lessons</span>
+                            <span><i class="fa-solid fa-clock mr-1"></i> 3h 15m</span>
+                        </div>
+                        <button class="btn btn-outline w-full text-sm">View Roadmap</button>
+                    </div>
+                </div>
+
+                <!-- 3. SaaS Automation -->
+                <div class="card card-glow reveal delay-300 relative group cursor-pointer"
+                    onclick="openCourseModal('3')">
+                    <div class="absolute top-4 right-4"><span class="badge badge-premium">PREMIUM</span></div>
+                    <div
+                        class="mb-6 w-14 h-14 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-rocket"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">SaaS Automation</h3>
+                    <p class="text-slate-500 mb-6 text-sm leading-relaxed line-clamp-2">Build a complete SaaS backend
+                        using low-code tools.</p>
+                    <div class="mt-auto">
+                        <div class="flex items-center gap-4 text-xs text-slate-400 font-medium mb-4">
+                            <span><i class="fa-solid fa-list-ul mr-1"></i> 20 Lessons</span>
+                            <span><i class="fa-solid fa-clock mr-1"></i> 5h 45m</span>
+                        </div>
+                        <button class="btn btn-outline w-full text-sm">View Roadmap</button>
+                    </div>
+                </div>
+
+                <!-- 4. Java Programming -->
+                <div class="card card-glow reveal delay-100 relative group cursor-pointer"
+                    onclick="openCourseModal('7')">
+                    <div
+                        class="mb-6 w-14 h-14 rounded-xl bg-red-50 text-red-600 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                        <i class="fa-brands fa-java"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Java Programming</h3>
+                    <p class="text-slate-500 mb-6 text-sm leading-relaxed line-clamp-2">Complete guide to Java syntax,
+                        OOP, and development.</p>
+                    <div class="mt-auto">
+                        <div class="flex items-center gap-4 text-xs text-slate-400 font-medium mb-4">
+                            <span><i class="fa-solid fa-list-ul mr-1"></i> 18 Lessons</span>
+                            <span><i class="fa-solid fa-clock mr-1"></i> 6h 20m</span>
+                        </div>
+                        <button class="btn btn-outline w-full text-sm">View Roadmap</button>
+                    </div>
+                </div>
+
+                <!-- 5. Scripting & Automation -->
+                <div class="card card-glow reveal delay-200 relative group cursor-pointer"
+                    onclick="openCourseModal('9')">
+                    <div
+                        class="mb-6 w-14 h-14 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-scroll"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Scripting & Automation</h3>
+                    <p class="text-slate-500 mb-6 text-sm leading-relaxed line-clamp-2">Python and Shell scripting for
+                        real-world DevOps.</p>
+                    <div class="mt-auto">
+                        <div class="flex items-center gap-4 text-xs text-slate-400 font-medium mb-4">
+                            <span><i class="fa-solid fa-list-ul mr-1"></i> 11 Lessons</span>
+                            <span><i class="fa-solid fa-clock mr-1"></i> 4h 00m</span>
+                        </div>
+                        <button class="btn btn-outline w-full text-sm">View Roadmap</button>
+                    </div>
+                </div>
+
+                <!-- 6. Discrete Mathematics -->
+                <div class="card card-glow reveal delay-300 relative group cursor-pointer"
+                    onclick="openCourseModal('6')">
+                    <div
+                        class="mb-6 w-14 h-14 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-calculator"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Discrete Mathematics</h3>
+                    <p class="text-slate-500 mb-6 text-sm leading-relaxed line-clamp-2">Logic, sets, graph theory, and
+                        algorithms for CS.</p>
+                    <div class="mt-auto">
+                        <div class="flex items-center gap-4 text-xs text-slate-400 font-medium mb-4">
+                            <span><i class="fa-solid fa-list-ul mr-1"></i> 14 Lessons</span>
+                            <span><i class="fa-solid fa-clock mr-1"></i> 5h 00m</span>
+                        </div>
+                        <button class="btn btn-outline w-full text-sm">View Roadmap</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-12">
+                <button onclick="UI.openModal('register')" class="btn btn-outline btn-pill">View All Courses <i
+                        class="fa-solid fa-arrow-right ml-2"></i></button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================== PROJECTS SECTION ===================== -->
+    <section id="projects" class="section-padding bg-slate-50 py-16 md:py-24">
+        <div class="max-w-7xl mx-auto px-4 md:px-6">
+            <div class="text-center mb-12 md:mb-16 reveal">
+                <span class="badge badge-premium mb-4">Showcase</span>
+                <h2 class="text-3xl md:text-4xl font-extrabold mb-4 tracking-tight">Built by the Community</h2>
+                <p class="text-slate-500 max-w-lg mx-auto">See what our students (and I) are building with these skills.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                <!-- Project 1 -->
+                <a href="https://github.com" target="_blank" class="project-card reveal delay-100 group block">
+                    <div class="project-image">
+                        <i class="fa-brands fa-github"></i>
+                        <span class="absolute bottom-4 right-4 bg-black/80 text-white text-xs px-2 py-1 rounded">By
+                            Pritom</span>
+                    </div>
+                    <div class="project-content">
+                        <h3 class="font-bold text-lg mb-2 group-hover:text-orange-600 transition-colors">LMS Automation
+                            System</h3>
+                        <p class="text-slate-500 text-sm mb-4 line-clamp-2">A complete Learning Management System built
+                            with Node.js and n8n based backend.</p>
+                        <div class="project-tags mt-auto relative">
+                            <span class="project-tag">Node.js</span>
+                            <span class="project-tag">n8n</span>
+                            <span class="project-tag">HTML5</span>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Project 2 -->
+                <a href="https://github.com" target="_blank" class="project-card reveal delay-200 group block">
+                    <div class="project-image">
+                        <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=500"
+                            alt="Dashboard">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="font-bold text-lg mb-2 group-hover:text-orange-600 transition-colors">SaaS Analytics
+                            Dashboard</h3>
+                        <p class="text-slate-500 text-sm mb-4 line-clamp-2">Real-time revenue tracking dashboard
+                            connected to Stripe API.</p>
+                        <div class="project-tags mt-auto relative">
+                            <span class="project-tag">Vue.js</span>
+                            <span class="project-tag">Tailwind</span>
+                            <span class="project-tag">Stripe</span>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Project 3 -->
+                <a href="https://github.com" target="_blank" class="project-card reveal delay-300 group block">
+                    <div class="project-image">
+                        <i class="fa-solid fa-robot"></i>
+                    </div>
+                    <div class="project-content">
+                        <h3 class="font-bold text-lg mb-2 group-hover:text-orange-600 transition-colors">Discord Support
+                            Bot</h3>
+                        <p class="text-slate-500 text-sm mb-4 line-clamp-2">AI-powered support bot that answers user
+                            queries automatically.</p>
+                        <div class="project-tags mt-auto relative">
+                            <span class="project-tag">Python</span>
+                            <span class="project-tag">Discord.py</span>
+                            <span class="project-tag">OpenAI</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="text-center mt-12 reveal">
+                <p class="text-slate-500 mb-4">Have a project to share?</p>
+                <a href="mailto:submit@example.com" class="font-bold text-orange-600 hover:underline">Submit your
+                    project used in our courses!</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================== TESTIMONIALS ===================== -->
+    <section id="testimonials" class="section-padding bg-white py-16 md:py-24">
+        <div class="max-w-7xl mx-auto px-4 md:px-6">
+            <div class="text-center mb-12 md:mb-16 reveal">
+                <span class="badge badge-paid mb-4">Reviews</span>
+                <h2 class="text-3xl md:text-4xl font-extrabold mb-4 tracking-tight">Student Success Stories</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                <!-- Review 1 -->
+                <div class="testimonial-card reveal delay-100">
+                    <div class="text-yellow-400 text-sm mb-4">★★★★★</div>
+                    <p class="testimonial-text">"Code With Pritom completely changed how I work. I automated my entire
+                        email pipeline in one weekend. The free course alone is worth more than most paid courses!"</p>
+                    <div class="testimonial-author mt-6">
+                        <div class="testimonial-avatar">SA</div>
+                        <div>
+                            <div class="font-bold text-sm text-slate-800">Sabrina A.</div>
+                            <div class="text-xs text-slate-400">Digital Marketer</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Review 2 -->
+                <div class="testimonial-card reveal delay-200">
+                    <div class="text-yellow-400 text-sm mb-4">★★★★★</div>
+                    <p class="testimonial-text">"The Linux Fundamentals course cleared up so many concepts I struggled
+                        with for years. The visual examples are top-notch."</p>
+                    <div class="testimonial-author mt-6">
+                        <div class="testimonial-avatar bg-gradient-to-br from-blue-500 to-purple-500">DK</div>
+                        <div>
+                            <div class="font-bold text-sm text-slate-800">David K.</div>
+                            <div class="text-xs text-slate-400">SysAdmin</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Review 3 -->
+                <div class="testimonial-card reveal delay-300">
+                    <div class="text-yellow-400 text-sm mb-4">★★★★★</div>
+                    <p class="testimonial-text">"I built my startup's backend using the SaaS Automation masterclass.
+                        Saved $5000 in dev costs. Pritom is a genius instructor."</p>
+                    <div class="testimonial-author mt-6">
+                        <div class="testimonial-avatar bg-gradient-to-br from-green-500 to-teal-500">JM</div>
+                        <div>
+                            <div class="font-bold text-sm text-slate-800">Jessica M.</div>
+                            <div class="text-xs text-slate-400">Founder</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Review 4 -->
+                <div class="testimonial-card reveal delay-100">
+                    <div class="text-yellow-400 text-sm mb-4">★★★★☆</div>
+                    <p class="testimonial-text">"Great clear audio and pacing. I love the interactive roadmaps feature
+                        in the new update!"</p>
+                    <div class="testimonial-author mt-6">
+                        <div class="testimonial-avatar">RJ</div>
+                        <div>
+                            <div class="font-bold text-sm text-slate-800">Rahul J.</div>
+                            <div class="text-xs text-slate-400">Student</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Review 5 -->
+                <div class="testimonial-card reveal delay-200">
+                    <div class="text-yellow-400 text-sm mb-4">★★★★★</div>
+                    <p class="testimonial-text">"Java OOP was finally explained in a way that makes sense. The hands-on
+                        projects were challenging but rewarding."</p>
+                    <div class="testimonial-author mt-6">
+                        <div class="testimonial-avatar bg-orange-500">TP</div>
+                        <div>
+                            <div class="font-bold text-sm text-slate-800">Tom P.</div>
+                            <div class="text-xs text-slate-400">Junior Dev</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Review 6 -->
+                <div class="testimonial-card reveal delay-300">
+                    <div class="text-yellow-400 text-sm mb-4">★★★★★</div>
+                    <p class="testimonial-text">"Best investment I made this year. The community support is amazing
+                        too."</p>
+                    <div class="testimonial-author mt-6">
+                        <div class="testimonial-avatar bg-purple-500">AL</div>
+                        <div>
+                            <div class="font-bold text-sm text-slate-800">Ana L.</div>
+                            <div class="text-xs text-slate-400">Freelancer</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================== FAQ SECTION ===================== -->
+    <section id="faq" class="section-padding bg-slate-50 py-16 md:py-24">
+        <div class="max-w-7xl mx-auto px-4 md:px-6">
+            <div class="text-center mb-12 md:mb-16 reveal">
+                <span class="badge badge-premium mb-4">FAQ</span>
+                <h2 class="text-3xl md:text-4xl font-extrabold mb-4 tracking-tight">Got Questions?</h2>
+            </div>
+
+            <div class="max-w-2xl mx-auto space-y-4">
+                <div class="card reveal delay-100 cursor-pointer"
+                    onclick="this.querySelector('.faq-answer').classList.toggle('hidden');this.querySelector('.faq-icon').classList.toggle('rotate-180')">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-sm">Do I need coding experience?</h3>
+                        <i
+                            class="fa-solid fa-chevron-down faq-icon text-slate-400 text-xs transition-transform duration-300"></i>
+                    </div>
+                    <p class="faq-answer hidden text-slate-500 text-sm mt-3 leading-relaxed">No! Our foundational
+                        courses (Linux, n8n) start from absolute zero. For advanced programming courses (Java, C), we
+                        guide you step-by-step.</p>
+                </div>
+                <div class="card reveal delay-200 cursor-pointer"
+                    onclick="this.querySelector('.faq-answer').classList.toggle('hidden');this.querySelector('.faq-icon').classList.toggle('rotate-180')">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-sm">Is the content updated?</h3>
+                        <i
+                            class="fa-solid fa-chevron-down faq-icon text-slate-400 text-xs transition-transform duration-300"></i>
+                    </div>
+                    <p class="faq-answer hidden text-slate-500 text-sm mt-3 leading-relaxed">Yes, we regularly update
+                        all courses to reflect the latest software versions and industry best practices. Updates are
+                        free for enrolled students.</p>
+                </div>
+                <div class="card reveal delay-300 cursor-pointer"
+                    onclick="this.querySelector('.faq-answer').classList.toggle('hidden');this.querySelector('.faq-icon').classList.toggle('rotate-180')">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-sm">How do I access the roadmaps?</h3>
+                        <i
+                            class="fa-solid fa-chevron-down faq-icon text-slate-400 text-xs transition-transform duration-300"></i>
+                    </div>
+                    <p class="faq-answer hidden text-slate-500 text-sm mt-3 leading-relaxed">Simply click "View Roadmap"
+                        on any course card to see the interactive curriculum, lesson details, and what you'll build.</p>
+                </div>
+                <div class="card reveal delay-400 cursor-pointer"
+                    onclick="this.querySelector('.faq-answer').classList.toggle('hidden');this.querySelector('.faq-icon').classList.toggle('rotate-180')">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-sm">Do you offer refunds?</h3>
+                        <i
+                            class="fa-solid fa-chevron-down faq-icon text-slate-400 text-xs transition-transform duration-300"></i>
+                    </div>
+                    <p class="faq-answer hidden text-slate-500 text-sm mt-3 leading-relaxed">We offer a 14-day
+                        satisfaction guarantee. If the course isn't right for you, contact support for a full refund.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================== CTA SECTION ===================== -->
+    <section class="section-padding relative overflow-hidden py-20"
+        style="background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%)">
+        <div class="absolute inset-0 opacity-10"
+            style="background-image:radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0);background-size:30px 30px">
+        </div>
+        <div class="max-w-3xl mx-auto px-4 text-center relative z-10">
+            <h2 class="text-3xl md:text-4xl font-extrabold text-white mb-4 tracking-tight reveal">Ready to Start
+                Automating?</h2>
+            <p class="text-slate-400 mb-8 max-w-lg mx-auto reveal delay-100">Join 500+ learners who have already
+                transformed their workflow.</p>
+            <button onclick="UI.openModal('register')"
+                class="btn btn-primary btn-lg btn-pill shadow-2xl reveal delay-200 animate-pulse-glow w-full sm:w-auto">
+                <i class="fa-solid fa-bolt"></i>
+                Create Free Account
+            </button>
+        </div>
+    </section>
+
+    <!-- ===================== COMMUNITY & PROJECTS ===================== -->
+    <section id="community" class="section-padding py-20 bg-slate-50 border-t border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 md:px-6">
+            <div class="text-center mb-16">
+                <span
+                    class="text-orange-600 font-bold uppercase tracking-wider text-xs mb-2 block animate-fade-in-up">Connect
+                    With Us</span>
+                <h2
+                    class="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4 tracking-tight animate-fade-in-up delay-100">
+                    Join Our Community</h2>
+                <p class="text-slate-500 max-w-2xl mx-auto animate-fade-in-up delay-200">Connect with developers, share
+                    your projects, and grow together.</p>
+            </div>
+
+            <!-- Community Links -->
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
+                <!-- Discord -->
+                <a href="https://discord.gg/spFQN2Zs" target="_blank"
+                    class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-lg transition group text-center hover:-translate-y-1 duration-300">
+                    <div
+                        class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition">
+                        <i class="fa-brands fa-discord text-3xl"></i>
+                    </div>
+                    <h3 class="font-bold text-xl text-slate-800 mb-2">Discord Server</h3>
+                    <p class="text-slate-500 text-sm">Chat live with developers, get help, and attend events.</p>
+                </a>
+                <!-- Facebook Group -->
+                <a href="https://www.facebook.com/groups/1240993220731995" target="_blank"
+                    class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-lg transition group text-center hover:-translate-y-1 duration-300">
+                    <div
+                        class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition">
+                        <i class="fa-brands fa-facebook-f text-3xl"></i>
+                    </div>
+                    <h3 class="font-bold text-xl text-slate-800 mb-2">Facebook Group</h3>
+                    <p class="text-slate-500 text-sm">Join our discussions and stay updated with announcements.</p>
+                </a>
+                <!-- CP Group -->
+                <a href="https://vjudge.net/group/ewu-codeventure?r=BJDoPOik5SIqUz3uV9J8" target="_blank"
+                    class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-lg transition group text-center hover:-translate-y-1 duration-300">
+                    <div
+                        class="w-16 h-16 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition">
+                        <i class="fa-solid fa-code text-3xl"></i>
+                    </div>
+                    <h3 class="font-bold text-xl text-slate-800 mb-2">CP Group (VJudge)</h3>
+                    <p class="text-slate-500 text-sm">Sharpen your problem-solving skills with competitive programming.
+                    </p>
+                </a>
+            </div>
+
+            <!-- Other Projects -->
+            <div class="text-center">
+                <h3 class="text-xl font-bold text-slate-900 mb-8 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-layer-group text-slate-400"></i> Other Projects & Resources
+                </h3>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <a href="https://glittering-florentine-b6f323.netlify.app/" target="_blank"
+                        class="btn bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 shadow-sm hover:shadow-md hover:border-orange-200">
+                        <i class="fa-solid fa-briefcase mr-2 text-slate-400"></i> My Portfolio
+                    </a>
+                    <a href="https://catalyst-smart-classroom.vercel.app/index.html" target="_blank"
+                        class="btn bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 shadow-sm hover:shadow-md hover:border-orange-200">
+                        <i class="fa-solid fa-graduation-cap mr-2 text-orange-500"></i> Smart Classroom
+                    </a>
+                    <a href="https://codewithpritom.blogspot.com/" target="_blank"
+                        class="btn btn-white border border-slate-200 shadow-sm hover:shadow-md hover:border-orange-200">
+                        <i class="fa-brands fa-blogger mr-2 text-orange-600"></i> Blog
+                    </a>
+                    <a href="https://www.facebook.com/pritom.rs.3/" target="_blank"
+                        class="btn bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 shadow-sm hover:shadow-md hover:border-orange-200">
+                        <i class="fa-brands fa-facebook mr-2 text-blue-600"></i> Facebook
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================== FOOTER ===================== -->
+    <footer class="site-footer bg-white border-t border-slate-100 pt-16 pb-8">
+        <div class="max-w-7xl mx-auto px-4 md:px-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+                <div>
+                    <div class="flex items-center gap-2 text-xl font-bold mb-4">Code With <span
+                            class="text-orange-600">Pritom</span></div>
+                    <p class="text-slate-500 text-sm leading-relaxed mb-6">Learn automation, build workflows, and
+                        accelerate your career with professional courses.</p>
+                    <div class="flex gap-4 text-slate-400">
+                        <a href="https://www.youtube.com/@CodeWithPritom-360" target="_blank" aria-label="YouTube"
+                            class="hover:text-orange-600 transition"><i class="fa-brands fa-youtube text-xl"></i></a>
+                        <a href="https://discord.gg/spFQN2Zs" target="_blank" aria-label="Discord"
+                            class="hover:text-indigo-600 transition"><i class="fa-brands fa-discord text-xl"></i></a>
+                        <a href="https://www.linkedin.com/in/arup-bhowmik-pritom-a7a7a23a4/" target="_blank"
+                            aria-label="LinkedIn" class="hover:text-blue-600 transition"><i
+                                class="fa-brands fa-linkedin-in text-xl"></i></a>
+                        <a href="https://github.com/CodeWithPritom" target="_blank" aria-label="Github"
+                            class="hover:text-black transition"><i class="fa-brands fa-github text-xl"></i></a>
+                    </div>
+                </div>
+                <div>
+                    <div class="font-bold text-slate-800 mb-6 uppercase text-xs tracking-wider">Courses</div>
+                    <ul class="space-y-3 text-sm text-slate-500">
+                        <li><a href="#courses" class="hover:text-orange-600 transition">n8n Fundamentals</a></li>
+                        <li><a href="#courses" class="hover:text-orange-600 transition">Linux Admin</a></li>
+                        <li><a href="#courses" class="hover:text-orange-600 transition">Java Mastery</a></li>
+                        <li><a href="#courses" class="hover:text-orange-600 transition">SaaS Automation</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="font-bold text-slate-800 mb-6 uppercase text-xs tracking-wider">Platform</div>
+                    <ul class="space-y-3 text-sm text-slate-500">
+                        <li><a href="#community" class="hover:text-orange-600 transition">Projects</a></li>
+                        <li><a href="#testimonials" class="hover:text-orange-600 transition">Reviews</a></li>
+                        <li><a href="#faq" class="hover:text-orange-600 transition">FAQ</a></li>
+                        <li><a href="#community" class="hover:text-orange-600 transition">Community</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="font-bold text-slate-800 mb-6 uppercase text-xs tracking-wider">Legal</div>
+                    <ul class="space-y-3 text-sm text-slate-500">
+                        <li><a href="#" class="hover:text-orange-600 transition">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-orange-600 transition">Terms of Service</a></li>
+                        <li><a href="#" class="hover:text-orange-600 transition">Cookie Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div
+                class="border-t border-slate-100 pt-8 text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-xs text-slate-400">&copy; 2026 Code With Pritom by Arup Bhowmik Pritom. All rights
+                    reserved.</p>
+                <div class="text-xs text-slate-400 flex gap-4">
+                    <a href="#" class="hover:text-slate-600">Privacy</a>
+                    <a href="#" class="hover:text-slate-600">Terms</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ===================== ROADMAP MODAL ===================== -->
+    <div id="course-modal-overlay" class="course-modal-overlay" onclick="closeCourseModal(event)">
+        <div class="course-modal" onclick="event.stopPropagation()">
+            <!-- Dynamic Content Injected Here -->
+            <div id="course-modal-content" class="flex flex-col h-full"></div>
+        </div>
+    </div>
+
+    <!-- ===================== AUTH MODAL ===================== -->
+    <div id="modal-backdrop" class="modal-backdrop" onclick="UI.closeModal()"></div>
+    <div id="modal-container" class="modal-container">
+        <!-- Tabs -->
+        <div class="modal-tabs">
+            <button onclick="UI.switchTab('login')" id="tab-login" class="modal-tab active">Log In</button>
+            <button onclick="UI.switchTab('register')" id="tab-register" class="modal-tab">Create Account</button>
+        </div>
+
+        <div class="modal-body">
+            <!-- Login Form -->
+            <form id="loginForm" class="space-y-5">
+                <div class="form-group">
+                    <label class="form-label" for="l_email">Email Address</label>
+                    <input type="email" id="l_email" class="form-input" placeholder="you@example.com" required
+                        autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="l_password">Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="l_password" class="form-input" placeholder="••••••••" required
+                            minlength="6" autocomplete="current-password" style="padding-right:40px">
+                        <button type="button" class="password-toggle" onclick="UI.togglePassword('l_password', this)"
+                            aria-label="Toggle password visibility">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" id="l_btn" class="btn btn-primary w-full btn-lg">
+                    Log In
+                </button>
+                <p class="text-center text-sm text-slate-400">Don't have an account? <button type="button"
+                        onclick="UI.switchTab('register')" class="text-orange-600 font-semibold hover:underline">Sign up
+                        free</button></p>
+            </form>
+
+            <!-- Register Form -->
+            <form id="regForm" class="space-y-5 hidden">
+                <div class="form-group">
+                    <label class="form-label" for="r_name">Full Name</label>
+                    <input type="text" id="r_name" class="form-input" placeholder="Arup Bhowmik" required minlength="2"
+                        autocomplete="name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="r_email">Email Address</label>
+                    <input type="email" id="r_email" class="form-input" placeholder="you@example.com" required
+                        autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="r_password">Create Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="r_password" class="form-input" placeholder="Min. 6 characters"
+                            required minlength="6" autocomplete="new-password" style="padding-right:40px">
+                        <button type="button" class="password-toggle" onclick="UI.togglePassword('r_password', this)"
+                            aria-label="Toggle password visibility">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" id="r_btn" class="btn btn-dark w-full btn-lg">
+                    <i class="fa-solid fa-bolt text-orange-400 text-sm"></i>
+                    Start Free Access
+                </button>
+                <p class="text-center text-sm text-slate-400">Already have an account? <button type="button"
+                        onclick="UI.switchTab('login')" class="text-orange-600 font-semibold hover:underline">Log
+                        in</button></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-[200] space-y-3"></div>
+
+    <!-- Scripts -->
+    <script src="js/ui.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        // Redirect if already logged in
+        if (Auth.isLoggedIn()) {
+            window.location.href = 'dashboard.html';
+        }
+    </script>
+</body>
+
+</html>

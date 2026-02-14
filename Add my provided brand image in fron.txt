@@ -1,0 +1,3 @@
+Add my provided brand image in frontend  ( visual ) . Add project section where displaying other's project also highlighted my own project . Project is basically github and image based .  Add review and FAQ  youtself. Display course with roadmap (interactive ) thus everybody attract.
+
+I told you to add courses like ( linux course, n8n automation course, C programming language course, Discrete mathmatics course, Java Programming language course , Java OOP Course, Script course etc. ) with individual roadmap ( interactive ). It is just implement in index.html page . When click on course then it show roadmap and enroll button .  

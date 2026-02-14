@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Code With Pritom</title>
+    <meta name="description"
+        content="Your Code With Pritom learning dashboard. Access courses, track progress, and read hand notes.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Auth Guard -->
+    <script src="js/ui.js"></script>
+    <script src="js/auth.js"></script>
+    <script>if (!Auth.isLoggedIn()) window.location.href = 'index.html';</script>
+</head>
+
+<body class="bg-slate-50 font-['Inter'] text-slate-800 antialiased min-h-screen flex">
+
+    <!-- Page Loader -->
+    <div id="page-loader" class="page-loader">
+        <div class="page-loader-brand">Code With <span class="text-orange-600">Pritom</span></div>
+        <div class="spinner"></div>
+    </div>
+
+    <!-- ===================== SIDEBAR ===================== -->
+    <div id="sidebar-overlay" class="sidebar-overlay" onclick="UI.closeSidebar()"></div>
+    <aside id="dashboard-sidebar" class="sidebar">
+        <div class="sidebar-brand">
+            Code With <span style="color:#ea580c">Pritom</span>
+        </div>
+        <nav class="sidebar-nav">
+            <button id="btn-tab-courses" onclick="UI.switchDashboardTab('courses');UI.closeSidebar()"
+                class="sidebar-link active">
+                <i class="fa-solid fa-layer-group"></i> My Courses
+            </button>
+            <button id="btn-tab-handnotes" onclick="UI.switchDashboardTab('handnotes');UI.closeSidebar()"
+                class="sidebar-link">
+                <i class="fa-solid fa-book-open"></i> Hand Notes
+            </button>
+            <button id="btn-tab-explore" onclick="UI.switchDashboardTab('explore');UI.closeSidebar()"
+                class="sidebar-link">
+                <i class="fa-solid fa-compass"></i> Explore
+            </button>
+            <button id="btn-tab-settings" onclick="UI.switchDashboardTab('settings');UI.closeSidebar()"
+                class="sidebar-link">
+                <i class="fa-solid fa-user-gear"></i> Profile & Support
+            </button>
+        </nav>
+        <div class="sidebar-footer">
+            <button onclick="Auth.logout()" class="sidebar-link" style="color:#ef4444">
+                <i class="fa-solid fa-power-off"></i> Logout
+            </button>
+        </div>
+    </aside>
+
+    <!-- ===================== MAIN CONTENT ===================== -->
+    <main class="flex-1 flex flex-col min-h-screen">
+        <!-- Top Bar -->
+        <header
+            class="bg-white border-b border-slate-200 px-6 py-3 sticky top-0 z-20 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <button onclick="UI.toggleSidebar()"
+                    class="lg:hidden w-9 h-9 flex items-center justify-center rounded-lg bg-slate-100 hover:bg-slate-200 transition">
+                    <i class="fa-solid fa-bars text-slate-600 text-sm"></i>
+                </button>
+                <span class="lg:hidden font-bold text-orange-600 text-lg">CW Pritom</span>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="hidden sm:flex relative flex-1 max-w-sm">
+                <i
+                    class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                <input type="text" id="courseSearch" oninput="window.renderCourses()" placeholder="Search courses..."
+                    class="w-full pl-10 pr-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-orange-500/30 transition">
+            </div>
+
+            <!-- User Info & Cart -->
+            <div class="flex items-center gap-3">
+
+                <!-- Cart Trigger -->
+                <div class="cart-trigger text-slate-600 hover:text-orange-600 mr-4" onclick="Cart.toggleCart()">
+                    <i class="fa-solid fa-cart-shopping text-xl"></i>
+                    <div id="cart-badge-count" class="cart-badge" style="display:none">0</div>
+                </div>
+
+                <div class="hidden md:block text-right">
+                    <div id="header-name" class="text-sm font-bold text-slate-800">Student</div>
+                    <div id="header-email" class="text-xs text-slate-400">email@example.com</div>
+                </div>
+                <div class="w-9 h-9 bg-gradient-to-br from-orange-500 to-red-500 text-white rounded-xl flex items-center justify-center font-bold text-sm shadow-md"
+                    id="user-initial">U</div>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <div class="flex-1 p-4 md:p-8">
+
+            <!-- ============ TAB: MY COURSES ============ -->
+            <section id="tab-courses" class="tab-content animate-fade-in">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">
+                            Welcome back, <span id="display-name" class="gradient-text">Student</span>!
+                        </h1>
+                        <p class="text-slate-500 text-sm mt-1">Continue where you left off.</p>
+                    </div>
+                    <div class="sm:hidden relative">
+                        <i
+                            class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                        <input type="text" oninput="window.renderCourses()" placeholder="Search..."
+                            class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-orange-500/30">
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                    <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+                        <div class="text-xs font-bold text-slate-400 uppercase mb-1">Enrolled</div>
+                        <div id="stat-enrolled" class="text-2xl font-black text-slate-800">0</div>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+                        <div class="text-xs font-bold text-slate-400 uppercase mb-1">Unlocked</div>
+                        <div id="stat-unlocked" class="text-2xl font-black text-green-600">0</div>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+                        <div class="text-xs font-bold text-slate-400 uppercase mb-1">Locked</div>
+                        <div id="stat-locked" class="text-2xl font-black text-slate-400">0</div>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+                        <div class="text-xs font-bold text-slate-400 uppercase mb-1">Status</div>
+                        <div class="text-sm font-bold text-orange-600"><i
+                                class="fa-solid fa-circle text-[8px] animate-pulse mr-1"></i> Active</div>
+                    </div>
+                </div>
+
+                <!-- Course Grid -->
+                <div id="course-grid" class="grid md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
+            </section>
+
+            <!-- ============ TAB: HAND NOTES ============ -->
+            <section id="tab-handnotes" class="tab-content hidden">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">
+                            <i class="fa-solid fa-book-open text-orange-500 mr-2"></i>Hand Notes
+                        </h1>
+                        <p class="text-slate-500 text-sm mt-1">Comprehensive study notes published on Blogger & Medium.
+                            Read for free anytime!</p>
+                    </div>
+                </div>
+
+                <!-- Handnotes Grid -->
+                <div id="handnotes-grid" class="grid md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
+
+                <div class="mt-8 bg-blue-50 border border-blue-200 rounded-xl p-5">
+                    <div class="flex items-start gap-3">
+                        <i class="fa-solid fa-circle-info text-blue-500 mt-0.5"></i>
+                        <div>
+                            <h4 class="font-bold text-sm text-blue-800">About Hand Notes</h4>
+                            <p class="text-xs text-blue-600 mt-1 leading-relaxed">These hand notes are freely available
+                                on Blogger and Medium. Click the link below to read them on the original platform. No
+                                login required!</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============ TAB: EXPLORE ============ -->
+            <section id="tab-explore" class="tab-content hidden">
+                <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight mb-2">Explore Courses</h1>
+                <p class="text-slate-500 text-sm mb-8">Discover all available courses and upgrade your skills.</p>
+                <div id="explore-grid" class="grid md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
+            </section>
+
+            <!-- ============ TAB: SETTINGS ============ -->
+            <section id="tab-settings" class="tab-content hidden">
+                <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight mb-8">Profile & Support</h1>
+                <div class="max-w-2xl space-y-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <h3 class="font-bold mb-5 flex items-center gap-2"><i
+                                class="fa-solid fa-user text-orange-500 text-sm"></i> Account Information</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            <div><label class="form-label">NAME</label>
+                                <p id="set-name" class="font-semibold text-slate-800">—</p>
+                            </div>
+                            <div><label class="form-label">EMAIL</label>
+                                <p id="set-email" class="font-semibold text-slate-500">—</p>
+                            </div>
+                            <div><label class="form-label">PLAN</label>
+                                <p id="set-plan" class="font-semibold text-orange-600">Free</p>
+                            </div>
+                            <div><label class="form-label">COURSES UNLOCKED</label>
+                                <p id="set-access" class="font-semibold text-green-600">1</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <h3 class="font-bold mb-2 flex items-center gap-2"><i
+                                class="fa-solid fa-headset text-blue-500 text-sm"></i> Contact Support</h3>
+                        <p class="text-sm text-slate-500 mb-5">Need help? Send us a message.</p>
+                        <form id="contactForm" class="space-y-4">
+                            <textarea id="contact-msg" class="form-input" rows="4" placeholder="How can we help you?"
+                                required></textarea>
+                            <button type="submit" id="contact-btn" class="btn btn-dark btn-sm">
+                                <i class="fa-solid fa-paper-plane text-xs"></i> Send Message
+                            </button>
+                        </form>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-red-100">
+                        <h3 class="font-bold mb-2 flex items-center gap-2 text-red-600"><i
+                                class="fa-solid fa-triangle-exclamation text-sm"></i> Danger Zone</h3>
+                        <p class="text-sm text-slate-500 mb-4">Logging out will clear your session.</p>
+                        <button onclick="Auth.logout()" class="btn btn-sm"
+                            style="background:#fef2f2;color:#ef4444;border:1px solid #fecaca">
+                            <i class="fa-solid fa-power-off text-xs"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- ===================== CART PANEL ===================== -->
+    <div id="cart-overlay" class="cart-overlay" onclick="Cart.closeCart()"></div>
+    <div id="cart-panel" class="cart-panel">
+        <div class="cart-header">
+            <h3 class="font-bold text-slate-800">Your Cart</h3>
+            <button onclick="Cart.closeCart()" class="text-slate-400 hover:text-slate-600"><i
+                    class="fa-solid fa-xmark text-xl"></i></button>
+        </div>
+
+        <div id="cart-items-list" class="cart-items">
+            <!-- Items injected here -->
+        </div>
+
+        <div id="cart-empty" class="p-8 text-center text-slate-400 hidden">
+            <i class="fa-solid fa-cart-shopping text-4xl mb-4 opacity-50"></i>
+            <p>Your cart is empty.</p>
+        </div>
+
+        <div id="cart-content" class="cart-footer">
+            <div class="cart-total-row final">
+                <span>Total</span>
+                <span id="cart-subtotal">$0.00</span>
+            </div>
+            <button onclick="Cart.openCheckout()" class="btn btn-primary w-full mt-4">
+                Proceed to Checkout
+            </button>
+        </div>
+    </div>
+
+    <!-- ===================== CHECKOUT MODAL ===================== -->
+    <div id="checkout-modal-overlay" class="modal-backdrop" onclick="Cart.closeCheckout()"></div>
+    <!-- Checkout Modal Removed (Redirects to cart.html) -->
+
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-[200] space-y-3"></div>
+
+    <!-- Scripts -->
+    <script src="js/cart.js"></script>
+
+    <!-- ===================== DASHBOARD LOGIC ===================== -->
+    <script>
+        // ===== COURSE DATABASE (prices updated) =====
+        const courses = [
+            { id: "1", title: "n8n Fundamentals", desc: "Master nodes, triggers, and JSON workflow logic.", icon: "fa-bolt", color: "bg-blue-100 text-blue-600", price: "Free", totalLessons: 8, duration: "1h 50m" },
+            { id: "2", title: "Advanced Webhooks & APIs", desc: "Connect APIs, handle auth, and build integrations.", icon: "fa-code-branch", color: "bg-purple-100 text-purple-600", price: "49", totalLessons: 6, duration: "1h 30m" },
+            { id: "3", title: "SaaS Automation Masterclass", desc: "Build a complete SaaS backend with automation.", icon: "fa-rocket", color: "bg-orange-100 text-orange-600", price: "59", totalLessons: 6, duration: "2h" },
+            { id: "4", title: "Linux Fundamentals", desc: "Master the command line, file systems, and system administration.", icon: "fa-linux", color: "bg-slate-800 text-white", price: "49", totalLessons: 12, duration: "3h 15m" },
+            { id: "5", title: "C Programming Language", desc: "Learn C from basics to advanced memory management.", icon: "fa-code", color: "bg-blue-600 text-white", price: "59", totalLessons: 15, duration: "4h 30m" },
+            { id: "6", title: "Discrete Mathematics", desc: "Foundations of discrete math: logic, sets, and graphs.", icon: "fa-calculator", color: "bg-purple-600 text-white", price: "49", totalLessons: 14, duration: "5h 00m" },
+            { id: "7", title: "Java Programming", desc: "Complete Java development: syntax, OOP, and frameworks.", icon: "fa-java", color: "bg-red-600 text-white", price: "69", totalLessons: 18, duration: "6h 20m" },
+            { id: "8", title: "Java OOP Mastery", desc: "Deep dive into Object-Oriented principles and patterns.", icon: "fa-cubes", color: "bg-orange-600 text-white", price: "59", totalLessons: 13, duration: "4h 45m" },
+            { id: "9", title: "Scripting & Automation", desc: "Python and Shell scripting for DevOps.", icon: "fa-scroll", color: "bg-teal-600 text-white", price: "49", totalLessons: 11, duration: "4h 00m" }
+        ];
+
+        // ===== HANDNOTES DATABASE (with Blogger/Medium links) =====
+        const handnotes = [
+            { id: "hn1", title: "n8n Nodes Cheat Sheet", desc: "Quick reference for all essential n8n nodes.", icon: "📘", link: "https://codewithpritom.blogspot.com/p/n8n-nodes.html", platform: "Blogger" },
+            { id: "hn2", title: "API Integration Guide", desc: "Connecting REST APIs, OAuth, and webhooks.", icon: "📗", link: "https://codewithpritom.blogspot.com/p/api-integration.html", platform: "Blogger" },
+            { id: "hn3", title: "Automation Formulas", desc: "Code snippets for n8n workflows.", icon: "📙", link: "https://medium.com/@codewithpritom/automation", platform: "Medium" },
+            { id: "hn4", title: "SaaS Architecture Notes", desc: "Architecture diagrams and flow charts.", icon: "📕", link: "https://codewithpritom.blogspot.com/p/saas-architecture.html", platform: "Blogger" },
+            { id: "hn5", title: "Linux Commands", desc: "Essential Linux commands cheat sheet.", icon: "🐧", link: "https://medium.com/@codewithpritom/linux-commands", platform: "Medium" },
+            { id: "hn6", title: "C Pointer Guide", desc: "Visual guide to memory and pointers.", icon: "💾", link: "https://codewithpritom.blogspot.com/p/c-pointers.html", platform: "Blogger" },
+            { id: "hn7", title: "Math Formulas", desc: "Set theory and logic symbols reference.", icon: "🔢", link: "https://medium.com/@codewithpritom/discrete-math", platform: "Medium" },
+            { id: "hn8", title: "Java OOP Charts", desc: "Inheritance and polymorphism diagrams.", icon: "☕", link: "https://codewithpritom.blogspot.com/p/java-oop.html", platform: "Blogger" },
+            { id: "hn9", title: "Design Patterns", desc: "Common GoF patterns implemented in Java.", icon: "🏗️", link: "https://medium.com/@codewithpritom/design-patterns", platform: "Medium" },
+            { id: "hn10", title: "Python One-Liners", desc: "Efficient Python scripts for automation.", icon: "🐍", link: "https://codewithpritom.blogspot.com/p/python-scripts.html", platform: "Blogger" }
+        ];
+
+        // ===== PROGRESS HELPERS =====
+        function getCourseProgress(courseId, totalLessons) {
+            try {
+                const completed = JSON.parse(localStorage.getItem(`cwp-progress-${courseId}`) || '[]');
+                const count = completed.length;
+                const pct = Math.round((count / totalLessons) * 100);
+                return { count, pct };
+            } catch { return { count: 0, pct: 0 }; }
+        }
+
+        // ===== REQUEST CERTIFICATE =====
+        window.requestCertificate = async (courseId, courseTitle) => {
+            const user = Auth.getUser();
+            if (!confirm(`Request certificate for ${courseTitle}?`)) return;
+
+            try {
+                UI.showToast('Sending request...', 'info');
+                await fetch('/api/auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'certificate_request',
+                        user: user,
+                        courseTitle: courseTitle
+                    })
+                });
+                UI.showToast('Request sent! Check your email.', 'success');
+            } catch (e) {
+                UI.showToast('Failed to send request.', 'error');
+                console.error(e);
+            }
+        };
+
+        // ===== RENDER COURSES =====
+        window.renderCourses = () => {
+            const user = Auth.getUser();
+            if (!user) return;
+
+            const searchTerm = (document.getElementById('courseSearch')?.value || '').toLowerCase();
+            const accessList = (user.access || '').toString().split(',').map(s => s.trim());
+            const grid = document.getElementById('course-grid');
+            const exploreGrid = document.getElementById('explore-grid');
+
+            let unlockedCount = 0, lockedCount = 0;
+            grid.innerHTML = '';
+            if (exploreGrid) exploreGrid.innerHTML = '';
+
+            courses.filter(c => c.title.toLowerCase().includes(searchTerm)).forEach((c, idx) => {
+                const isUnlocked = accessList.includes(c.id);
+                if (isUnlocked) unlockedCount++; else lockedCount++;
+
+                const { count, pct } = getCourseProgress(c.id, c.totalLessons);
+
+                const cardHTML = `
+                    <div class="course-card animate-fade-in-up" style="animation-delay:${idx * 0.1}s;opacity:0">
+                        <div class="course-card-body">
+                            <div class="flex items-start justify-between mb-5">
+                                <div class="w-12 h-12 ${c.color} rounded-xl flex items-center justify-center text-lg">
+                                    <i class="fa-solid ${c.icon}"></i>
+                                </div>
+                                ${isUnlocked
+                        ? '<span class="badge badge-unlocked"><i class="fa-solid fa-lock-open text-[10px] mr-1"></i> UNLOCKED</span>'
+                        : '<span class="badge badge-locked"><i class="fa-solid fa-lock text-[10px] mr-1"></i> LOCKED</span>'}
+                            </div>
+                            <h3 class="font-bold text-lg mb-1">${c.title}</h3>
+                            <p class="text-slate-500 text-sm mb-4 leading-relaxed">${c.desc}</p>
+                            <div class="flex items-center gap-4 text-xs text-slate-400 font-medium">
+                                <span><i class="fa-solid fa-play-circle mr-1"></i> ${c.totalLessons} Lessons</span>
+                                <span><i class="fa-solid fa-clock mr-1"></i> ${c.duration}</span>
+                            </div>
+                            ${isUnlocked ? `
+                                <div class="progress-bar-container mt-4">
+                                    <div class="progress-bar-fill" style="width:${pct}%"></div>
+                                </div>
+                                <div class="flex items-center justify-between mt-1">
+                                    <span class="text-xs text-slate-400">${pct}% complete</span>
+                                    <span class="text-xs font-bold ${pct === 100 ? 'text-green-600' : 'text-slate-400'}">${count}/${c.totalLessons} lessons</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div class="course-card-footer">
+                            ${isUnlocked
+                        ? `<a href="classroom.html?id=${c.id}" class="btn btn-dark w-full">
+                                    <i class="fa-solid fa-play text-xs"></i>
+                                    ${pct === 100 ? 'Review Course' : pct > 0 ? 'Continue Learning' : 'Start Learning'}
+                                  </a>
+                                  ${pct === 100 ? `<button onclick="requestCertificate('${c.id}', '${c.title}')" class="btn w-full mt-2 bg-green-600 text-white hover:bg-green-700 shadow-md"><i class="fa-solid fa-certificate text-xs mr-1"></i> Get Certificate</button>` : ''}
+                                  `
+                        : `<button onclick="Cart.addItem({id:'${c.id}', title:'${c.title}', price:'${c.price}'})" id="buy-btn-${c.id}" class="btn btn-outline w-full">
+                                    <i class="fa-solid fa-cart-shopping text-xs"></i> Buy Course — $${c.price}
+                                  </button>`
+                    }
+                        </div>
+                    </div>
+                `;
+
+                if (isUnlocked) {
+                    grid.innerHTML += cardHTML;
+                }
+                if (exploreGrid) {
+                    exploreGrid.innerHTML += cardHTML;
+                }
+            });
+
+            document.getElementById('stat-enrolled').textContent = unlockedCount; // Updated logic: Enrolled = Unlocked count (visually makes sense for user)
+            document.getElementById('stat-unlocked').textContent = unlockedCount;
+            document.getElementById('stat-locked').textContent = lockedCount;
+        };
+
+
+
+        // ===== REMOVE PDF FUNCTIONS =====
+        // Deleted: openPdfReader(), closePdfReader(), PDF protection listeners
+
+        // ===== INIT DASHBOARD =====
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = Auth.getUser();
+            if (!user) return;
+
+            // Populate user info
+            document.getElementById('display-name').textContent = user.name || 'Student';
+            document.getElementById('header-name').textContent = user.name || 'Student';
+            document.getElementById('header-email').textContent = user.email || '';
+            document.getElementById('set-name').textContent = user.name || '—';
+            document.getElementById('set-email').textContent = user.email || '—';
+            document.getElementById('user-initial').textContent = (user.name || 'U').charAt(0).toUpperCase();
+
+            // Prefill checkout
+            if (document.getElementById('bill-name')) document.getElementById('bill-name').value = user.name || '';
+            if (document.getElementById('bill-email')) document.getElementById('bill-email').value = user.email || '';
+
+            const accessCount = (user.access || '').toString().split(',').filter(s => s.trim()).length;
+            document.getElementById('set-access').textContent = accessCount;
+            document.getElementById('set-plan').textContent = accessCount > 1 ? 'Premium' : 'Free';
+
+            // Render everything
+            window.renderCourses();
+            renderHandnotes();
+
+            // Dismiss page loader
+            const loader = document.getElementById('page-loader');
+            if (loader) {
+                loader.classList.add('hidden');
+                setTimeout(() => loader.remove(), 500);
+            }
+
+            // Silent Sync (Once Per Day)
+            Auth.syncSessionSilently();
+        });
+
+        window.refreshUserAccess = (newAccess) => {
+    const user = Auth.getUser();
+    if (user && newAccess) {
+        // নতুন এক্সেস লিস্ট আপডেট করা (যেমন: 1,2)
+        user.access = newAccess;
+        
+        // LocalStorage আপডেট করা
+        localStorage.setItem('cwp-user', JSON.stringify(user));
+        
+        // ড্যাশবোর্ডের সব কোর্স আবার রেন্ডার করা (লগআউট ছাড়াই)
+        window.renderCourses();
+        
+        // প্রোফাইল সেকশনের সংখ্যাগুলো আপডেট করা
+        const accessCount = (newAccess || '').toString().split(',').filter(s => s.trim()).length;
+        if(document.getElementById('set-access')) document.getElementById('set-access').textContent = accessCount;
+        
+        UI.showToast('Course unlocked successfully!', 'success');
+    }
+};
+
+        // Listen for access updates from silent sync
+window.addEventListener('access-updated', (event) => {
+    console.log('[Dashboard] Syncing data...');
+    // যদি ইভেন্টের সাথে নতুন ডাটা আসে তবে সেটা ব্যবহার করবে
+    if (event.detail && event.detail.access) {
+        window.refreshUserAccess(event.detail.access);
+    } else {
+        window.renderCourses();
+    }
+});
+
+        // ===== CONTACT SUPPORT =====
+        document.getElementById('contactForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const msg = document.getElementById('contact-msg').value.trim();
+            if (!msg) return;
+            UI.toggleLoading('contact-btn', true);
+            try {
+                await fetch('/api/auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'contact', email: Auth.getUser().email, name: Auth.getUser().name, message: msg })
+                });
+                UI.showToast('Message sent to support!', 'success');
+                document.getElementById('contact-msg').value = '';
+            } catch { UI.showToast('Failed to send message.', 'error'); }
+            finally { UI.toggleLoading('contact-btn', false); }
+        });
+    </script>
+</body>
+
+</html>
