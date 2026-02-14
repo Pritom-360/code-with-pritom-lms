@@ -278,7 +278,8 @@
             { id: "6", title: "Discrete Mathematics", desc: "Foundations of discrete math: logic, sets, and graphs.", icon: "fa-calculator", color: "bg-purple-600 text-white", price: "49", totalLessons: 14, duration: "5h 00m" },
             { id: "7", title: "Java Programming", desc: "Complete Java development: syntax, OOP, and frameworks.", icon: "fa-java", color: "bg-red-600 text-white", price: "69", totalLessons: 18, duration: "6h 20m" },
             { id: "8", title: "Java OOP Mastery", desc: "Deep dive into Object-Oriented principles and patterns.", icon: "fa-cubes", color: "bg-orange-600 text-white", price: "59", totalLessons: 13, duration: "4h 45m" },
-            { id: "9", title: "Scripting & Automation", desc: "Python and Shell scripting for DevOps.", icon: "fa-scroll", color: "bg-teal-600 text-white", price: "49", totalLessons: 11, duration: "4h 00m" }
+            { id: "9", title: "Scripting & Automation", desc: "Python and Shell scripting for DevOps.", icon: "fa-scroll", color: "bg-teal-600 text-white", price: "49", totalLessons: 11, duration: "4h 00m" },
+            { id: "NEW_19", title: "Generated YouTube Course", desc: "Master AI Agents with this comprehensive generated course in Hindi.", icon: "fa-robot", color: "bg-indigo-600 text-white", price: "49", totalLessons: 21, duration: "3h 30m" }
         ];
 
         // ===== HANDNOTES DATABASE (with Blogger/Medium links) =====
@@ -409,6 +410,30 @@
         // ===== REMOVE PDF FUNCTIONS =====
         // Deleted: openPdfReader(), closePdfReader(), PDF protection listeners
 
+        // ===== RENDER HANDNOTES =====
+        window.renderHandnotes = () => {
+            const grid = document.getElementById('handnotes-grid');
+            if (!grid) return;
+
+            grid.innerHTML = handnotes.map((note, idx) => `
+                <a href="${note.link}" target="_blank" class="block bg-white p-6 rounded-xl border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition duration-300 group animate-fade-in-up" style="animation-delay:${idx * 0.05}s">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-orange-50 rounded-lg flex items-center justify-center text-2xl group-hover:scale-110 transition">
+                            ${note.icon}
+                        </div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-50 px-2 py-1 rounded border border-slate-100 group-hover:border-orange-100 group-hover:text-orange-500 transition">
+                            ${note.platform}
+                        </span>
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-800 mb-2 group-hover:text-orange-600 transition">${note.title}</h3>
+                    <p class="text-sm text-slate-500 leading-relaxed mb-4 line-clamp-2">${note.desc}</p>
+                    <div class="flex items-center text-xs font-bold text-orange-600 group-hover:gap-2 transition-all">
+                        Read Note <i class="fa-solid fa-arrow-up-right-from-square ml-1"></i>
+                    </div>
+                </a>
+            `).join('');
+        };
+
         // ===== INIT DASHBOARD =====
         document.addEventListener('DOMContentLoaded', () => {
             const user = Auth.getUser();
@@ -446,35 +471,35 @@
         });
 
         window.refreshUserAccess = (newAccess) => {
-    const user = Auth.getUser();
-    if (user && newAccess) {
-        // নতুন এক্সেস লিস্ট আপডেট করা (যেমন: 1,2)
-        user.access = newAccess;
-        
-        // LocalStorage আপডেট করা
-        localStorage.setItem('cwp-user', JSON.stringify(user));
-        
-        // ড্যাশবোর্ডের সব কোর্স আবার রেন্ডার করা (লগআউট ছাড়াই)
-        window.renderCourses();
-        
-        // প্রোফাইল সেকশনের সংখ্যাগুলো আপডেট করা
-        const accessCount = (newAccess || '').toString().split(',').filter(s => s.trim()).length;
-        if(document.getElementById('set-access')) document.getElementById('set-access').textContent = accessCount;
-        
-        UI.showToast('Course unlocked successfully!', 'success');
-    }
-};
+            const user = Auth.getUser();
+            if (user && newAccess) {
+                // নতুন এক্সেস লিস্ট আপডেট করা (যেমন: 1,2)
+                user.access = newAccess;
+
+                // LocalStorage আপডেট করা
+                localStorage.setItem('cwp-user', JSON.stringify(user));
+
+                // ড্যাশবোর্ডের সব কোর্স আবার রেন্ডার করা (লগআউট ছাড়াই)
+                window.renderCourses();
+
+                // প্রোফাইল সেকশনের সংখ্যাগুলো আপডেট করা
+                const accessCount = (newAccess || '').toString().split(',').filter(s => s.trim()).length;
+                if (document.getElementById('set-access')) document.getElementById('set-access').textContent = accessCount;
+
+                UI.showToast('Course unlocked successfully!', 'success');
+            }
+        };
 
         // Listen for access updates from silent sync
-window.addEventListener('access-updated', (event) => {
-    console.log('[Dashboard] Syncing data...');
-    // যদি ইভেন্টের সাথে নতুন ডাটা আসে তবে সেটা ব্যবহার করবে
-    if (event.detail && event.detail.access) {
-        window.refreshUserAccess(event.detail.access);
-    } else {
-        window.renderCourses();
-    }
-});
+        window.addEventListener('access-updated', (event) => {
+            console.log('[Dashboard] Syncing data...');
+            // যদি ইভেন্টের সাথে নতুন ডাটা আসে তবে সেটা ব্যবহার করবে
+            if (event.detail && event.detail.access) {
+                window.refreshUserAccess(event.detail.access);
+            } else {
+                window.renderCourses();
+            }
+        });
 
         // ===== CONTACT SUPPORT =====
         document.getElementById('contactForm').addEventListener('submit', async (e) => {

@@ -187,6 +187,17 @@ const courseRoadmaps = {
             { title: "Web Scraping", desc: "Extracting data from websites with BeautifulSoup" },
             { title: "Cron Jobs", desc: "Scheduling scripts to run automatically" }
         ]
+    },
+    "NEW_19": {
+        title: "Generated YouTube Course",
+        desc: "Master AI Agents with this comprehensive generated course in Hindi.",
+        steps: [
+            { title: "Introduction to AI Agents", desc: "Understanding the basics and potential of AI Agents." },
+            { title: "Tools & Frameworks", desc: "Exploring the best tools like n8n and LangChain." },
+            { title: "Building Workflows", desc: "Creating complex agent workflows from scratch." },
+            { title: "Advanced Integration", desc: "Connecting agents to real-world APIs and databases." },
+            { title: "RAG & MCP", desc: "Retrieval Augmented Generation and Model Context Protocol." }
+        ]
     }
 };
 
