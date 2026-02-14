@@ -17,6 +17,7 @@
     <!-- Auth Guard -->
     <script src="js/ui.js"></script>
     <script src="js/auth.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>if (!Auth.isLoggedIn()) window.location.href = 'index.html';</script>
 </head>
 
@@ -136,6 +137,22 @@
                         <div class="text-xs font-bold text-slate-400 uppercase mb-1">Status</div>
                         <div class="text-sm font-bold text-orange-600"><i
                                 class="fa-solid fa-circle text-[8px] animate-pulse mr-1"></i> Active</div>
+                    </div>
+                </div>
+
+                <!-- Analytics Chart -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm mb-8 w-full">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-chart-column text-orange-500"></i> Workshop Analytics
+                        </h3>
+                        <span
+                            class="text-xs text-slate-500 font-medium bg-slate-50 border border-slate-100 px-3 py-1 rounded-full"><i
+                                class="fa-solid fa-circle text-[6px] text-green-500 mr-1.5 animate-pulse"></i> Live
+                            Data</span>
+                    </div>
+                    <div class="relative w-full h-64 md:h-80">
+                        <canvas id="workshopChart"></canvas>
                     </div>
                 </div>
 
@@ -329,8 +346,40 @@
             }
         };
 
+        // ===== WORKSHOP REGISTRATION (Dynamic) =====
+        window.registerForWorkshop = async (workshopId) => {
+            const WORKSHOP_WEBHOOK = 'https://arup-vivobook-asuslaptop-x509dj-d509dj.taila8249c.ts.net/webhook/join-workshop';
+            const user = Auth.getUser();
+            const btn = event.currentTarget || document.activeElement;
+            const originalContent = btn.innerHTML;
+
+            if (btn) {
+                btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Joining...';
+                btn.disabled = true;
+            }
+
+            try {
+                await fetch(WORKSHOP_WEBHOOK, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: user.email || '', workshop_id: workshopId || "WORKSHOP_01" })
+                });
+                window.location.href = `workshop.html?id=${workshopId}`;
+            } catch (e) {
+                console.error(e);
+                UI.showToast('Connection error. Please try again.', 'error');
+                if (btn) {
+                    btn.innerHTML = originalContent;
+                    btn.disabled = false;
+                }
+            }
+        };
+
         // ===== RENDER COURSES =====
-        window.renderCourses = () => {
+        window.renderCourses = async () => {
+            // 0. Fetch Workshop Data (Ensure fresh status)
+            await WorkshopManager.fetchData();
+
             const user = Auth.getUser();
             if (!user) return;
 
@@ -342,6 +391,49 @@
             let unlockedCount = 0, lockedCount = 0;
             grid.innerHTML = '';
             if (exploreGrid) exploreGrid.innerHTML = '';
+
+            // --- DYNAMIC WORKSHOP CARD ---
+            const featuredWorkshop = WorkshopManager.getFeaturedWorkshop();
+            if (featuredWorkshop && (!searchTerm || featuredWorkshop.title.toLowerCase().includes(searchTerm) || 'workshop live'.includes(searchTerm))) {
+                const isLive = featuredWorkshop.displayStatus === 'live';
+                const date = new Date(featuredWorkshop.startTime);
+                const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
+                const workshopHTML = `
+                <div class="course-card animate-fade-in-up border-2 ${isLive ? 'border-red-500/40 bg-slate-900' : 'border-orange-500/20 bg-slate-900'} text-white relative overflow-hidden group" style="animation-delay:0s">
+                     ${isLive ? `
+                     <div class="absolute top-3 right-3 z-10">
+                        <span class="flex h-3 w-3">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                        </span>
+                     </div>` : ''}
+                    <!-- Glow Effect -->
+                    <div class="absolute -right-10 -top-10 w-32 h-32 ${isLive ? 'bg-red-600/20' : 'bg-orange-600/20'} blur-[60px] rounded-full pointer-events-none"></div>
+
+                    <div class="course-card-body relative z-10">
+                        <div class="flex items-start justify-between mb-5">
+                            <div class="w-12 h-12 ${isLive ? 'bg-red-600' : 'bg-orange-600'} rounded-xl flex items-center justify-center text-lg text-white group-hover:scale-110 transition shadow-lg shadow-orange-900/40">
+                                <i class="fa-solid fa-microphone-lines"></i>
+                            </div>
+                            <span class="badge border border-white/10 text-white/80 ${isLive ? 'bg-red-500/20' : 'bg-orange-500/10'}">${isLive ? 'LIVE NOW' : 'UPCOMING'}</span>
+                        </div>
+                        <h3 class="font-bold text-lg mb-1 group-hover:text-orange-400 transition line-clamp-1">${featuredWorkshop.title}</h3>
+                        <p class="text-slate-400 text-sm mb-4 leading-relaxed line-clamp-2">${featuredWorkshop.desc}</p>
+                        <div class="flex items-center gap-4 text-xs text-slate-500 font-medium">
+                            <span class="flex items-center gap-1"><i class="fa-regular fa-calendar"></i> ${dateStr}</span>
+                            <span class="flex items-center gap-1"><i class="fa-regular fa-clock"></i> ${timeStr}</span>
+                        </div>
+                    </div>
+                    <div class="course-card-footer bg-slate-950 border-t border-slate-800 relative z-10">
+                        <button onclick="window.registerForWorkshop('${featuredWorkshop.id}')" class="btn btn-primary w-full shadow-lg shadow-orange-900/20 group-hover:bg-orange-500 transition">
+                            ${isLive ? 'Join Live Now' : 'Join Workshop'} <i class="fa-solid fa-arrow-right text-xs ml-2 group-hover:translate-x-1 transition"></i>
+                        </button>
+                    </div>
+                </div>`;
+                grid.innerHTML += workshopHTML;
+            }
 
             courses.filter(c => c.title.toLowerCase().includes(searchTerm)).forEach((c, idx) => {
                 const isUnlocked = accessList.includes(c.id);
@@ -434,6 +526,78 @@
             `).join('');
         };
 
+        // ===== WORKSHOP ANALYTICS =====
+        const loadAnalytics = async () => {
+            const ctx = document.getElementById('workshopChart');
+            if (!ctx) return;
+
+            try {
+                const response = await fetch('https://arup-vivobook-asuslaptop-x509dj-d509dj.taila8249c.ts.net/webhook/get-graph-data');
+                const data = await response.json();
+
+                // Process Data
+                const labels = data.map(d => d.name);
+                const values = data.map(d => d.total_joined);
+
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Workshops Joined',
+                            data: values,
+                            backgroundColor: 'rgba(234, 88, 12, 0.8)', // orange-600
+                            borderColor: '#ea580c',
+                            borderWidth: 1,
+                            borderRadius: 6,
+                            barThickness: 30, // Fixed width bars for cleaner look
+                            maxBarThickness: 40
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: '#1e293b',
+                                padding: 12,
+                                titleFont: { family: 'Inter', size: 13 },
+                                bodyFont: { family: 'Inter', size: 13 },
+                                cornerRadius: 8,
+                                displayColors: false,
+                                callbacks: {
+                                    label: (context) => `Joined ${context.raw} workshops`
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: '#f1f5f9', borderDash: [4, 4] },
+                                ticks: { font: { family: 'Inter', size: 11 }, color: '#64748b', stepSize: 1 }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { font: { family: 'Inter', size: 11 }, color: '#64748b' }
+                            }
+                        },
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                    }
+                });
+
+            } catch (error) {
+                console.error("Failed to load analytics:", error);
+                // Friendly error state
+                if (ctx.parentElement) {
+                    ctx.parentElement.innerHTML = '<div class="flex flex-col items-center justify-center h-full text-slate-400 text-sm gap-2"><i class="fa-solid fa-chart-line text-2xl opacity-20"></i><span>Waiting for live data...</span></div>';
+                }
+            }
+        };
+
         // ===== INIT DASHBOARD =====
         document.addEventListener('DOMContentLoaded', () => {
             const user = Auth.getUser();
@@ -458,6 +622,7 @@
             // Render everything
             window.renderCourses();
             renderHandnotes();
+            loadAnalytics();
 
             // Dismiss page loader
             const loader = document.getElementById('page-loader');

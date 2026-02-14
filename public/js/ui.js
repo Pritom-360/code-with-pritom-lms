@@ -191,7 +191,7 @@ class UI {
     static initNavbarScroll() {
         const navbar = document.getElementById('navbar');
         if (!navbar) return;
-        
+
         window.addEventListener('scroll', () => {
             if (window.scrollY > 50) {
                 navbar.classList.add('scrolled');
@@ -254,7 +254,60 @@ document.addEventListener('DOMContentLoaded', () => {
     UI.initScrollReveal();
     UI.initNavbarScroll();
     UI.animateCounters();
-    
+
     // Hide page loader after a small delay
     setTimeout(() => UI.hidePageLoader(), 300);
 });
+
+/* ============================================
+   WORKSHOP DATA & CONTROLLER (Async)
+   ============================================ */
+class WorkshopManager {
+    static async fetchData() {
+        try {
+            // Add cache busting to ensure fresh data
+            const response = await fetch(`data/workshop.json?t=${new Date().getTime()}`);
+            this.workshops = await response.json();
+            return this.workshops;
+        } catch (error) {
+            console.error('Failed to load workshop data:', error);
+            return [];
+        }
+    }
+
+    static getWorkshops() {
+        return this.workshops || [];
+    }
+
+    static getWorkshopById(id) {
+        return (this.workshops || []).find(w => w.id === id);
+    }
+
+    // Find Live or Nearest Upcoming
+    static getFeaturedWorkshop() {
+        const workshops = this.workshops || [];
+        const now = new Date();
+
+        // 1. Check for LIVE (Current Time is within slot)
+        // OR if status is explicitly 'live' regardless of time (for manual override)
+        const live = workshops.find(w => {
+            const start = new Date(w.startTime);
+            const end = new Date(w.endTime);
+            return (now >= start && now <= end) || w.status === 'live';
+        });
+        if (live) return { ...live, displayStatus: 'live' };
+
+        // 2. Check for Upcoming (Nearest Future)
+        const upcoming = workshops
+            .filter(w => new Date(w.startTime) > now && w.status !== 'archived')
+            .sort((a, b) => new Date(a.startTime) - new Date(b.startTime))[0];
+
+        return upcoming ? { ...upcoming, displayStatus: 'upcoming' } : null;
+    }
+
+    static getArchivedWorkshops() {
+        const now = new Date();
+        // Archived manually OR past endTime
+        return (this.workshops || []).filter(w => w.status === 'archived' || (new Date(w.endTime) < now && w.status !== 'upcoming'));
+    }
+}

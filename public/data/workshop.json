@@ -1,0 +1,22 @@
+[
+    {
+        "id": "WORKSHOP_LIVE_01",
+        "title": "Master AI Agents with n8n",
+        "desc": "Join us for an exclusive live session where we build a complete AI Agent system from scratch. Learn RAG, Function Calling, and n8n integration in real-time.",
+        "videoID": "dQw4w9WgXcQ",
+        "startTime": "2026-10-24T22:00:00",
+        "endTime": "2026-10-25T00:00:00",
+        "status": "upcoming",
+        "thumbnail": "https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=2670&auto=format&fit=crop"
+    },
+    {
+        "id": "WORKSHOP_ARCHIVE_01",
+        "title": "Intro to n8n Automation",
+        "desc": "Basic concepts of nodes, connections, and workflows.",
+        "videoID": "dQw4w9WgXcQ",
+        "startTime": "2025-01-15T10:00:00",
+        "endTime": "2025-01-15T12:00:00",
+        "status": "archived",
+        "thumbnail": "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2000&auto=format&fit=crop"
+    }
+]
