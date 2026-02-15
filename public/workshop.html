@@ -25,24 +25,38 @@
     <script src="js/auth.js"></script>
 </head>
 
-<body class="bg-slate-950 text-slate-100 font-['Inter'] antialiased min-h-screen flex flex-col overflow-hidden">
+<body
+    class="bg-[#020617] text-slate-100 font-['Inter'] antialiased min-h-screen flex flex-col md:overflow-hidden overflow-x-hidden">
 
     <!-- Navbar -->
-    <nav class="border-b border-slate-800 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50 h-16 flex items-center">
-        <div class="w-full px-4 md:px-6 flex justify-between items-center">
-            <a href="dashboard.html" class="flex items-center gap-2 text-slate-400 hover:text-white transition group">
-                <i class="fa-solid fa-chevron-left text-xs group-hover:-translate-x-1 transition"></i>
-                <span class="font-medium text-sm">Dashboard</span>
+    <nav
+        class="border-b border-white/5 bg-slate-950/40 backdrop-blur-2xl sticky top-0 z-50 h-16 flex items-center shrink-0">
+        <div class="w-full px-4 md:px-8 flex justify-between items-center">
+            <a href="dashboard.html"
+                class="flex items-center gap-3 text-slate-400 hover:text-white transition-all duration-300 group">
+                <div
+                    class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                    <i
+                        class="fa-solid fa-chevron-left text-[10px] group-hover:-translate-x-0.5 transition-transform"></i>
+                </div>
+                <span class="font-semibold text-sm hidden sm:inline tracking-tight">Return to Dashboard</span>
             </a>
 
-            <div class="flex items-center gap-3" id="live-indicator">
-                <span class="animate-pulse w-2 h-2 rounded-full bg-red-500"></span>
-                <span class="font-bold tracking-tight text-white" id="workshop-title-nav">Live Workshop</span>
+            <div class="flex items-center gap-2 sm:gap-4 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-xl shadow-inner"
+                id="live-indicator">
+                <div class="relative flex h-2 w-2">
+                    <span
+                        class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                </div>
+                <span
+                    class="font-bold tracking-tight text-white text-[11px] sm:text-xs truncate max-w-[140px] sm:max-w-none uppercase"
+                    id="workshop-title-nav">Live Workshop</span>
             </div>
 
-            <div class="w-20 text-right">
+            <div class="flex items-center">
                 <div
-                    class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-800 text-xs font-bold text-slate-300 ring-2 ring-slate-800">
+                    class="hidden sm:flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-tr from-slate-800 to-slate-700 text-xs font-bold text-white shadow-xl border border-white/10 ring-2 ring-slate-950">
                     <i class="fa-solid fa-user"></i>
                 </div>
             </div>
@@ -50,64 +64,239 @@
     </nav>
 
     <!-- Main Interface -->
-    <main class="flex-1 flex flex-col lg:flex-row h-[calc(100vh-64px)] w-full relative" id="main-layout">
+    <main
+        class="flex-1 flex flex-col lg:flex-row h-auto lg:h-[calc(100vh-64px)] w-full relative overflow-y-auto lg:overflow-hidden"
+        id="main-layout">
 
         <!-- Video Player Area -->
-        <div class="flex-1 bg-black relative group flex items-center justify-center bg-slate-950" id="player-container">
-            <div class="w-full h-full relative" id="video-wrapper">
-                <iframe id="workshop-player" class="w-full h-full absolute inset-0" src="" title="Workshop"
-                    frameborder="0"
+        <div class="w-full lg:flex-1 bg-black relative flex items-center justify-center group aspect-video lg:aspect-auto overflow-hidden"
+            id="player-container">
+            <div class="w-full h-full relative z-0 transition-transform duration-700 ease-out" id="video-wrapper">
+                <iframe id="workshop-player" class="w-full h-full absolute inset-0 md:p-2 lg:p-4 rounded-3xl" src=""
+                    title="Workshop" frameborder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowfullscreen></iframe>
 
-                <!-- Overlay (Waiting) -->
+                <!-- Premium Overlay (Connecting/Upcoming) -->
                 <div id="player-overlay"
-                    class="absolute inset-0 bg-slate-900 z-10 flex flex-col items-center justify-center hidden">
-                    <i class="fa-brands fa-youtube text-6xl text-slate-700 mb-4"></i>
-                    <p class="text-slate-500 font-medium text-lg" id="overlay-msg">Connecting...</p>
+                    class="absolute inset-0 bg-[#020617] z-10 flex flex-col items-center justify-center hidden p-8 text-center transition-all duration-500">
+                    <div class="relative mb-8">
+                        <div class="absolute inset-0 bg-red-600/20 blur-3xl rounded-full scale-150 animate-pulse"></div>
+                        <i
+                            class="fa-brands fa-youtube text-6xl sm:text-8xl text-red-600 relative drop-shadow-[0_0_30px_rgba(220,38,38,0.5)]"></i>
+                    </div>
+                    <p class="text-slate-300 font-bold text-lg sm:text-2xl tracking-tight mb-2 animate-pulse"
+                        id="overlay-msg">Connecting to stream...</p>
+                    <p class="text-slate-500 text-sm max-w-xs mx-auto">Please wait while we establish a secure
+                        connection to the live server.</p>
+                </div>
+            </div>
+
+            <!-- Floating Controls (Visual only) -->
+            <div
+                class="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none hidden lg:flex">
+                <div
+                    class="px-4 py-2 rounded-full bg-white/5 backdrop-blur-2xl border border-white/10 text-[10px] font-black uppercase tracking-widest text-white/50 shadow-2xl">
+                    Cinematic View Active
                 </div>
             </div>
         </div>
 
-        <!-- Right Sidebar (Chat) -->
-        <div class="w-full lg:w-[400px] bg-slate-900 border-l border-slate-800 flex flex-col" id="workshop-sidebar">
-
-            <div class="px-4 py-3 border-b border-slate-800 flex justify-between items-center bg-slate-900">
-                <span class="font-semibold text-sm text-slate-300">Live Chat</span>
-                <div class="flex gap-2">
+        <!-- Right Sidebar (Premium resources) -->
+        <div class="w-full lg:w-[420px] bg-slate-950/50 backdrop-blur-3xl border-t lg:border-t-0 lg:border-l border-white/5 flex flex-col shrink-0 overflow-visible lg:overflow-hidden animate-slide-left shadow-[-20px_0_50px_rgba(0,0,0,0.5)]"
+            id="workshop-sidebar">
+            <div class="px-6 py-5 border-b border-white/5 flex justify-between items-center bg-white/5">
+                <div class="flex flex-col">
                     <span
-                        class="text-[10px] bg-red-500/10 text-red-500 px-2 py-0.5 rounded font-bold border border-red-500/20">LIVE</span>
+                        class="font-black text-[10px] uppercase tracking-[0.2em] text-orange-500 mb-0.5">Workshop</span>
+                    <span class="font-bold text-sm text-slate-100">Live Resources</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                    <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Connected</span>
                 </div>
             </div>
 
-            <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-4 scroll-smooth">
-                <div class="flex gap-3">
-                    <div
-                        class="w-8 h-8 rounded-full bg-orange-600/20 flex items-center justify-center text-orange-500 text-xs shrink-0">
-                        <i class="fa-solid fa-robot"></i>
-                    </div>
-                    <div>
-                        <div class="flex items-baseline gap-2">
-                            <span class="text-xs font-bold text-orange-500">System</span>
-                            <span class="text-[10px] text-slate-600">Now</span>
+            <div class="flex-1 p-6 md:p-8 overflow-y-auto space-y-8 dark-scroll custom-scrollbar">
+
+                <!-- Google Meet Section -->
+                <div id="meet-section" class="space-y-4 animate-fade-in stagger-1">
+                    <h3
+                        class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] flex items-center gap-3">
+                        <span
+                            class="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]"></span>
+                        Direct Interaction
+                    </h3>
+                    <a id="meet-btn" href="#" target="_blank"
+                        class="flex items-center gap-4 p-5 rounded-[2rem] bg-gradient-to-br from-green-500/10 via-green-500/5 to-transparent border border-green-500/20 hover:border-green-500/50 hover:bg-green-500/15 transition-all duration-500 group relative overflow-hidden">
+                        <div
+                            class="absolute inset-0 bg-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity">
                         </div>
-                        <p class="text-sm text-slate-400 mt-0.5">Welcome! Chat is open.</p>
+                        <div
+                            class="w-14 h-14 rounded-2xl bg-green-500 text-white flex items-center justify-center text-2xl shadow-[0_10px_30px_rgba(34,197,94,0.3)] group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                            <i class="fa-solid fa-video"></i>
+                        </div>
+                        <div class="flex-1 min-w-0 relative z-10">
+                            <div class="font-black text-green-400 text-base">Google Meet</div>
+                            <div class="text-[11px] text-green-500/70 font-medium">Join for Q&A Session</div>
+                        </div>
+                        <div
+                            class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-green-500 text-green-500 group-hover:text-white transition-all duration-300">
+                            <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Messenger Section -->
+                <div class="space-y-4 animate-fade-in stagger-2">
+                    <h3
+                        class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] flex items-center gap-3">
+                        <span
+                            class="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></span>
+                        Student Lounge
+                    </h3>
+                    <a href="https://m.me/cm/AbbA2j-MAcTU6OyN/?send_source=cm%3Acopy_invite_link" target="_blank"
+                        class="flex items-center gap-4 p-5 rounded-[2rem] bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-transparent border border-blue-500/20 hover:border-blue-500/50 hover:bg-blue-500/15 transition-all duration-500 group relative overflow-hidden">
+                        <div
+                            class="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        </div>
+                        <div
+                            class="w-14 h-14 rounded-2xl bg-blue-500 text-white flex items-center justify-center text-2xl shadow-[0_10px_30px_rgba(59,130,246,0.3)] group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
+                            <i class="fa-brands fa-messenger"></i>
+                        </div>
+                        <div class="flex-1 min-w-0 relative z-10">
+                            <div class="font-black text-blue-400 text-base">Community Chat</div>
+                            <div class="text-[11px] text-blue-500/70 font-medium">Real-time collaboration</div>
+                        </div>
+                        <div
+                            class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-blue-500 text-blue-500 group-hover:text-white transition-all duration-300">
+                            <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                        </div>
+                    </a>
+
+                    <!-- QR Code Card -->
+                    <div
+                        class="bg-gradient-to-b from-white to-slate-200 rounded-[2.5rem] p-8 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] flex flex-col items-center justify-center space-y-6 border border-white/20 group hover:scale-[1.03] transition-all duration-700">
+                        <div
+                            class="relative p-4 bg-white rounded-3xl shadow-inner group-hover:shadow-2xl transition-all duration-700">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://m.me/cm/AbbA2j-MAcTU6OyN/?send_source=cm%3Acopy_invite_link"
+                                alt="Community QR Code"
+                                class="w-40 h-40 md:w-52 md:h-52 object-contain group-hover:scale-105 transition-transform duration-700">
+                            <div
+                                class="absolute inset-4 border border-slate-100 rounded-2xl pointer-events-none opacity-50">
+                            </div>
+                        </div>
+                        <div class="text-center px-4">
+                            <p class="text-[11px] text-slate-800 font-black uppercase tracking-[0.25em] mb-2">Instant
+                                Scan</p>
+                            <div class="h-1 w-8 bg-blue-600 mx-auto rounded-full mb-3"></div>
+                            <p class="text-[10px] text-slate-500 leading-relaxed font-medium">Access our premium
+                                Messenger group from your phone by scanning this code.</p>
+                        </div>
                     </div>
+                </div>
+
+                <!-- Footer-like Notice -->
+                <div
+                    class="p-5 rounded-3xl bg-white/5 border border-white/5 flex gap-4 items-center animate-fade-in stagger-3">
+                    <div class="w-10 h-10 rounded-full bg-orange-600/20 flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-shield-halved text-orange-500 text-xs"></i>
+                    </div>
+                    <p class="text-[10px] text-slate-400 leading-relaxed font-medium italic">
+                        All links are encrypted and restricted to enrolled students. Sharing outside the portal is
+                        prohibited.
+                    </p>
                 </div>
             </div>
 
-            <div class="p-4 border-t border-slate-800 bg-slate-900">
-                <form onsubmit="event.preventDefault();" class="relative">
-                    <input type="text" placeholder="Type a message..."
-                        class="w-full bg-slate-800 text-sm text-white placeholder-slate-500 border border-slate-700 rounded-lg pl-4 pr-10 py-3 focus:outline-none focus:border-orange-500 transition">
-                    <button
-                        class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-slate-400 hover:text-orange-500 transition">
-                        <i class="fa-solid fa-paper-plane"></i>
-                    </button>
-                </form>
+            <!-- Mobile Footer -->
+            <div class="lg:hidden p-6 text-center border-t border-white/5 bg-slate-950/20 backdrop-blur-md">
+                <p class="text-[10px] text-slate-600 font-bold uppercase tracking-widest">&copy; 2026 Code With Pritom
+                </p>
             </div>
         </div>
     </main>
+
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideLeft {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+            opacity: 0;
+        }
+
+        .animate-slide-left {
+            animation: slideLeft 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        .stagger-1 {
+            animation-delay: 0.2s;
+        }
+
+        .stagger-2 {
+            animation-delay: 0.4s;
+        }
+
+        .stagger-3 {
+            animation-delay: 0.6s;
+        }
+
+        @media (max-width: 1023px) {
+            #main-layout {
+                height: auto !important;
+            }
+
+            #player-container {
+                position: sticky;
+                top: 64px;
+                z-index: 40;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+            }
+
+            #workshop-player {
+                opacity: 0.9;
+            }
+        }
+    </style>
 
     <!-- Logic -->
     <script>
@@ -122,14 +311,13 @@
 
             // 2. Fallback if not found
             if (!workshop) {
-                // Try to find ANY live one
                 const live = WorkshopManager.getFeaturedWorkshop();
                 if (live) {
-                    window.location.href = `workshop.html?id=${live.id}`;
+                    window.location.replace(`workshop.html?id=${live.id}`);
                     return;
                 }
-                alert('Workshop not found.');
-                window.location.href = 'index.html';
+                alert('Session record not found.');
+                window.location.replace('dashboard.html');
                 return;
             }
 
@@ -137,88 +325,100 @@
             const now = new Date();
             const start = new Date(workshop.startTime);
             const end = new Date(workshop.endTime);
-            // Status Override: If explicitly archived or time passed
-            // Check 'status' property first for manual override
             const isArchived = workshop.status === 'archived' || (now > end && workshop.status !== 'upcoming');
             const isLive = workshop.status === 'live' || (now >= start && now <= end);
             const isUpcoming = !isArchived && !isLive;
 
-            // 4. Auth Check (Only for Live/Upcoming)
+            // 4. Auth Check
             if (!isArchived && !Auth.isLoggedIn()) {
-                window.location.href = `index.html?redirect=workshop&id=${id}`;
+                window.location.replace(`index.html?redirect=workshop&id=${id}`);
                 return;
             }
 
             // 5. Update UI
-            document.title = `${workshop.title} | Workshop`;
-            document.getElementById('workshop-title-nav').textContent = isArchived ? 'Recorded Session' : (isLive ? 'Live Workshop' : 'Upcoming Event');
+            document.title = `${workshop.title} | Exclusive Workshop`;
+            const titleEl = document.getElementById('workshop-title-nav');
+            if (titleEl) {
+                if (isArchived) {
+                    titleEl.innerHTML = `<span class="text-slate-500 mr-2">Archive:</span> ${workshop.title}`;
+                } else {
+                    titleEl.textContent = workshop.title;
+                }
+            }
+
+            // Set Meet Link
+            const meetBtn = document.getElementById('meet-btn');
+            if (meetBtn && workshop.meetLink) {
+                meetBtn.href = workshop.meetLink;
+            } else if (meetBtn) {
+                const meetSec = document.getElementById('meet-section');
+                if (meetSec) meetSec.style.display = 'none';
+            }
 
             // Video Player Logic
             const player = document.getElementById('workshop-player');
             if (workshop.videoID) {
-                let src = `https://www.youtube.com/embed/${workshop.videoID}?rel=0&modestbranding=1`;
-                // Only autoplay if LIVE
+                let src = `https://www.youtube.com/embed/${workshop.videoID}?rel=0&modestbranding=1&showinfo=0&iv_load_policy=3&color=red`;
                 if (isLive) src += '&autoplay=1';
                 player.src = src;
             } else {
-                // No video ID? Show overlay
-                document.getElementById('video-wrapper').style.background = '#000';
-            }
-
-            // LIVE Badge Indicator
-            const indicator = document.getElementById('live-indicator').querySelector('span');
-            if (isArchived) {
-                indicator.className = 'w-2 h-2 rounded-full bg-slate-600'; // Gray dot
-            } else if (isLive) {
-                indicator.className = 'w-2 h-2 rounded-full bg-red-500 animate-pulse'; // Red dot
-            } else {
-                indicator.className = 'w-2 h-2 rounded-full bg-orange-500'; // Orange dot
+                document.getElementById('video-wrapper').style.background = '#020617';
             }
 
             // Handle States
             if (isArchived) {
-                // ARCHIVED MODE: Hide Chat, Expand Player
-                document.getElementById('workshop-sidebar').style.display = 'none';
+                const sidebar = document.getElementById('workshop-sidebar');
+                if (sidebar) sidebar.style.display = 'none';
 
                 const main = document.getElementById('main-layout');
                 main.classList.remove('lg:flex-row');
-                main.classList.add('flex-col', 'items-center', 'justify-center', 'bg-black');
+                main.classList.add('flex-col', 'items-center', 'bg-[#020617]', 'pt-8', 'pb-32', 'px-4');
+                main.style.height = '100vh';
 
                 const container = document.getElementById('player-container');
                 container.style.width = '100%';
                 container.style.maxWidth = '1200px';
-                container.style.aspectRatio = '16/9';
-                container.classList.remove('flex-1');
-                container.classList.add('shadow-2xl');
+                container.className = 'bg-black shadow-[0_50px_100px_-20px_rgba(0,0,0,1)] rounded-3xl overflow-hidden aspect-video relative group';
 
-                // Add "Recorded" Badge
-                const badge = document.createElement('div');
-                badge.className = 'absolute top-6 left-6 bg-black/80 text-white px-4 py-2 text-sm font-bold rounded backdrop-blur-md border border-white/10 z-20';
-                badge.innerHTML = '<i class="fa-solid fa-clock-rotate-left mr-2 text-orange-500"></i> RECORDED';
-                container.appendChild(badge);
+                const wrapper = document.getElementById('video-wrapper');
+                wrapper.className = 'w-full h-full rounded-3xl overflow-hidden border border-white/5 active:scale-[0.99] transition-transform duration-500';
+
+                const infoBox = document.createElement('div');
+                infoBox.className = 'mt-12 text-center max-w-2xl animate-fade-in stagger-2';
+                infoBox.innerHTML = `
+                    <div class="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-orange-500 text-[10px] font-black tracking-widest uppercase mb-6">
+                        <i class="fa-solid fa-clock-rotate-left"></i> Recorded Session
+                    </div>
+                    <h1 class="text-3xl md:text-5xl font-black text-white mb-4 tracking-tight">${workshop.title}</h1>
+                    <p class="text-slate-400 text-sm md:text-lg leading-relaxed">${workshop.desc}</p>
+                `;
+                main.appendChild(infoBox);
 
             } else if (isUpcoming) {
-                // UPCOMING MODE
                 const overlay = document.getElementById('player-overlay');
                 overlay.classList.remove('hidden');
                 document.getElementById('overlay-msg').innerHTML = `
-                    <div class="text-center p-6">
-                        <div class="text-3xl font-bold text-white mb-4">Stream Starting Soon</div>
-                        <div class="text-xl text-orange-500 font-mono bg-slate-800/50 px-4 py-2 rounded border border-slate-700">
-                            ${start.toLocaleString()}
+                    <div class="text-center p-8 space-y-6">
+                        <div class="inline-block px-4 py-1 rounded-full bg-orange-600/20 border border-orange-600/30 text-orange-500 text-[11px] font-black tracking-[0.2em] uppercase mb-4 animate-bounce">Upcoming Livestream</div>
+                        <div class="text-3xl md:text-5xl font-black text-white leading-tight tracking-tight">Prepare Your Setup</div>
+                        <div class="text-base md:text-2xl text-slate-300 font-bold bg-white/5 py-4 px-8 rounded-full border border-white/10 shadow-2xl">
+                            <i class="fa-solid fa-clock mr-3 text-orange-500"></i> ${start.toLocaleString([], { dateStyle: 'full', timeStyle: 'short' })}
                         </div>
-                        <p class="text-slate-400 mt-4 text-sm max-w-md mx-auto">${workshop.desc}</p>
+                        <p class="text-slate-500 mt-8 text-xs md:text-base max-w-md mx-auto leading-relaxed font-medium">${workshop.desc}</p>
                     </div>
                 `;
             } else if (isLive && !workshop.videoID) {
-                // LIVE but no video ID ?
                 const overlay = document.getElementById('player-overlay');
                 overlay.classList.remove('hidden');
-                document.getElementById('overlay-msg').textContent = "Waiting for stream signal...";
+                document.getElementById('overlay-msg').innerHTML = `
+                    <div class="flex flex-col items-center">
+                        <div class="w-16 h-16 border-4 border-white/5 border-t-red-600 rounded-full animate-spin mb-6"></div>
+                        <span class="text-xl font-black tracking-tight">Syncing Signal...</span>
+                    </div>
+                `;
             }
         });
     </script>
-
 </body>
 
 </html>
