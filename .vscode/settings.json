@@ -1,0 +1,19 @@
+{
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "100.119.102.77",
+            "port": 3307,
+            "driver": "MariaDB",
+            "name": "codewithpritom",
+            "password": "n8n_secret_pass",
+            "username": "root",
+            "database": "n8n_website"
+        }
+    ]
+}

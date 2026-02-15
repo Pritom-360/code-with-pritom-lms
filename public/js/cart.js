@@ -19,6 +19,11 @@ const Cart = {
     loadCart() {
         const savedCart = localStorage.getItem('cwp_cart');
         if (savedCart) this.state.items = JSON.parse(savedCart);
+        // Ensure single item restriction even on load
+        if (this.state.items.length > 1) {
+            this.state.items = [this.state.items[0]];
+            this.saveCart();
+        }
     },
 
     saveCart() {
@@ -37,13 +42,14 @@ const Cart = {
             image = course.image;
         }
 
-        if (this.state.items.find(item => item.id == id)) {
-            if (window.UI) UI.showToast('Course already in cart!', 'info');
-            this.openCart();
-            return;
-        }
+        // CRITICAL BUG FIX: Restricted to ONE item only.
+        // Clear existing cart before adding new course.
+        this.state.items = [];
+        this.state.promoCode = null; // Reset promo code when course changes
 
-        const priceNum = typeof price === 'string' ? parseFloat(price.replace('$', '')) : price;
+        const priceNum = typeof price === 'string'
+            ? parseFloat(price.replace('$', '').replace('৳', '').replace('TK', '').replace('Taka', '').trim())
+            : price;
 
         this.state.items.push({
             id: id,
@@ -53,7 +59,7 @@ const Cart = {
         });
 
         this.saveCart();
-        if (window.UI) UI.showToast('Added to cart', 'success');
+        if (window.UI) UI.showToast('Course selected for checkout', 'success');
         this.openCart();
     },
 
@@ -179,9 +185,6 @@ const Cart = {
         });
     },
 
-    // ... (rest of logic: validateBilling, applyPromo, submitOrder, updateUI) ...
-    // Using abbreviated version to save tokens but implementing key parts:
-
     validateBilling() {
         const reqFields = ['bill-name', 'bill-phone', 'bill-email', 'bill-address'];
         let valid = true;
@@ -209,21 +212,80 @@ const Cart = {
     },
 
     async applyPromo() {
-        const code = document.getElementById('promo-code-input').value;
-        if (!code) return;
+        const codeInput = document.getElementById('promo-code-input');
+        const code = codeInput ? codeInput.value.trim() : '';
+        const feedbackEl = document.getElementById('promo-feedback');
+        const applyBtn = codeInput ? codeInput.nextElementSibling || document.querySelector('[onclick="Cart.applyPromo()"]') : null;
+
+        if (!code) {
+            if (window.UI) UI.showToast('Please enter a coupon code.', 'error');
+            return;
+        }
+
+        // Determine courseId from cart items (single or first item)
+        const courseId = this.state.items.length > 0 ? this.state.items[0].id : null;
+
+        if (!courseId) {
+            if (window.UI) UI.showToast('No course in cart to apply coupon to.', 'error');
+            if (feedbackEl) feedbackEl.innerHTML = `<p class="text-sm text-red-500"><i class="fa-solid fa-times-circle mr-1"></i> Add a course to cart first.</p>`;
+            return;
+        }
+
+        // Show loading state
+        if (applyBtn) {
+            applyBtn.disabled = true;
+            applyBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
+        }
+        if (feedbackEl) feedbackEl.innerHTML = `<p class="text-sm text-slate-400"><i class="fa-solid fa-circle-notch fa-spin mr-1"></i> Verifying coupon...</p>`;
 
         try {
-            const res = await fetch(`/api/promo-codes?code=${code}`);
-            const data = await res.json();
-            if (data.success) {
-                this.state.promoCode = data.promo;
-                if (window.UI) UI.showToast(`Applied ${data.promo.code}`, 'success');
+            const response = await fetch(`https://arup-vivobook-asuslaptop-x509dj-d509dj.taila8249c.ts.net/webhook/verify-coupon?coupon_name=${encodeURIComponent(code)}&course_code=${encodeURIComponent(courseId)}`
+            );
+            const data = await response.json();
+
+            // Normalize — API may return an array
+            const result = Array.isArray(data) ? data[0] : data;
+
+            if (result && result.valid === true && result.discount_percent !== undefined) {
+                const discountPercent = parseFloat(result.discount_percent);
+
+                if (isNaN(discountPercent) || discountPercent <= 0) {
+                    if (window.UI) UI.showToast('Invalid coupon for this course.', 'error');
+                    if (feedbackEl) feedbackEl.innerHTML = `<p class="text-sm text-red-500"><i class="fa-solid fa-times-circle mr-1"></i> Coupon not valid for this course.</p>`;
+                    return;
+                }
+
+                // Apply discount as a percent type promo
+                this.state.promoCode = {
+                    code: code.toUpperCase(),
+                    type: 'percent',
+                    discount: discountPercent
+                };
+
+                const discountLabel = discountPercent === 100 ? 'FREE' : `${discountPercent}% off`;
+                if (window.UI) UI.showToast(`Coupon applied! ${discountLabel}`, 'success');
+
+                if (feedbackEl) {
+                    feedbackEl.innerHTML = `<p class="text-sm text-green-600 font-bold"><i class="fa-solid fa-check-circle mr-1"></i> Coupon "${code.toUpperCase()}" applied — ${discountLabel}!</p>`;
+                }
+
                 this.updateCheckoutSummary();
             } else {
-                if (window.UI) UI.showToast(data.message, 'error');
+                // API said valid: false, or no discount
+                const errorMsg = result?.message || 'Invalid or expired promo code';
+                if (window.UI) UI.showToast(errorMsg, 'error');
+                if (feedbackEl) feedbackEl.innerHTML = `<p class="text-sm text-red-500"><i class="fa-solid fa-times-circle mr-1"></i> ${errorMsg}</p>`;
             }
-        } catch (e) {
-            console.error(e);
+        } catch (error) {
+            console.error('[Coupon] Verification failed:', error);
+            if (window.UI) UI.showToast('Failed to verify coupon. Please try again.', 'error');
+            if (feedbackEl) feedbackEl.innerHTML = `<p class="text-sm text-red-500"><i class="fa-solid fa-times-circle mr-1"></i> Network error. Please try again.</p>`;
+        } finally {
+            // Restore button
+            if (applyBtn) {
+                applyBtn.disabled = false;
+                applyBtn.innerHTML = 'Apply';
+            }
         }
     },
 
@@ -237,18 +299,32 @@ const Cart = {
         const disc = this.getDiscountAmount();
         const total = this.getTotal();
 
-        document.querySelectorAll('.checkout-subtotal').forEach(el => el.textContent = '$' + sub.toFixed(2));
-        document.querySelectorAll('.checkout-total').forEach(el => el.textContent = '$' + total.toFixed(2));
+        document.querySelectorAll('.checkout-subtotal').forEach(el => el.textContent = '৳' + sub.toFixed(2));
+        document.querySelectorAll('.checkout-total').forEach(el => el.textContent = '৳' + total.toFixed(2));
 
+        // Update discount row in checkout modal (classroom page)
         const discRow = document.getElementById('checkout-discount-row');
         if (discRow) {
             if (disc > 0) {
                 discRow.classList.remove('hidden');
-                document.getElementById('checkout-discount-amount').textContent = '-$' + disc.toFixed(2);
+                document.getElementById('checkout-discount-amount').textContent = '-৳' + disc.toFixed(2);
             } else {
                 discRow.classList.add('hidden');
             }
         }
+
+        // Update discount row in cart.html sidebar
+        const cartPageDiscRow = document.getElementById('cart-page-discount-row');
+        if (cartPageDiscRow) {
+            if (disc > 0) {
+                cartPageDiscRow.classList.remove('hidden');
+                const cartPageDiscAmt = document.getElementById('cart-page-discount-amount');
+                if (cartPageDiscAmt) cartPageDiscAmt.textContent = '-৳' + disc.toFixed(2);
+            } else {
+                cartPageDiscRow.classList.add('hidden');
+            }
+        }
+
         this.handleFreeMode(total === 0);
     },
 
@@ -263,7 +339,7 @@ const Cart = {
                 paidSection.classList.add('hidden');
                 if (submitBtn) {
                     submitBtn.innerHTML = 'Confirm Order (Free) <i class="fa-solid fa-gift ml-2"></i>';
-                    submitBtn.classList.remove('bg-green-600', 'hover:bg-green-700'); // Optional styling tweak
+                    submitBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
                     submitBtn.classList.add('bg-orange-600', 'hover:bg-orange-700');
                 }
             } else {
@@ -291,15 +367,17 @@ const Cart = {
             cartList.innerHTML = this.state.items.map(i => `
                 <div class="flex justify-between p-4 border-b">
                     <div>
-                        <div class="font-bold text-sm">${i.title}</div>
-                        <div class="text-xs text-gray-500">$${i.price}</div>
+                        <div class="font-bold text-sm text-slate-800">${i.title}</div>
+                        <div class="text-xs text-slate-500">৳${i.price}</div>
                     </div>
-                    <button onclick="Cart.remove('${i.id}')" class="text-red-500"><i class="fa-solid fa-trash"></i></button>
+                    <button onclick="Cart.remove('${i.id}')" class="text-red-500 hover:text-red-700 transition">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
                 </div>
             `).join('');
 
             const subEl = document.getElementById('cart-subtotal');
-            if (subEl) subEl.textContent = '$' + this.getSubtotal().toFixed(2);
+            if (subEl) subEl.textContent = '৳' + this.getSubtotal().toFixed(2);
         }
 
         const checkList = document.getElementById('checkout-cart-list');
@@ -307,7 +385,7 @@ const Cart = {
             checkList.innerHTML = this.state.items.map(i => `
                 <div class="flex justify-between py-2 border-b last:border-0 border-gray-100">
                     <span class="text-sm">${i.title}</span>
-                    <span class="font-bold text-sm">$${i.price}</span>
+                    <span class="font-bold text-sm">৳${i.price}</span>
                 </div>
             `).join('');
         }
@@ -317,6 +395,74 @@ const Cart = {
         const total = this.getTotal();
         const txn = document.getElementById('bkash-txn-input') ? document.getElementById('bkash-txn-input').value : '';
 
+        // ===== FREE / 100% DISCOUNT BYPASS =====
+        if (total === 0) {
+            const btn = document.getElementById('btn-place-order');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> Enrolling...';
+            }
+
+            try {
+                const userEmail = this.state.billing?.email ||
+                    document.getElementById('bill-email')?.value ||
+                    (window.Auth ? Auth.getUser()?.email : null);
+
+                const courseItems = this.state.items;
+
+                if (!userEmail) {
+                    if (window.UI) UI.showToast('Email is required for enrollment.', 'error');
+                    if (btn) { btn.disabled = false; btn.innerHTML = 'Confirm Order (Free) <i class="fa-solid fa-gift ml-2"></i>'; }
+                    return;
+                }
+
+                let allSuccess = true;
+                for (const item of courseItems) {
+                    try {
+                        const response = await fetch('https://arup-vivobook-asuslaptop-x509dj-d509dj.taila8249c.ts.net/webhook/grant-free-access', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                email: userEmail,
+                                course_code: item.id
+                            })
+                        });
+
+                        if (!response.ok) {
+                            console.error(`[Free Access] Failed for course ${item.id}:`, response.status);
+                            allSuccess = false;
+                        }
+                    } catch (err) {
+                        console.error(`[Free Access] Error granting access for ${item.id}:`, err);
+                        allSuccess = false;
+                    }
+                }
+
+                if (allSuccess) {
+                    this.clear();
+                    if (window.UI) UI.showToast('🎉 Enrollment Successful! Redirecting...', 'success');
+                    alert('🎉 Enrollment Successful!\nYou now have access to your course.');
+
+                    const firstCourseId = courseItems[0]?.id;
+                    if (firstCourseId) {
+                        window.location.href = `classroom.html?course_id=${firstCourseId}`;
+                    } else {
+                        window.location.href = 'dashboard.html';
+                    }
+                } else {
+                    if (window.UI) UI.showToast('Some enrollments failed. Please contact support.', 'error');
+                    if (btn) { btn.disabled = false; btn.innerHTML = 'Confirm Order (Free) <i class="fa-solid fa-gift ml-2"></i>'; }
+                }
+            } catch (e) {
+                console.error('[Free Access] Submit error:', e);
+                if (window.UI) UI.showToast('Enrollment failed. Please try again.', 'error');
+                const btn = document.getElementById('btn-place-order');
+                if (btn) { btn.disabled = false; btn.innerHTML = 'Confirm Order (Free) <i class="fa-solid fa-gift ml-2"></i>'; }
+            }
+            return;
+        }
+
+        // ===== PAID FLOW (bKash) — Manual Verification =====
         if (total > 0 && !txn) {
             if (window.UI) UI.showToast('Please enter Transaction ID', 'error');
             return;
@@ -325,37 +471,42 @@ const Cart = {
         const btn = document.getElementById('btn-place-order');
         if (btn) {
             btn.disabled = true;
-            btn.innerHTML = 'Processing...';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Submitting...';
         }
 
         try {
+            const userEmail = this.state.billing?.email || document.getElementById('bill-email')?.value || (window.Auth ? Auth.getUser()?.email : '');
+            const userName = this.state.billing?.name || document.getElementById('bill-name')?.value || (window.Auth ? Auth.getUser()?.name : '');
+
             const payload = {
-                action: 'checkout',
-                items: this.state.items,
-                billing: this.state.billing,
-                payment: {
-                    method: total === 0 ? 'free' : 'bkash',
-                    txnId: total === 0 ? 'FREE-ORDER' : txn,
-                    total: total
-                }
+                email: userEmail,
+                name: userName,
+                course_id: this.state.items.map(i => i.id).join(','),
+                transaction_id: txn,
+                amount: total,
+                promo_code: this.state.promoCode ? this.state.promoCode.code : '',
+                items: this.state.items
             };
 
-            await fetch('/api/checkout', {
+            await fetch('https://arup-vivobook-asuslaptop-x509dj-d509dj.taila8249c.ts.net/webhook/submit-payment', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
 
-            this.setStep(4);
             this.clear();
-            const orderIdEl = document.getElementById('conf-order-id');
-            if (orderIdEl) orderIdEl.textContent = 'ORD-' + Date.now();
+            if (window.UI) UI.showToast('Payment submitted! Pending admin verification.', 'success');
+
+            alert('Payment submitted successfully!\nPlease wait up to 24 hours for manual verification by the admin.');
+            window.location.href = 'dashboard.html';
 
         } catch (e) {
-            if (window.UI) UI.showToast('Submission failed', 'error');
-            console.error(e);
-        } finally {
-            if (btn) btn.disabled = false;
+            if (window.UI) UI.showToast('Submission failed. Check connection.', 'error');
+            console.error('[Checkout] Submit error:', e);
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = 'Confirm Payment <i class="fa-solid fa-check ml-2"></i>';
+            }
         }
     }
 };

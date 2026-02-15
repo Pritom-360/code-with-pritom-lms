@@ -267,17 +267,17 @@
                     <div class="space-y-3 mb-6">
                         <div class="flex justify-between text-slate-500 text-sm">
                             <span>Subtotal</span>
-                            <span class="checkout-subtotal font-semibold text-slate-800">$0.00</span>
+                            <span class="checkout-subtotal font-semibold text-slate-800">৳0.00</span>
                         </div>
                         <div id="cart-page-discount-row"
                             class="flex justify-between text-green-600 text-sm font-bold hidden">
                             <span>Discount</span>
-                            <span id="cart-page-discount-amount">-$0.00</span>
+                            <span id="cart-page-discount-amount">-৳0.00</span>
                         </div>
                         <div class="border-t border-slate-100 my-2"></div>
                         <div class="flex justify-between items-baseline">
                             <span class="text-slate-500 font-bold">Total</span>
-                            <span class="checkout-total text-2xl font-black text-slate-900 tracking-tight">$0.00</span>
+                            <span class="checkout-total text-2xl font-black text-slate-900 tracking-tight">৳0.00</span>
                         </div>
                     </div>
 
@@ -365,7 +365,7 @@
                     <div class="flex-1 min-w-0">
                         <div class="flex justify-between items-start">
                             <h3 class="font-bold text-slate-800 truncate pr-2">${item.title}</h3>
-                            <span class="font-black text-slate-900">$${item.price}</span>
+                            <span class="font-black text-slate-900">৳${item.price}</span>
                         </div>
                         <button onclick="Cart.remove('${item.id}'); renderCartList();" class="text-xs text-slate-400 hover:text-red-500 mt-1 font-medium flex items-center gap-1">
                             <i class="fa-solid fa-trash-can"></i> Remove
@@ -384,14 +384,14 @@
             const disc = Cart.getDiscountAmount();
             const total = Cart.getTotal();
 
-            document.querySelectorAll('.checkout-subtotal').forEach(el => el.textContent = '$' + sub.toFixed(2));
-            document.querySelectorAll('.checkout-total').forEach(el => el.textContent = '$' + total.toFixed(2));
+            document.querySelectorAll('.checkout-subtotal').forEach(el => el.textContent = '৳' + sub.toFixed(2));
+            document.querySelectorAll('.checkout-total').forEach(el => el.textContent = '৳' + total.toFixed(2));
 
             const discRow = document.getElementById('cart-page-discount-row');
             if (discRow) {
                 if (disc > 0) {
                     discRow.classList.remove('hidden');
-                    document.getElementById('cart-page-discount-amount').textContent = '-$' + disc.toFixed(2);
+                    document.getElementById('cart-page-discount-amount').textContent = '-৳' + disc.toFixed(2);
                 } else {
                     discRow.classList.add('hidden');
                 }

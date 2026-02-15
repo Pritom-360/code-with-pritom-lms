@@ -100,6 +100,7 @@ window.addEventListener('scroll', reveal);
 const courseRoadmaps = {
     "1": {
         title: "n8n Fundamentals",
+        price: 0,
         desc: "Master nodes, triggers, and JSON flow basics.",
         steps: [
             { title: "Introduction to Automation", desc: "Understanding Nodes, Connections, and Workflow Canvas" },
@@ -110,6 +111,7 @@ const courseRoadmaps = {
     },
     "2": {
         title: "Advanced Webhooks & APIs",
+        price: 199,
         desc: "Deep dive into HTTP requests and Auth.",
         steps: [
             { title: "HTTP Protocol Deep Dive", desc: "GET, POST, PUT, DELETE headers and body" },
@@ -120,6 +122,7 @@ const courseRoadmaps = {
     },
     "3": {
         title: "SaaS Automation Masterclass",
+        price: 500,
         desc: "Build a backend without code.",
         steps: [
             { title: "Architecture Design", desc: "Planning your Database and API endpoints" },
@@ -130,6 +133,7 @@ const courseRoadmaps = {
     },
     "4": {
         title: "Linux Fundamentals",
+        price: 0,
         desc: "Master the command line and server admin.",
         steps: [
             { title: "Shell Basics", desc: "Navigation, file manipulation, and permissions (chmod/chown)" },
@@ -140,6 +144,7 @@ const courseRoadmaps = {
     },
     "5": {
         title: "C Programming Language",
+        price: 0,
         desc: "Low-level programming mastery.",
         steps: [
             { title: "Syntax & Types", desc: "Variables, loops, and control structures" },
@@ -150,6 +155,7 @@ const courseRoadmaps = {
     },
     "6": {
         title: "Discrete Mathematics",
+        price: 0,
         desc: "The math behind Computer Science.",
         steps: [
             { title: "Logic & Proofs", desc: "Propositional logic and truth tables" },
@@ -160,6 +166,7 @@ const courseRoadmaps = {
     },
     "7": {
         title: "Java Programming",
+        price: 0,
         desc: "Building robust enterprise applications.",
         steps: [
             { title: "Java Basics", desc: "JVM, JRE, and Main method structure" },
@@ -170,6 +177,7 @@ const courseRoadmaps = {
     },
     "8": {
         title: "Java OOP Mastery",
+        price: 500,
         desc: "Design patterns and advanced architecture.",
         steps: [
             { title: "Polymorphism", desc: "Overloading and Overriding deep dive" },
@@ -180,6 +188,7 @@ const courseRoadmaps = {
     },
     "9": {
         title: "Scripting & Automation",
+        price: 0,
         desc: "Python and Shell for DevOps.",
         steps: [
             { title: "Python Basics", desc: "Variables, functions, and libraries" },
@@ -190,6 +199,7 @@ const courseRoadmaps = {
     },
     "NEW_19": {
         title: "Generated YouTube Course",
+        price: 0,
         desc: "Master AI Agents with this comprehensive generated course in Hindi.",
         steps: [
             { title: "Introduction to AI Agents", desc: "Understanding the basics and potential of AI Agents." },
@@ -216,12 +226,23 @@ window.openCourseModal = (courseId) => {
         </div>
     `).join('');
 
+    // Logic for Freemium
+    const isFree = data.price === 0;
+    const priceLabel = isFree ? 'FREE' : `৳${data.price}`;
+    const badgeClass = isFree ? 'badge-free' : 'badge-premium';
+
+    // Redirect logic
+    const btnText = isFree ? 'Start Learning for Free' : 'Enroll Now';
+    const btnAction = isFree
+        ? `window.location.href = 'classroom.html?course_id=${courseId}'`
+        : `closeCourseModal();UI.openModal('register')`;
+
     content.innerHTML = `
         <div class="modal-header-bg">
             <button onclick="closeCourseModal()" class="absolute top-6 right-6 text-white/70 hover:text-white transition rounded-full hover:bg-white/10 w-8 h-8 flex items-center justify-center">
                 <i class="fa-solid fa-xmark text-xl"></i>
             </button>
-            <span class="badge badge-free bg-white/20 text-white border-none mb-3 inline-block backdrop-blur-sm">Course Roadmap</span>
+            <span class="badge ${badgeClass} bg-white/20 text-white border-none mb-3 inline-block backdrop-blur-sm">${priceLabel}</span>
             <h2 class="text-3xl font-bold mb-2">${data.title}</h2>
             <p class="text-slate-200 opacity-90">${data.desc}</p>
         </div>
@@ -232,7 +253,7 @@ window.openCourseModal = (courseId) => {
         </div>
         <div class="p-6 border-t border-slate-100 flex justify-end gap-3 bg-slate-50">
             <button onclick="closeCourseModal()" class="btn btn-outline">Close</button>
-            <button onclick="closeCourseModal();UI.openModal('register')" class="btn btn-primary shadow-lg">Enroll Now</button>
+            <button onclick="${btnAction}" class="btn btn-primary shadow-lg">${btnText}</button>
         </div>
     `;
 
@@ -393,7 +414,7 @@ const renderUserChart = async () => {
     if (!ctx) return;
 
     try {
-        const response = await fetch('https://arup-vivobook-asuslaptop-x509dj-d509dj.taila8249c.ts.net/webhook-test/get-live-stats');
+        const response = await fetch('https://arup-vivobook-asuslaptop-x509dj-d509dj.taila8249c.ts.net/webhook/get-live-stats');
         const data = await response.json();
 
         // Data processing for Chart.js

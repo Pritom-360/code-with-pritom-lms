@@ -87,6 +87,54 @@ api.post('/verify-payment', async (req, res) => {
     handleN8nRequest(req, res, 'verification');
 });
 
+// New: Proxy for fetching lessons (avoids CORS)
+api.get('/get-lessons', async (req, res) => {
+    try {
+        const query = req.query; // forward all params: course_id, id, etc.
+        // Fallback to hardcoded URL if env var is missing (for immediate testing without restart)
+        const url = process.env.N8N_GET_LESSONS_URL || 'https://arup-vivobook-asuslaptop-x509dj-d509dj.taila8249c.ts.net/webhook/get-lessons';
+
+        console.log(`[Proxy] Fetching lessons from: ${url}`);
+        const response = await axios.get(url, { params: query });
+        res.json(response.data);
+    } catch (error) {
+        console.error('[Proxy] Error fetching lessons:', error.message);
+        res.status(500).json({ success: false, message: 'Failed to fetch lessons via proxy.', error: error.message });
+    }
+});
+
+// New: Proxy for fetching course data (avoids CORS)
+api.get('/get-course-data', async (req, res) => {
+    try {
+        const query = req.query; // forward all params: course_id, course_code
+        // Fallback to hardcoded URL if env var is missing
+        const url = process.env.N8N_GET_COURSE_URL || 'https://arup-vivobook-asuslaptop-x509dj-d509dj.taila8249c.ts.net/webhook/get-course-data';
+
+        console.log(`[Proxy] Fetching course data from: ${url}`);
+        const response = await axios.get(url, { params: query });
+        res.json(response.data);
+    } catch (error) {
+        console.error('[Proxy] Error fetching course data:', error.message);
+        res.status(500).json({ success: false, message: 'Failed to fetch course data via proxy.', error: error.message });
+    }
+});
+
+// New: Proxy for checking access (avoids CORS)
+api.get('/check-access', async (req, res) => {
+    try {
+        const query = req.query; // forward all params: email
+        // Fallback to hardcoded URL if env var is missing
+        const url = process.env.N8N_CHECK_ACCESS_URL || 'https://arup-vivobook-asuslaptop-x509dj-d509dj.taila8249c.ts.net/webhook/check-access';
+
+        console.log(`[Proxy] Checking access from: ${url}`);
+        const response = await axios.get(url, { params: query });
+        res.json(response.data);
+    } catch (error) {
+        console.error('[Proxy] Error checking access:', error.message);
+        res.status(500).json({ success: false, message: 'Failed to check access via proxy.', error: error.message });
+    }
+});
+
 // Helper function for n8n requests
 async function handleN8nRequest(req, res, context) {
     try {
@@ -137,25 +185,9 @@ async function handleN8nRequest(req, res, context) {
 }
 
 // ===== PROMO CODES ENDPOINT =====
-const PROMO_CODES = [
-    { code: 'EWUPCC2026', discount: 100, type: 'flat', valid_until: '2026-12-31', status: 'ACTIVE' }
-];
-
-api.get('/promo-codes', (req, res) => {
-    const { code } = req.query;
-    if (code) {
-        const promo = PROMO_CODES.find(p => p.code === code.toUpperCase() && p.status !== 'INACTIVE');
-        if (promo) {
-            return res.json({ success: true, promo });
-        }
-        return res.status(404).json({ success: false, message: 'Invalid or expired promo code.' });
-    }
-    // Return all active public codes
-    res.json({
-        success: true,
-        promos: PROMO_CODES.filter(p => p.status === 'ACTIVE')
-    });
-});
+// Promo/Coupon codes are now validated dynamically via the n8n webhook API:
+// GET https://...ts.net/webhook/verify-coupon?coupon_name=X&course_code=Y
+// The static PROMO_CODES array has been removed.
 
 // Mount API router at /api
 app.use('/api', api);

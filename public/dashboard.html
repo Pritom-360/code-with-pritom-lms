@@ -264,7 +264,7 @@
         <div id="cart-content" class="cart-footer">
             <div class="cart-total-row final">
                 <span>Total</span>
-                <span id="cart-subtotal">$0.00</span>
+                <span id="cart-subtotal">৳0.00</span>
             </div>
             <button onclick="Cart.openCheckout()" class="btn btn-primary w-full mt-4">
                 Proceed to Checkout
@@ -285,42 +285,125 @@
 
     <!-- ===================== DASHBOARD LOGIC ===================== -->
     <script>
-        // ===== COURSE DATABASE (prices updated) =====
-        const courses = [
-            { id: "1", title: "n8n Fundamentals", desc: "Master nodes, triggers, and JSON workflow logic.", icon: "fa-bolt", color: "bg-blue-100 text-blue-600", price: "Free", totalLessons: 8, duration: "1h 50m" },
-            { id: "2", title: "Advanced Webhooks & APIs", desc: "Connect APIs, handle auth, and build integrations.", icon: "fa-code-branch", color: "bg-purple-100 text-purple-600", price: "49", totalLessons: 6, duration: "1h 30m" },
-            { id: "3", title: "SaaS Automation Masterclass", desc: "Build a complete SaaS backend with automation.", icon: "fa-rocket", color: "bg-orange-100 text-orange-600", price: "59", totalLessons: 6, duration: "2h" },
-            { id: "4", title: "Linux Fundamentals", desc: "Master the command line, file systems, and system administration.", icon: "fa-linux", color: "bg-slate-800 text-white", price: "49", totalLessons: 12, duration: "3h 15m" },
-            { id: "5", title: "C Programming Language", desc: "Learn C from basics to advanced memory management.", icon: "fa-code", color: "bg-blue-600 text-white", price: "59", totalLessons: 15, duration: "4h 30m" },
-            { id: "6", title: "Discrete Mathematics", desc: "Foundations of discrete math: logic, sets, and graphs.", icon: "fa-calculator", color: "bg-purple-600 text-white", price: "49", totalLessons: 14, duration: "5h 00m" },
-            { id: "7", title: "Java Programming", desc: "Complete Java development: syntax, OOP, and frameworks.", icon: "fa-java", color: "bg-red-600 text-white", price: "69", totalLessons: 18, duration: "6h 20m" },
-            { id: "8", title: "Java OOP Mastery", desc: "Deep dive into Object-Oriented principles and patterns.", icon: "fa-cubes", color: "bg-orange-600 text-white", price: "59", totalLessons: 13, duration: "4h 45m" },
-            { id: "9", title: "Scripting & Automation", desc: "Python and Shell scripting for DevOps.", icon: "fa-scroll", color: "bg-teal-600 text-white", price: "49", totalLessons: 11, duration: "4h 00m" },
-            { id: "NEW_19", title: "Generated YouTube Course", desc: "Master AI Agents with this comprehensive generated course in Hindi.", icon: "fa-robot", color: "bg-indigo-600 text-white", price: "49", totalLessons: 21, duration: "3h 30m" }
-        ];
+        // ===== DYNAMIC COURSE DATA (Fetched from API) =====
+        let courses = []; // Will be populated from API
 
-        // ===== HANDNOTES DATABASE (with Blogger/Medium links) =====
-        const handnotes = [
-            { id: "hn1", title: "n8n Nodes Cheat Sheet", desc: "Quick reference for all essential n8n nodes.", icon: "📘", link: "https://codewithpritom.blogspot.com/p/n8n-nodes.html", platform: "Blogger" },
-            { id: "hn2", title: "API Integration Guide", desc: "Connecting REST APIs, OAuth, and webhooks.", icon: "📗", link: "https://codewithpritom.blogspot.com/p/api-integration.html", platform: "Blogger" },
-            { id: "hn3", title: "Automation Formulas", desc: "Code snippets for n8n workflows.", icon: "📙", link: "https://medium.com/@codewithpritom/automation", platform: "Medium" },
-            { id: "hn4", title: "SaaS Architecture Notes", desc: "Architecture diagrams and flow charts.", icon: "📕", link: "https://codewithpritom.blogspot.com/p/saas-architecture.html", platform: "Blogger" },
-            { id: "hn5", title: "Linux Commands", desc: "Essential Linux commands cheat sheet.", icon: "🐧", link: "https://medium.com/@codewithpritom/linux-commands", platform: "Medium" },
-            { id: "hn6", title: "C Pointer Guide", desc: "Visual guide to memory and pointers.", icon: "💾", link: "https://codewithpritom.blogspot.com/p/c-pointers.html", platform: "Blogger" },
-            { id: "hn7", title: "Math Formulas", desc: "Set theory and logic symbols reference.", icon: "🔢", link: "https://medium.com/@codewithpritom/discrete-math", platform: "Medium" },
-            { id: "hn8", title: "Java OOP Charts", desc: "Inheritance and polymorphism diagrams.", icon: "☕", link: "https://codewithpritom.blogspot.com/p/java-oop.html", platform: "Blogger" },
-            { id: "hn9", title: "Design Patterns", desc: "Common GoF patterns implemented in Java.", icon: "🏗️", link: "https://medium.com/@codewithpritom/design-patterns", platform: "Medium" },
-            { id: "hn10", title: "Python One-Liners", desc: "Efficient Python scripts for automation.", icon: "🐍", link: "https://codewithpritom.blogspot.com/p/python-scripts.html", platform: "Blogger" }
-        ];
-
-        // ===== PROGRESS HELPERS =====
-        function getCourseProgress(courseId, totalLessons) {
+        async function fetchCourses() {
             try {
-                const completed = JSON.parse(localStorage.getItem(`cwp-progress-${courseId}`) || '[]');
-                const count = completed.length;
-                const pct = Math.round((count / totalLessons) * 100);
-                return { count, pct };
-            } catch { return { count: 0, pct: 0 }; }
+                // Fetch ALL courses (no email filter) to ensure we get the full catalog
+                // Filtering happens on the client side based on access list
+                const url = 'https://arup-vivobook-asuslaptop-x509dj-d509dj.taila8249c.ts.net/webhook/get-all-courses';
+                console.log('[Dashboard] Fetching course catalog...');
+
+                const response = await fetch(url);
+                const data = await response.json();
+                console.log('[Dashboard] Course API Response:', data);
+
+                // Robust parsing for various wrapper formats
+                let rawCourses = [];
+                if (Array.isArray(data)) {
+                    rawCourses = data;
+                } else if (typeof data === 'object' && data !== null) {
+                    // Check common wrapper properties
+                    rawCourses = data.courses || data.data || data.result || data.items || [];
+
+                    // Fallback: If it looks like a single course object
+                    if (rawCourses.length === 0 && (data.course_code || data.id)) {
+                        rawCourses = [data];
+                    }
+                }
+
+                if (rawCourses.length > 0) {
+                    courses = rawCourses.map(c => ({
+                        id: c.course_code || c.id || '',
+                        title: c.title || 'Untitled Course',
+                        desc: c.description || '',
+                        thumbnail: c.thumbnail_url || '',
+                        // Normalize price: 0, "0", "Free" -> "Free"
+                        price: (c.price === 0 || c.price === '0' || c.price === 'Free') ? 'Free' : String(c.price || '0'),
+                        totalLessons: c.total_lessons || (c.lessons ? c.lessons.length : 0),
+                        duration: c.duration || '—'
+                    }));
+                    console.log(`[Dashboard] Parsed ${courses.length} courses.`);
+                } else {
+                    console.warn('[Dashboard] No courses found in API response. Structure might be unknown.');
+                    courses = [];
+                }
+            } catch (error) {
+                console.error('[Dashboard] Failed to fetch courses:', error);
+                courses = [];
+            }
+        }
+
+        // ===== HANDNOTES DATABASE (Kept as fallback — Dynamic fetch below overrides) =====
+        const handnotes = [];
+
+        // ===== PROGRESS HELPERS (Dynamic Database Fetch) =====
+        const courseProgressCache = {};
+
+        async function fetchCardProgress(userEmail, courseCode) {
+            if (courseProgressCache[courseCode] !== undefined) return courseProgressCache[courseCode];
+
+            try {
+                // Fetch progress from n8n webhook
+                const url = `https://arup-vivobook-asuslaptop-x509dj-d509dj.taila8249c.ts.net/webhook/get-user-progress?user_email=${encodeURIComponent(userEmail)}&course_code=${encodeURIComponent(courseCode)}`;
+                const response = await fetch(url);
+                if (response.ok) {
+                    const data = await response.json();
+
+                    if (Array.isArray(data)) {
+                        // Handle both [{lesson_number: 1}] and [1, 2] formats
+                        const validLessons = new Set();
+
+                        data.forEach(item => {
+                            let lessonNum = null;
+                            if (typeof item === 'object' && item !== null) {
+                                lessonNum = item.lesson_number; // Database column name
+                            } else if (typeof item === 'number' || typeof item === 'string') {
+                                lessonNum = item;
+                            }
+
+                            if (lessonNum !== null && lessonNum !== undefined) {
+                                validLessons.add(String(lessonNum));
+                            }
+                        });
+
+                        const count = validLessons.size;
+                        console.log(`[Dashboard] Progress for ${courseCode}: ${count}`);
+                        courseProgressCache[courseCode] = count;
+
+                        // STRICT DOM UPDATE: Only update elements inside the specific card for this course
+                        const card = document.getElementById(`card-${courseCode}`);
+                        if (card) {
+                            const total = parseInt(card.querySelector('.progress-section')?.getAttribute('data-total') || '1');
+                            const pct = Math.round((count / total) * 100);
+
+                            const bar = card.querySelector('.progress-bar-fill');
+                            if (bar) bar.style.width = `${pct}%`;
+
+                            const pctText = card.querySelector('.progress-pct');
+                            if (pctText) pctText.textContent = `${pct}% complete`;
+
+                            const countText = card.querySelector('.progress-text');
+                            if (countText) {
+                                countText.textContent = `${count}/${total} lessons`;
+                                if (pct === 100) countText.classList.add('text-green-600');
+                            }
+
+                            const btn = card.querySelector('.btn-action');
+                            if (btn) {
+                                if (pct === 100) btn.innerHTML = '<i class="fa-solid fa-rotate-right text-xs"></i> Review Course';
+                                else if (pct > 0) btn.innerHTML = '<i class="fa-solid fa-play text-xs"></i> Continue Learning';
+                            }
+                        }
+
+                        return count;
+                    }
+                }
+            } catch (e) {
+                console.error(`[Dashboard] Failed to fetch progress for ${courseCode}:`, e);
+            }
+            return 0;
         }
 
         // ===== REQUEST CERTIFICATE =====
@@ -380,11 +463,39 @@
             // 0. Fetch Workshop Data (Ensure fresh status)
             await WorkshopManager.fetchData();
 
+            // 1. Fetch courses from API if not already loaded
+            if (courses.length === 0) {
+                const grid = document.getElementById('course-grid');
+                grid.innerHTML = '<div class="col-span-full text-center py-10"><i class="fa-solid fa-circle-notch fa-spin text-orange-500 text-2xl"></i><p class="text-slate-500 text-sm mt-2">Loading courses...</p></div>';
+                await fetchCourses();
+            }
+
             const user = Auth.getUser();
             if (!user) return;
 
             const searchTerm = (document.getElementById('courseSearch')?.value || '').toLowerCase();
-            const accessList = (user.access || '').toString().split(',').map(s => s.trim());
+
+            // Fetch fresh access list from API (Task 1 consistency)
+            let accessList = (user.access || '').toString().split(',').map(s => s.trim());
+
+            if (user.email) {
+                try {
+                    console.log('[Dashboard] Fetching access for:', user.email);
+                    const accessRes = await fetch(`https://arup-vivobook-asuslaptop-x509dj-d509dj.taila8249c.ts.net/webhook/check-access?email=${encodeURIComponent(user.email)}`);
+                    const accessData = await accessRes.json();
+
+                    console.log('[Dashboard] Access API Response:', accessData);
+                    const remoteAccess = (accessData?.access || accessData?.Access || '').toString();
+
+                    if (remoteAccess) {
+                        const newAccessList = remoteAccess.split(',').map(s => s.trim()).filter(Boolean);
+                        console.log('[Dashboard] using fresh access list:', newAccessList);
+                        accessList = newAccessList;
+                    }
+                } catch (e) {
+                    console.warn('[Dashboard] check-access API failed, using local access:', e);
+                }
+            }
             const grid = document.getElementById('course-grid');
             const exploreGrid = document.getElementById('explore-grid');
 
@@ -435,19 +546,27 @@
                 grid.innerHTML += workshopHTML;
             }
 
+            // Show message if no courses loaded from API
+            if (courses.length === 0) {
+                grid.innerHTML += '<div class="col-span-full text-center py-10 text-slate-400"><i class="fa-solid fa-exclamation-circle text-2xl mb-2"></i><p>Unable to load courses. Please refresh the page.</p></div>';
+                return;
+            }
+
             courses.filter(c => c.title.toLowerCase().includes(searchTerm)).forEach((c, idx) => {
-                const isUnlocked = accessList.includes(c.id);
+                const isFree = (c.price === 'Free' || c.price === '0' || c.price === 0);
+                const isUnlocked = isFree || accessList.includes(c.id);
                 if (isUnlocked) unlockedCount++; else lockedCount++;
 
-                const { count, pct } = getCourseProgress(c.id, c.totalLessons);
+                // Thumbnail or fallback icon
+                const thumbnailHTML = c.thumbnail
+                    ? `<img src="${c.thumbnail}" alt="${c.title}" class="w-12 h-12 rounded-xl object-cover">`
+                    : `<div class="w-12 h-12 bg-orange-100 text-orange-600 rounded-xl flex items-center justify-center text-lg"><i class="fa-solid fa-graduation-cap"></i></div>`;
 
                 const cardHTML = `
-                    <div class="course-card animate-fade-in-up" style="animation-delay:${idx * 0.1}s;opacity:0">
+                    <div class="course-card animate-fade-in-up" id="card-${c.id}" style="animation-delay:${idx * 0.1}s;opacity:0">
                         <div class="course-card-body">
                             <div class="flex items-start justify-between mb-5">
-                                <div class="w-12 h-12 ${c.color} rounded-xl flex items-center justify-center text-lg">
-                                    <i class="fa-solid ${c.icon}"></i>
-                                </div>
+                                ${thumbnailHTML}
                                 ${isUnlocked
                         ? '<span class="badge badge-unlocked"><i class="fa-solid fa-lock-open text-[10px] mr-1"></i> UNLOCKED</span>'
                         : '<span class="badge badge-locked"><i class="fa-solid fa-lock text-[10px] mr-1"></i> LOCKED</span>'}
@@ -455,29 +574,33 @@
                             <h3 class="font-bold text-lg mb-1">${c.title}</h3>
                             <p class="text-slate-500 text-sm mb-4 leading-relaxed">${c.desc}</p>
                             <div class="flex items-center gap-4 text-xs text-slate-400 font-medium">
-                                <span><i class="fa-solid fa-play-circle mr-1"></i> ${c.totalLessons} Lessons</span>
-                                <span><i class="fa-solid fa-clock mr-1"></i> ${c.duration}</span>
+                                ${c.totalLessons ? `<span><i class="fa-solid fa-play-circle mr-1"></i> ${c.totalLessons} Lessons</span>` : ''}
+                                ${c.duration && c.duration !== '—' ? `<span><i class="fa-solid fa-clock mr-1"></i> ${c.duration}</span>` : ''}
+                                ${isFree ? '<span class="text-green-600 font-bold"><i class="fa-solid fa-gift mr-1"></i> FREE</span>' : ''}
                             </div>
+                            
+                            <!-- Progress Section Placeholder -->
                             ${isUnlocked ? `
-                                <div class="progress-bar-container mt-4">
-                                    <div class="progress-bar-fill" style="width:${pct}%"></div>
-                                </div>
-                                <div class="flex items-center justify-between mt-1">
-                                    <span class="text-xs text-slate-400">${pct}% complete</span>
-                                    <span class="text-xs font-bold ${pct === 100 ? 'text-green-600' : 'text-slate-400'}">${count}/${c.totalLessons} lessons</span>
+                                <div class="progress-section mt-4" data-course-id="${c.id}" data-total="${c.totalLessons}">
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar-fill w-0 transition-all duration-1000"></div>
+                                    </div>
+                                    <div class="flex items-center justify-between mt-1">
+                                        <span class="text-xs text-slate-400 progress-pct">0% complete</span>
+                                        <span class="text-xs font-bold text-slate-400 progress-text">0/${c.totalLessons || '?'} lessons</span>
+                                    </div>
                                 </div>
                             ` : ''}
+
                         </div>
                         <div class="course-card-footer">
                             ${isUnlocked
-                        ? `<a href="classroom.html?id=${c.id}" class="btn btn-dark w-full">
+                        ? `<a href="classroom.html?course_id=${c.id}" class="btn btn-dark w-full btn-action">
                                     <i class="fa-solid fa-play text-xs"></i>
-                                    ${pct === 100 ? 'Review Course' : pct > 0 ? 'Continue Learning' : 'Start Learning'}
-                                  </a>
-                                  ${pct === 100 ? `<button onclick="requestCertificate('${c.id}', '${c.title}')" class="btn w-full mt-2 bg-green-600 text-white hover:bg-green-700 shadow-md"><i class="fa-solid fa-certificate text-xs mr-1"></i> Get Certificate</button>` : ''}
-                                  `
+                                    Start Learning
+                                  </a>`
                         : `<button onclick="Cart.addItem({id:'${c.id}', title:'${c.title}', price:'${c.price}'})" id="buy-btn-${c.id}" class="btn btn-outline w-full">
-                                    <i class="fa-solid fa-cart-shopping text-xs"></i> Buy Course — $${c.price}
+                                    <i class="fa-solid fa-cart-shopping text-xs"></i> Buy Course — ৳${c.price}
                                   </button>`
                     }
                         </div>
@@ -486,13 +609,21 @@
 
                 if (isUnlocked) {
                     grid.innerHTML += cardHTML;
+                    // Trigger async progress update for this card
+                    if (user.email) {
+                        fetchCardProgress(user.email, c.id);
+                    }
+                } else {
+                    grid.innerHTML += cardHTML;
                 }
+
                 if (exploreGrid) {
+                    // Explore grid just shows basic card without progress fetch logic to save API calls
                     exploreGrid.innerHTML += cardHTML;
                 }
             });
 
-            document.getElementById('stat-enrolled').textContent = unlockedCount; // Updated logic: Enrolled = Unlocked count (visually makes sense for user)
+            document.getElementById('stat-enrolled').textContent = courses.length;
             document.getElementById('stat-unlocked').textContent = unlockedCount;
             document.getElementById('stat-locked').textContent = lockedCount;
         };
@@ -502,28 +633,56 @@
         // ===== REMOVE PDF FUNCTIONS =====
         // Deleted: openPdfReader(), closePdfReader(), PDF protection listeners
 
-        // ===== RENDER HANDNOTES =====
-        window.renderHandnotes = () => {
+        // ===== RENDER HANDNOTES (Dynamic from Webhook) =====
+        window.renderHandnotes = async () => {
             const grid = document.getElementById('handnotes-grid');
             if (!grid) return;
 
-            grid.innerHTML = handnotes.map((note, idx) => `
-                <a href="${note.link}" target="_blank" class="block bg-white p-6 rounded-xl border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition duration-300 group animate-fade-in-up" style="animation-delay:${idx * 0.05}s">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-orange-50 rounded-lg flex items-center justify-center text-2xl group-hover:scale-110 transition">
-                            ${note.icon}
+            // Show loading state
+            grid.innerHTML = '<div class="col-span-full text-center py-10"><i class="fa-solid fa-circle-notch fa-spin text-orange-500 text-2xl"></i><p class="text-slate-500 text-sm mt-2">Loading notes...</p></div>';
+
+            try {
+                const response = await fetch('https://arup-vivobook-asuslaptop-x509dj-d509dj.taila8249c.ts.net/webhook/get-hand-notes');
+                const notes = await response.json();
+
+                if (!notes || notes.length === 0) {
+                    grid.innerHTML = '<div class="col-span-full text-center text-slate-400 py-10">No notes found.</div>';
+                    return;
+                }
+
+                grid.innerHTML = notes.map((note, idx) => {
+                    const isBlogger = (note.platform || '').toUpperCase() === 'BLOGGER';
+                    // Dynamic Badge Style
+                    const badgeClass = isBlogger
+                        ? 'bg-orange-50 text-orange-600 border-orange-100'
+                        : 'bg-slate-100 text-slate-800 border-slate-200'; // Medium/Other style
+
+                    const icon = isBlogger
+                        ? '<i class="fa-brands fa-blogger text-orange-500"></i>'
+                        : '<i class="fa-brands fa-medium text-slate-900"></i>';
+
+                    return `
+                    <a href="${note.url}" target="_blank" class="block bg-white p-6 rounded-xl border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition duration-300 group animate-fade-in-up" style="animation-delay:${idx * 0.05}s">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="w-12 h-12 bg-slate-50 rounded-lg flex items-center justify-center text-2xl group-hover:scale-110 transition">
+                                ${icon}
+                            </div>
+                            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded border ${badgeClass} transition">
+                                ${note.platform || 'Article'}
+                            </span>
                         </div>
-                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-50 px-2 py-1 rounded border border-slate-100 group-hover:border-orange-100 group-hover:text-orange-500 transition">
-                            ${note.platform}
-                        </span>
-                    </div>
-                    <h3 class="font-bold text-lg text-slate-800 mb-2 group-hover:text-orange-600 transition">${note.title}</h3>
-                    <p class="text-sm text-slate-500 leading-relaxed mb-4 line-clamp-2">${note.desc}</p>
-                    <div class="flex items-center text-xs font-bold text-orange-600 group-hover:gap-2 transition-all">
-                        Read Note <i class="fa-solid fa-arrow-up-right-from-square ml-1"></i>
-                    </div>
-                </a>
-            `).join('');
+                        <h3 class="font-bold text-lg text-slate-800 mb-2 group-hover:text-orange-600 transition line-clamp-2">${note.title}</h3>
+                        <p class="text-sm text-slate-500 leading-relaxed mb-4 line-clamp-2">${note.description || 'Click to read full article...'}</p>
+                        <div class="flex items-center text-xs font-bold text-orange-600 group-hover:gap-2 transition-all">
+                            Read Note <i class="fa-solid fa-arrow-up-right-from-square ml-1"></i>
+                        </div>
+                    </a>
+                `}).join('');
+
+            } catch (error) {
+                console.error("Failed to load handnotes:", error);
+                grid.innerHTML = '<div class="col-span-full text-center text-red-400 py-10">Unable to load notes. Please refresh.</div>';
+            }
         };
 
         // ===== WORKSHOP ANALYTICS =====

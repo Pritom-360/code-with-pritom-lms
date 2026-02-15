@@ -1,22 +1,25 @@
 {
-  "name": "LMS Master Controller",
+  "name": "CodeWithPritom",
   "nodes": [
     {
       "parameters": {
         "httpMethod": "POST",
         "path": "auth",
         "responseMode": "responseNode",
-        "options": {}
+        "options": {
+          "allowedOrigins": "*"
+        }
       },
-      "id": "657b438e-7e71-499d-a9d4-31c45aae2690",
+      "id": "b1937941-52ec-4eb8-805d-a38bb015aa6a",
       "name": "Webhook (Entry)",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
       "position": [
-        128,
-        112
+        -448,
+        2016
       ],
-      "webhookId": "264f62e0-2739-4a06-8051-1b19cdd52e94"
+      "webhookId": "264f62e0-2739-4a06-8051-1b19cdd52e94",
+      "alwaysOutputData": true
     },
     {
       "parameters": {
@@ -36,86 +39,32 @@
               "output": 2
             },
             {
-              "value2": "sync",
-              "output": 3
-            },
-            {
               "value2": "contact",
-              "output": 4
-            },
-            {
-              "value2": "certificate_request",
-              "output": 5
+              "output": 3
             }
           ]
         }
       },
-      "id": "c3291fd5-1b34-4d29-9554-91c12ec23f13",
+      "id": "c26939ef-1a04-4740-a5a6-7726a94a0048",
       "name": "Action Router",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 1,
       "position": [
-        352,
-        112
+        -224,
+        1792
       ]
-    },
-    {
-      "parameters": {
-        "documentId": {
-          "__rl": true,
-          "value": "1vPtk6WUiAc9ZLMYHa6_E2ftEsVhmQBnLKyq9aoHYIF0",
-          "mode": "list",
-          "cachedResultName": "test n8n",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vPtk6WUiAc9ZLMYHa6_E2ftEsVhmQBnLKyq9aoHYIF0/edit?usp=drivesdk"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": "gid=0",
-          "mode": "list",
-          "cachedResultName": "Sheet1",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vPtk6WUiAc9ZLMYHa6_E2ftEsVhmQBnLKyq9aoHYIF0/edit#gid=0"
-        },
-        "filtersUI": {
-          "values": [
-            {
-              "lookupColumn": "email",
-              "lookupValue": "={{ $json.body.email }}"
-            },
-            {
-              "lookupColumn": "password",
-              "lookupValue": "={{ $json.body.password }}"
-            }
-          ]
-        },
-        "combineFilters": "AND",
-        "options": {}
-      },
-      "id": "96cc45de-2936-40a8-aef2-cb022d18a697",
-      "name": "Get All Users",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 3,
-      "position": [
-        560,
-        -96
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "0LhwnheN62VbG6Ai",
-          "name": "Google Sheets account"
-        }
-      }
     },
     {
       "parameters": {
         "jsCode": "// LOGIN LOGIC\nconst users = $input.all();\nconst req = $('Webhook (Entry)').first().json.body;\nconst user = users.find(u => u.json.email === req.email && u.json.password === req.password);\n\nif (user) {\n  return [{\n    json: {\n      success: true,\n      message: \"Login Successful\",\n      user: {\n        name: user.json.name,\n        email: user.json.email,\n        access: user.json.access\n      }\n    }\n  }];\n} else {\n  return [{ json: { success: false, message: \"Invalid Email or Password\" } }];\n}"
       },
-      "id": "1159ea1f-21ec-4c9d-859c-0cf4e3a24b92",
+      "id": "40b55b78-ccfb-4afe-9d07-3277ad96e8c2",
       "name": "Verify Credentials",
       "type": "n8n-nodes-base.code",
       "typeVersion": 1,
       "position": [
-        768,
-        -96
+        224,
+        1440
       ]
     },
     {
@@ -124,69 +73,26 @@
         "responseBody": "={{ JSON.stringify($json) }}",
         "options": {}
       },
-      "id": "db0a7cf6-3d83-4df2-9f40-06756646f1da",
+      "id": "cfa59f89-7c37-49ec-af55-25af9b159048",
       "name": "Respond Login",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
       "position": [
-        960,
-        -96
+        448,
+        1440
       ]
-    },
-    {
-      "parameters": {
-        "documentId": {
-          "__rl": true,
-          "value": "1vPtk6WUiAc9ZLMYHa6_E2ftEsVhmQBnLKyq9aoHYIF0",
-          "mode": "list",
-          "cachedResultName": "test n8n",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vPtk6WUiAc9ZLMYHa6_E2ftEsVhmQBnLKyq9aoHYIF0/edit?usp=drivesdk"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": "gid=0",
-          "mode": "list",
-          "cachedResultName": "Sheet1",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vPtk6WUiAc9ZLMYHa6_E2ftEsVhmQBnLKyq9aoHYIF0/edit#gid=0"
-        },
-        "filtersUI": {
-          "values": [
-            {
-              "lookupColumn": "email",
-              "lookupValue": "={{ $json.body.email }}"
-            }
-          ]
-        },
-        "combineFilters": "AND",
-        "options": {}
-      },
-      "id": "697bea52-4e1e-4742-9e66-78c800724dcc",
-      "name": "Check Existing",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 3,
-      "position": [
-        560,
-        112
-      ],
-      "alwaysOutputData": true,
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "0LhwnheN62VbG6Ai",
-          "name": "Google Sheets account"
-        }
-      }
     },
     {
       "parameters": {
         "jsCode": "// REGISTRATION LOGIC\nconst users = $input.all();\nconst req = $('Webhook (Entry)').first().json.body;\nconst exists = users.some(u => u.json.email === req.email);\n\nif (exists) {\n  return [{ json: { success: false, message: \"Email already registered! Please Login.\" } }];\n} else {\n  return [{\n    json: {\n      timestamp: new Date().toISOString(),\n      name: req.name,\n      email: req.email,\n      password: req.password,\n      access: \"1\",\n      success: true\n    }\n  }];\n}"
       },
-      "id": "fcc95891-0a1e-4555-abb7-58acaf0ba633",
+      "id": "e37d463d-569c-4e52-8779-29d9c6cbc953",
       "name": "Validate New User",
       "type": "n8n-nodes-base.code",
       "typeVersion": 1,
       "position": [
-        768,
-        112
+        224,
+        1632
       ]
     },
     {
@@ -200,13 +106,13 @@
           ]
         }
       },
-      "id": "ccd9e7db-5e74-40ff-99c9-48bf3a7733ab",
+      "id": "521330b6-d02b-4491-90e0-0858fc8e2084",
       "name": "Is Valid?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
       "position": [
-        960,
-        112
+        448,
+        1632
       ]
     },
     {
@@ -215,127 +121,69 @@
         "responseBody": "={{ JSON.stringify($json) }}",
         "options": {}
       },
-      "id": "c4fa9280-7772-481f-a262-04c5a598c007",
+      "id": "f990c1d1-d2d9-49b6-b1d7-00f0d5bbd434",
       "name": "Respond Error",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
       "position": [
-        1168,
-        304
+        672,
+        1728
       ]
     },
     {
       "parameters": {
-        "operation": "append",
-        "documentId": {
-          "__rl": true,
-          "value": "1vPtk6WUiAc9ZLMYHa6_E2ftEsVhmQBnLKyq9aoHYIF0",
-          "mode": "list",
-          "cachedResultName": "test n8n",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vPtk6WUiAc9ZLMYHa6_E2ftEsVhmQBnLKyq9aoHYIF0/edit?usp=drivesdk"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": "gid=0",
-          "mode": "list",
-          "cachedResultName": "Sheet1",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vPtk6WUiAc9ZLMYHa6_E2ftEsVhmQBnLKyq9aoHYIF0/edit#gid=0"
-        },
-        "fieldsUi": {
-          "fieldValues": [
-            {
-              "fieldId": "timestamp",
-              "fieldValue": "={{ $json.timestamp }}"
-            },
-            {
-              "fieldId": "name",
-              "fieldValue": "={{ $json.name }}"
-            },
-            {
-              "fieldId": "email",
-              "fieldValue": "={{ $json.email }}"
-            },
-            {
-              "fieldId": "password",
-              "fieldValue": "={{ $json.password }}"
-            },
-            {
-              "fieldId": "access",
-              "fieldValue": "={{ $json.access }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "f0c67601-d937-4a21-9b62-92f1802d4ac1",
-      "name": "Save to DB",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 3,
-      "position": [
-        1168,
-        96
-      ],
-      "alwaysOutputData": true,
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "0LhwnheN62VbG6Ai",
-          "name": "Google Sheets account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "sendTo": "={{ $json.email }}",
-        "subject": "Welcome to AutomatePro!",
-        "message": "=Hi {{ $json.name }},\n\nYour account has been created successfully.\n\nYou have free access to 'n8n Fundamentals'.\nLogin here: http://localhost:3000\n\nHappy Automating!",
+        "sendTo": "={{ $('Is Valid?').item.json.email }}",
+        "subject": "Welcome to Code With Pritom Academy",
+        "emailType": "text",
+        "message": "=Hi {{ $('Validate New User').item.json.name }},\n\nYour account has been created successfully.\n\nYou have free access to 'n8n Fundamentals'.\nLogin here: http://localhost:3000\n\nHappy Automating!",
         "options": {
           "appendAttribution": false,
           "senderName": "Arup Bhowmik Pritom"
         }
       },
-      "id": "d6ec18b9-0961-4802-9fcf-02d243f73fc0",
+      "id": "1490e084-3a42-4027-9aab-2d08cbd00145",
       "name": "Send Welcome Email",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2,
       "position": [
-        1360,
-        96
+        896,
+        1536
       ],
       "webhookId": "69fb907b-62c3-45ee-b3f0-99b50bfab0ed",
       "alwaysOutputData": true,
       "credentials": {
         "gmailOAuth2": {
-          "id": "0jOIK3V7iVG8UDyT",
-          "name": "Gmail account 2"
+          "id": "YLXQGvaCjC5ufTkC",
+          "name": "Gmail account"
         }
       }
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Account created! Please log in.\",\n  \"user\": {\n    \"name\": \"{{ $('Save to DB').item.json.name }}\",\n    \"email\": \"{{ $('Save to DB').item.json.email }}\",\n    \"access\": \"1\"\n  }\n}",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Account created! Please log in.\",\n  \"user\": {\n    \"name\": \"{{ $node['Save to DB1'].json.name }}\",\n    \"email\": \"{{ $node['Save to DB1'].json.email }}\",\n    \"access\": {{ parseInt($node['Save to DB1'].json.access) }}\n  }\n}",
         "options": {}
       },
-      "id": "316612dd-e396-452e-b023-5149b576561a",
+      "id": "eabcd15c-83fa-4563-a8bd-aea202c3043a",
       "name": "Respond Success",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
       "position": [
-        1568,
-        96
+        1120,
+        1536
       ]
     },
     {
       "parameters": {
         "jsCode": "const body = $('Webhook (Entry)').first().json.body;\nconst isFree = body.payment.total == 0 || body.payment.method === 'free';\nreturn [{ json: { isFree } }];"
       },
-      "id": "check-free-node",
+      "id": "4d633094-e948-4fc2-ab61-ffb86f1d8c33",
       "name": "Check Free",
       "type": "n8n-nodes-base.code",
       "typeVersion": 1,
       "position": [
-        360,
-        500
+        0,
+        2016
       ]
     },
     {
@@ -349,213 +197,106 @@
           ]
         }
       },
-      "id": "if-free-node",
+      "id": "8c7e064e-0449-43a4-9062-762b1d9ad6dc",
       "name": "IF Free",
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
       "position": [
-        560,
-        500
-      ]
-    },
-    {
-      "parameters": {
-        "documentId": {
-          "__rl": true,
-          "value": "1vPtk6WUiAc9ZLMYHa6_E2ftEsVhmQBnLKyq9aoHYIF0",
-          "mode": "list",
-          "cachedResultName": "test n8n",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vPtk6WUiAc9ZLMYHa6_E2ftEsVhmQBnLKyq9aoHYIF0/edit?usp=drivesdk"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": "gid=0",
-          "mode": "list",
-          "cachedResultName": "Sheet1",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vPtk6WUiAc9ZLMYHa6_E2ftEsVhmQBnLKyq9aoHYIF0/edit#gid=0"
-        },
-        "filtersUI": {
-          "values": [
-            {
-              "lookupColumn": "email",
-              "lookupValue": "={{ $('Webhook (Entry)').first().json.body.billing.email }}"
-            }
-          ]
-        },
-        "combineFilters": "AND",
-        "options": {}
-      },
-      "id": "query-user-access",
-      "name": "Query User Access",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 3,
-      "position": [
-        760,
-        400
+        224,
+        2016
       ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "0LhwnheN62VbG6Ai",
-          "name": "Google Sheets account"
-        }
-      }
+      "alwaysOutputData": true
     },
     {
       "parameters": {
         "jsCode": "const body = $('Webhook (Entry)').first().json.body;\nconst row = $input.first().json;\nconst currentAccess = (row.access || \"\").toString().split(',').map(s => s.trim()).filter(s => s);\nconst newIds = body.items.map(i => i.id);\nconst accessSet = new Set(currentAccess);\nnewIds.forEach(id => accessSet.add(id));\nconst newAccessStr = Array.from(accessSet).join(',');\nreturn [{ json: { newAccess: newAccessStr, email: body.billing.email } }];"
       },
-      "id": "calc-update-node",
+      "id": "422ab51a-b2cc-4448-a175-84eb54518b38",
       "name": "Calc Update",
       "type": "n8n-nodes-base.code",
       "typeVersion": 1,
       "position": [
-        960,
-        400
+        672,
+        1920
       ]
     },
     {
       "parameters": {
         "jsCode": "// Placeholder: Database Update\n// Use a Google Sheets node here to update the user's access.\nreturn [{ json: { success: true } }];"
       },
-      "id": "update-access-node",
+      "id": "c989dc46-4c3b-4bc7-a8b9-1caab2b6899b",
       "name": "Update Access Logic",
       "type": "n8n-nodes-base.code",
       "typeVersion": 1,
       "position": [
-        1160,
-        400
+        1120,
+        1920
       ]
     },
     {
       "parameters": {
         "sendTo": "arupbhowmikpritom@gmail.com",
-        "message": "=New Order Received!\n\nCustomer: {{ $('Webhook (Entry)').first().json.body.billing.name }}\nEmail: {{ $('Webhook (Entry)').first().json.body.billing.email }}\nPhone: {{ $('Webhook (Entry)').first().json.body.billing.phone }}\n\nPayment: {{ $('Webhook (Entry)').first().json.body.payment.method }}\nTxnID: {{ $('Webhook (Entry)').first().json.body.payment.txnId }}\nTotal: ${{ $('Webhook (Entry)').first().json.body.payment.total }}\n\nItems:\n{{ $('Webhook (Entry)').first().json.body.items.map(i => i.title).join(', ') }}",
         "subject": "New Order: {{ $('Webhook (Entry)').first().json.body.items[0].title }}",
-        "options": {}
+        "message": "=<!DOCTYPE html>\n<html>\n<body style=\"margin:0; padding:20px; background:#f5f5f5; font-family: Arial, Helvetica, sans-serif;\">\n\n<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\">\n  <tr>\n    <td align=\"center\">\n\n      <table width=\"520\" cellpadding=\"0\" cellspacing=\"0\" style=\"background:#ffffff; border:1px solid #e5e5e5; padding:20px;\">\n\n        <!-- Header -->\n        <tr>\n          <td style=\"padding-bottom:15px; border-bottom:1px solid #e5e5e5;\">\n            <h2 style=\"margin:0; font-size:18px; color:#333;\">New Order Received</h2>\n          </td>\n        </tr>\n\n        <!-- Customer Details -->\n        <tr>\n          <td style=\"padding:15px 0;\">\n            <strong>Customer Details</strong><br><br>\n            Name: {{ $('Webhook (Entry)').first().json.body.billing.name }}<br>\n            Email: <a href=\"mailto:{{ $('Webhook (Entry)').first().json.body.billing.email }}\" style=\"color:#1a73e8; text-decoration:none;\">\n              {{ $('Webhook (Entry)').first().json.body.billing.email }}\n            </a><br>\n            Phone: {{ $('Webhook (Entry)').first().json.body.billing.phone }}\n          </td>\n        </tr>\n\n        <!-- Payment Details -->\n        <tr>\n          <td style=\"padding:15px 0; border-top:1px solid #e5e5e5;\">\n            <strong>Payment Information</strong><br><br>\n            Order Title: {{ $('Action Router').item.json.body.items[0].title }}<br>\n            ID: {{ $('Action Router').item.json.body.items[0].id }}<br>\n            Method: {{ $('Webhook (Entry)').first().json.body.payment.method }}<br>\n            Transaction ID: {{ $('Webhook (Entry)').first().json.body.payment.txnId }}<br>\n            Total: <strong>${{ $('Webhook (Entry)').first().json.body.payment.total }}</strong>\n          </td>\n        </tr>\n\n        <!-- Items Ordered -->\n        <tr>\n          <td style=\"padding:15px 0; border-top:1px solid #e5e5e5;\">\n            <strong>Items Ordered</strong><br><br>\n            {{ $('Webhook (Entry)').first().json.body.items.map(i => \"• \" + i.title).join('<br>') }}\n          </td>\n        </tr>\n\n        <!-- Footer -->\n        <tr>\n          <td style=\"padding-top:15px; border-top:1px solid #e5e5e5; font-size:12px; color:#777;\">\n            This is an automated order notification.\n          </td>\n        </tr>\n\n      </table>\n\n    </td>\n  </tr>\n</table>\n\n</body>\n</html>\n",
+        "options": {
+          "appendAttribution": true
+        }
       },
-      "id": "42e322d9-868f-4cf2-a07f-c8b03913406d",
+      "id": "454017f9-7567-421d-9d9d-0cc4b83fa5ae",
       "name": "Notify Admin",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2,
       "position": [
-        1360,
-        400
+        896,
+        2112
       ],
       "webhookId": "a18f08c4-23d7-45fb-a19c-362558a93931",
       "credentials": {
         "gmailOAuth2": {
-          "id": "0jOIK3V7iVG8UDyT",
-          "name": "Gmail account 2"
+          "id": "YLXQGvaCjC5ufTkC",
+          "name": "Gmail account"
         }
       }
     },
     {
       "parameters": {
         "sendTo": "={{ $('Webhook (Entry)').first().json.body.billing.email }}",
-        "message": "=Hi {{ $('Webhook (Entry)').first().json.body.billing.name }},\n\nThank you for your order!\n\nWe have received your payment info (TxnID: {{ $('Webhook (Entry)').first().json.body.payment.txnId }}).\n\nWe will check your information and add your course in 2 hours.\n\nIf you have any questions, reply to this email.",
         "subject": "Order Received: {{ $('Webhook (Entry)').first().json.body.items[0].title }}",
-        "options": {}
+        "message": "=<!DOCTYPE html>\n<html>\n<body style=\"margin:0; padding:20px; font-family: Arial, Helvetica, sans-serif; background:#ffffff; color:#333; font-size:14px; line-height:1.6;\">\n\n<p>Hi {{ $('Webhook (Entry)').first().json.body.billing.name }},</p>\n\n<p>Thank you for your order.</p>\n<strong>Order : {{ $('Webhook (Entry)').item.json.body.items[0].title }}</strong>\n<p>\nWe have successfully received your payment details.<br>\n<strong>Transaction ID:</strong> {{ $('Webhook (Entry)').first().json.body.payment.txnId }}\n</p>\n\n<p>\nOur team is currently reviewing your information. Your course access will be activated within the next <strong>2 hours</strong>. \n\n</p>\n<strong>Please, Logout and Login your profile to see your course</strong>\n\n<p>\nIf you have any questions or need assistance, simply reply to this email and we’ll be happy to help.\n</p>\n\n<p>\nBest regards,<br>\nYour Support Team\n</p>\n\n</body>\n</html>\n",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "Arup Bhowmik Pritom Founder of Code With Pritom Academy"
+        }
       },
-      "id": "notify-user-0001",
+      "id": "1df652fc-aa78-4124-b371-f77253843f6d",
       "name": "Notify User",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2,
       "position": [
-        1560,
-        400
+        1120,
+        2112
       ],
       "webhookId": "notify-user-webhook-id",
       "credentials": {
         "gmailOAuth2": {
-          "id": "0jOIK3V7iVG8UDyT",
-          "name": "Gmail account 2"
+          "id": "YLXQGvaCjC5ufTkC",
+          "name": "Gmail account"
         }
       }
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "{\n  \"success\": true,\n  \"message\": \"Order received! Check your email.\"\n}",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Order received! Check your email.\"\n}",
         "options": {}
       },
-      "id": "49d25529-cd10-4483-86c9-06c426cd6c41",
+      "id": "8fcfcc31-7120-4bd9-b2af-d163d8a166fe",
       "name": "Respond Purchase",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
       "position": [
-        1760,
-        400
-      ]
-    },
-    {
-      "parameters": {
-        "documentId": {
-          "__rl": true,
-          "value": "1vPtk6WUiAc9ZLMYHa6_E2ftEsVhmQBnLKyq9aoHYIF0",
-          "mode": "list",
-          "cachedResultName": "test n8n",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vPtk6WUiAc9ZLMYHa6_E2ftEsVhmQBnLKyq9aoHYIF0/edit?usp=drivesdk"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": "gid=0",
-          "mode": "list",
-          "cachedResultName": "Sheet1",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vPtk6WUiAc9ZLMYHa6_E2ftEsVhmQBnLKyq9aoHYIF0/edit#gid=0"
-        },
-        "filtersUI": {
-          "values": [
-            {
-              "lookupColumn": "email",
-              "lookupValue": "={{ $json.body.email }}"
-            }
-          ]
-        },
-        "combineFilters": "AND",
-        "options": {}
-      },
-      "id": "sync-lookup-node",
-      "name": "Sync Lookup",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 3,
-      "position": [
-        560,
-        700
-      ],
-      "alwaysOutputData": true,
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "0LhwnheN62VbG6Ai",
-          "name": "Google Sheets account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "jsCode": "// SYNC LOGIC\nconst users = $input.all();\nconst req = $('Webhook (Entry)').first().json.body;\nconst user = users.find(u => u.json.email === req.email);\nif (user) {\n  return [{ json: { success: true, user: { name: user.json.name, email: user.json.email, access: user.json.access } } }];\n} else {\n  return [{ json: { success: false, message: \"User not found\" } }];\n}"
-      },
-      "id": "sync-logic-node",
-      "name": "Sync Response Logic",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 1,
-      "position": [
-        760,
-        700
-      ]
-    },
-    {
-      "parameters": {
-        "respondWith": "json",
-        "responseBody": "={{ JSON.stringify($json) }}",
-        "options": {}
-      },
-      "id": "respond-sync-node",
-      "name": "Respond Sync",
-      "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1,
-      "position": [
-        960,
-        700
+        1344,
+        2016
       ]
     },
     {
@@ -564,56 +305,62 @@
         "responseBody": "{\n  \"success\": true,\n  \"message\": \"Message received. We will get back to you soon.\"\n}",
         "options": {}
       },
-      "id": "respond-contact-node",
+      "id": "89c6925f-2940-4a98-ac42-934eea15f184",
       "name": "Respond Contact",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
       "position": [
-        560,
-        800
+        448,
+        2288
       ]
     },
     {
       "parameters": {
         "sendTo": "arupbhowmikpritom@gmail.com",
         "subject": "Certificate Request: {{ $json.body.courseTitle }}",
+        "emailType": "text",
         "message": "=User {{ $json.body.user.name }} requested a certificate for {{ $json.body.courseTitle }}.\n\nDetails:\nName: {{ $json.body.user.name }}\nEmail: {{ $json.body.user.email }}\nPassword: {{ $json.body.user.password || 'N/A' }}\nAccess: {{ $json.body.user.access }}",
-        "options": {}
+        "options": {
+          "appendAttribution": true
+        }
       },
-      "id": "cert-admin-001",
+      "id": "77831984-31c4-4d6f-9b78-90f95b6a8728",
       "name": "Notify Admin (Cert)",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2,
       "position": [
-        560,
-        900
+        0,
+        2480
       ],
+      "webhookId": "53569f7a-e0fd-48de-8070-60497316e8a8",
       "credentials": {
         "gmailOAuth2": {
-          "id": "0jOIK3V7iVG8UDyT",
-          "name": "Gmail account 2"
+          "id": "YLXQGvaCjC5ufTkC",
+          "name": "Gmail account"
         }
       }
     },
     {
       "parameters": {
-        "sendTo": "={{ $json.body.user.email }}",
-        "subject": "Certificate Request Received: {{ $json.body.courseTitle }}",
-        "message": "=Hi {{ $json.body.user.name }},\n\nWe have received your request for the {{ $json.body.courseTitle }} certificate.\n\nYour certificate is currently under development. You will receive it as soon as possible.\n\nBest regards,\nCode With Pritom Team",
+        "sendTo": "={{ $('Action Router1').item.json.body.user.email }}",
+        "subject": "=Certificate Request Received:  {{ $('Action Router1').item.json.body.courseTitle }}",
+        "emailType": "text",
+        "message": "=Hi {{ $('Action Router1').item.json.body.user.name }},\n\nThank you for your request for the {{ $('Action Router1').item.json.body.courseTitle }} certificate.\n\nYour certificate is currently being prepared. We will send it to you as soon as it is ready.\n\nIf you have any questions in the meantime, please feel free to reply to this email.\n\nBest regards,\nArup Bhowmik Pritom",
         "options": {}
       },
-      "id": "cert-user-001",
+      "id": "8c99d49e-73a4-44e8-bd42-69f8116ad456",
       "name": "Notify User (Cert)",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2,
       "position": [
-        760,
-        900
+        224,
+        2480
       ],
+      "webhookId": "0e9ba634-6e72-4f40-8da3-bc9b6221720f",
       "credentials": {
         "gmailOAuth2": {
-          "id": "0jOIK3V7iVG8UDyT",
-          "name": "Gmail account 2"
+          "id": "YLXQGvaCjC5ufTkC",
+          "name": "Gmail account"
         }
       }
     },
@@ -623,14 +370,1502 @@
         "responseBody": "{\n  \"success\": true,\n  \"message\": \"Certificate request sent!\"\n}",
         "options": {}
       },
-      "id": "cert-resp-001",
+      "id": "83411c51-94f3-40b8-96e6-00b6d3b53a51",
       "name": "Respond Certificate",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
       "position": [
-        960,
-        900
+        448,
+        2480
       ]
+    },
+    {
+      "parameters": {
+        "sendTo": "arupbhowmikpritom@gmail.com",
+        "subject": "Contact Support",
+        "emailType": "text",
+        "message": "=Name : {{ $json.body.name }}\nFrom : {{ $json.body.email }}\n\n{{ $json.body.message }}",
+        "options": {
+          "appendAttribution": true
+        }
+      },
+      "id": "484a51f9-131e-40a0-a562-330d9d68b060",
+      "name": "Notify Admin (Cert)1",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        0,
+        2288
+      ],
+      "webhookId": "53569f7a-e0fd-48de-8070-60497316e8a8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YLXQGvaCjC5ufTkC",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook (Entry)').item.json.body.email }}",
+        "subject": "Message from Academy",
+        "message": "=Thank you {{ $('Webhook (Entry)').item.json.body.name }} for getting in touch. I will follow up with you by email soon.",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "5b8feb33-326e-452a-8194-c0756d416038",
+      "name": "Notify User (Cert)1",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        224,
+        2288
+      ],
+      "webhookId": "0e9ba634-6e72-4f40-8da3-bc9b6221720f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YLXQGvaCjC5ufTkC",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.body.action }}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "certificate_request",
+              "output": 3
+            }
+          ]
+        }
+      },
+      "id": "2f26aa45-a0da-4e61-9e01-620307a7de70",
+      "name": "Action Router1",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        2448
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE users \nSET access = CONCAT(access, ',', '{{ $json.newAccess }}') \nWHERE email = '{{ $json.email }}';",
+        "options": {}
+      },
+      "id": "70bf8574-6409-446b-8823-46cc7032023c",
+      "name": "Update Access",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2,
+      "position": [
+        896,
+        1920
+      ],
+      "credentials": {
+        "mySql": {
+          "id": "iiau2wXB9qnecqXZ",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "table": {
+          "__rl": true,
+          "value": "users",
+          "mode": "list",
+          "cachedResultName": "users"
+        },
+        "where": {
+          "values": [
+            {
+              "column": "email",
+              "value": "={{ $json.body.email }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c3132330-c64b-4680-ba71-bf88e8467560",
+      "name": "Get All Users1",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2,
+      "position": [
+        0,
+        1440
+      ],
+      "credentials": {
+        "mySql": {
+          "id": "iiau2wXB9qnecqXZ",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM users WHERE email = '{{ $json.body.email }}'",
+        "options": {}
+      },
+      "id": "01f1aafc-fb06-4ef6-b1f6-a19c0a2596dc",
+      "name": "Check Existing1",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2,
+      "position": [
+        0,
+        1632
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "mySql": {
+          "id": "iiau2wXB9qnecqXZ",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "table": {
+          "__rl": true,
+          "value": "users",
+          "mode": "list",
+          "cachedResultName": "users"
+        },
+        "dataMode": "defineBelow",
+        "valuesToSend": {
+          "values": [
+            {
+              "column": "name",
+              "value": "={{ $json.name }}"
+            },
+            {
+              "column": "email",
+              "value": "={{ $json.email }}"
+            },
+            {
+              "column": "password",
+              "value": "={{ $json.password }}"
+            },
+            {
+              "column": "access",
+              "value": "={{ $json.access }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f6c9f52c-5aab-4f6c-8bd8-9f9bff3f0acb",
+      "name": "Save to DB1",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2,
+      "position": [
+        672,
+        1536
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "mySql": {
+          "id": "iiau2wXB9qnecqXZ",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "table": {
+          "__rl": true,
+          "value": "users",
+          "mode": "list",
+          "cachedResultName": "users"
+        },
+        "where": {
+          "values": [
+            {
+              "column": "email",
+              "value": "={{ $('Action Router').item.json.body.billing.email }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1c649642-2b2d-4c57-a253-29c4cacb8a03",
+      "name": "Query User Access1",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2,
+      "position": [
+        448,
+        1920
+      ],
+      "credentials": {
+        "mySql": {
+          "id": "iiau2wXB9qnecqXZ",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "get-graph-data",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        1712,
+        2352
+      ],
+      "id": "77d936f1-bdb7-4bb4-af6d-a05bd30b41d3",
+      "name": "Webhook",
+      "webhookId": "9a4d89a7-9787-4b78-8df0-6f495ec7e2ae"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT users.name, COUNT(workshop_registrations.workshop_id) as total_joined\nFROM workshop_registrations \nJOIN users ON workshop_registrations.email = users.email \nGROUP BY users.name;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        1936,
+        2352
+      ],
+      "id": "d3d5b753-12f6-4940-8785-04d2cbf4c4ad",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "mySql": {
+          "id": "iiau2wXB9qnecqXZ",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "get-live-stats",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        1712,
+        2128
+      ],
+      "id": "9afe86f5-e964-406c-b3c0-60a798aa7b9f",
+      "name": "Webhook1",
+      "webhookId": "aa921421-47e2-47c6-962d-932fec509547"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n    name, \n    (LENGTH(access) - LENGTH(REPLACE(access, ',', '')) + 1) AS total_courses \nFROM users \nWHERE access IS NOT NULL AND access != '';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        1936,
+        2128
+      ],
+      "id": "37fa60c8-e6c6-48a3-96e7-c145090e8200",
+      "name": "Execute a SQL query1",
+      "credentials": {
+        "mySql": {
+          "id": "iiau2wXB9qnecqXZ",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2144,
+        2128
+      ],
+      "id": "cfc0fc3e-7491-4113-97c7-a2b74d2d77f1",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "path": "get-hand-notes",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        1712,
+        1888
+      ],
+      "id": "ae6537ef-4f2d-4b75-828b-876d4b944116",
+      "name": "Webhook2",
+      "webhookId": "aa921421-47e2-47c6-962d-932fec509547"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM hand_notes ORDER BY id DESC;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        1936,
+        1888
+      ],
+      "id": "f7397d14-5571-4de8-a152-1a10af1e5c8c",
+      "name": "Execute a SQL query2",
+      "credentials": {
+        "mySql": {
+          "id": "iiau2wXB9qnecqXZ",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2128,
+        1888
+      ],
+      "id": "2d1aed3b-3489-4ae9-9a0f-ac9e584c2dc4",
+      "name": "Respond to Webhook2"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseMode": "responseNodes"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        240,
+        2768
+      ],
+      "id": "6ea921db-aaef-4aee-9469-9bfc43346510",
+      "name": "When chat message received",
+      "webhookId": "48caffdf-370e-453c-a325-d1ef3497e549"
+    },
+    {
+      "parameters": {
+        "jsCode": "// চ্যাট থেকে ইনপুট টেক্সট নিচ্ছি (আপনার চ্যাট ট্রিগারের ফিল্ডের নাম অনুযায়ী chatInput বা text হতে পারে)\nconst text = $input.first().json.chatInput || $input.first().json.text || \"\"; \n\n// রেগুলার এক্সপ্রেশন (Regex) দিয়ে 'list=' এর পরের অংশটুকু খুঁজছি\nconst match = text.match(/[?&]list=([a-zA-Z0-9_-]+)/);\n\nif (match && match[1]) {\n    // যদি আইডি পাওয়া যায়, তবে সেটাকে পরের নোডে পাঠাচ্ছি\n    return { \n        json: { \n            playlistId: match[1],\n            message: \"Playlist ID successfully extracted!\"\n        } \n    };\n} else {\n    // লিংক ভুল হলে এরর দেখাবে\n    throw new Error(\"ইউটিউব প্লেলিস্টের লিংক থেকে ID পাওয়া যায়নি! লিংকটি চেক করুন।\");\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        464,
+        2768
+      ],
+      "id": "dfcc8b18-bee9-4f74-b6d4-a2614f3bf317",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nif (!items || items.length === 0) {\n    throw new Error(\"ইউটিউব নোড থেকে কোনো ডাটা আসেনি!\");\n}\n\n// কোর্সের জন্য একটা ইউনিক কোড বানানো (যাতে ডাটাবেস চিনতে পারে)\nconst courseCode = \"YT_\" + Math.floor(Math.random() * 100000);\n\n// ইউটিউবের প্রথম ভিডিও বা প্লেলিস্টের ডাটা থেকে কোর্সের আসল নাম ও ডেসক্রিপশন নেওয়া\nconst firstItemData = items[0].json.snippet || {};\nconst courseTitle = firstItemData.title || \"Unknown YouTube Course\";\nconst courseDesc = firstItemData.description || \"No description provided.\";\n\n// থাম্বনেইল বের করা (High resolution থাকলে সেটা, না থাকলে default)\nconst courseThumb = (firstItemData.thumbnails && firstItemData.thumbnails.high && firstItemData.thumbnails.high.url) \n                    || (firstItemData.thumbnails && firstItemData.thumbnails.default && firstItemData.thumbnails.default.url) \n                    || \"\";\n\nlet lessonsArray = [];\nlet lessonCount = 1;\n\n// ইউটিউবের টাইম (PT10M30S) কনভার্ট করার ছোট্ট ফাংশন\nfunction parseYouTubeDuration(duration) {\n    if (!duration) return \"00:00\";\n    const match = duration.match(/PT(\\d+H)?(\\d+M)?(\\d+S)?/);\n    if (!match) return duration;\n    const h = (match[1] || '').replace('H', '');\n    const m = (match[2] || '').replace('M', '') || '0';\n    const s = (match[3] || '').replace('S', '') || '0';\n    let result = '';\n    if (h) result += `${h}:`;\n    result += `${m.padStart(2, '0')}:${s.padStart(2, '0')}`;\n    return result;\n}\n\n// লুপ চালিয়ে প্রত্যেকটা ভিডিওর আসল ডাটা বের করা\nfor (const item of items) {\n    const data = item.json;\n    \n    // ভিডিও আইডি\n    const videoId = (data.snippet && data.snippet.resourceId && data.snippet.resourceId.videoId) \n                 || (data.contentDetails && data.contentDetails.videoId)\n                 || data.videoId\n                 || data.id;\n\n    // ভিডিওর অরিজিনাল টাইটেল\n    const title = (data.snippet && data.snippet.title) || \"Unknown Title\";\n    \n    // ভিডিওর আসল ডিউরেশন (যদি API থেকে আসে)\n    let durationStr = \"10:00\"; // ডিফল্ট\n    if (data.contentDetails && data.contentDetails.duration) {\n        durationStr = parseYouTubeDuration(data.contentDetails.duration);\n    }\n\n    if (videoId && typeof videoId === 'string') {\n        // ডাটাবেসে পাঠানোর জন্য লেসনের অবজেক্ট তৈরি\n        lessonsArray.push({\n            course_code: courseCode,\n            lesson_number: lessonCount,\n            title: title,\n            video_url: videoId,\n            duration: durationStr\n        });\n        lessonCount++;\n    }\n}\n\n// ডাটাবেসে পাঠানোর জন্য সবকিছু সুন্দর করে সাজানো\nreturn [{\n    json: {\n        // কোর্সের মেইন ডাটা (courses টেবিলে যাবে)\n        courseData: {\n            course_code: courseCode,\n            title: courseTitle,\n            description: courseDesc,\n            thumbnail_url: courseThumb,\n            icon: \"fa-youtube\",\n            color: \"bg-red-600 text-white\", // এটা আপনি চাইলে পরিবর্তন করতে পারবেন\n            price: \"49\",\n            total_lessons: lessonsArray.length,\n            duration: \"Dynamic\" // এটা আপনি চাইলে টোটাল ডিউরেশন যোগ করে বসাতে পারেন\n        },\n        // লেসনের ডাটা (lessons টেবিলে যাবে)\n        lessonsData: lessonsArray\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        912,
+        2768
+      ],
+      "id": "b02bc690-1de9-46dc-9e71-e143ead77363",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "resource": "playlistItem",
+        "operation": "getAll",
+        "playlistId": "={{ $json.playlistId }}",
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.youTube",
+      "typeVersion": 1,
+      "position": [
+        688,
+        2768
+      ],
+      "id": "de542402-5d24-4a2b-999f-bd2feda08ae8",
+      "name": "Get many playlist items",
+      "alwaysOutputData": false,
+      "credentials": {
+        "youTubeOAuth2Api": {
+          "id": "ekyu7eMmoKUdnsYi",
+          "name": "YouTube account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "table": {
+          "__rl": true,
+          "value": "lessons",
+          "mode": "list",
+          "cachedResultName": "lessons"
+        },
+        "dataMode": "defineBelow",
+        "valuesToSend": {
+          "values": [
+            {
+              "column": "course_code",
+              "value": "={{ $json.lessonsData.course_code }}"
+            },
+            {
+              "column": "lesson_number",
+              "value": "={{ $json.lessonsData.lesson_number }}"
+            },
+            {
+              "column": "title",
+              "value": "={{ $json.lessonsData.title }}"
+            },
+            {
+              "column": "video_url",
+              "value": "={{ $json.lessonsData.video_url }}"
+            },
+            {
+              "column": "duration",
+              "value": "={{ $json.lessonsData.duration }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        1360,
+        2768
+      ],
+      "id": "54277f71-accc-45ea-9f1c-79050e0c245b",
+      "name": "Insert rows in a table",
+      "credentials": {
+        "mySql": {
+          "id": "iiau2wXB9qnecqXZ",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "message": "={{ $json.lessonsData }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chat",
+      "typeVersion": 1.1,
+      "position": [
+        1136,
+        2576
+      ],
+      "id": "99b0048c-9ee6-49c7-90f2-acf3bcf2126e",
+      "name": "Chat",
+      "webhookId": "2197a4d4-97b6-4cb2-9f24-7fd66814f3f7"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "lessonsData",
+        "include": "allOtherFields",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1136,
+        2768
+      ],
+      "id": "0fb717d0-399a-4e2a-bf28-96d660a9e18c",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "table": {
+          "__rl": true,
+          "value": "courses",
+          "mode": "list",
+          "cachedResultName": "courses"
+        },
+        "dataMode": "defineBelow",
+        "valuesToSend": {
+          "values": [
+            {
+              "column": "course_code",
+              "value": "={{ $json.courseData.course_code }}"
+            },
+            {
+              "column": "title",
+              "value": "={{ $json.courseData.title }}"
+            },
+            {
+              "column": "description",
+              "value": "={{ $json.courseData.description }}"
+            },
+            {
+              "column": "thumbnail_url",
+              "value": "={{ $json.courseData.thumbnail_url }}"
+            },
+            {
+              "column": "icon",
+              "value": "={{ $json.courseData.icon }}"
+            },
+            {
+              "column": "color",
+              "value": "={{ $json.courseData.color }}"
+            },
+            {
+              "column": "price",
+              "value": "={{ $json.courseData.price }}"
+            },
+            {
+              "column": "total_lessons",
+              "value": "={{ $json.courseData.total_lessons }}"
+            },
+            {
+              "column": "duration",
+              "value": "={{ $json.courseData.duration }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        1136,
+        2960
+      ],
+      "id": "e9ff57ea-c15d-4ac6-a553-6eb27fbf1a71",
+      "name": "Insert rows in a table1",
+      "credentials": {
+        "mySql": {
+          "id": "iiau2wXB9qnecqXZ",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2160,
+        2352
+      ],
+      "id": "373bf4fc-b4a4-455c-b79d-55da4bea7b4f",
+      "name": "Respond to Webhook3"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "7448873e-7e8a-4a0c-934c-e0b06e4a6b41",
+              "leftValue": "={{ $json.data[0].email }}",
+              "rightValue": "={{ $('Webhook3').item.json.body.email }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "98221f08-c829-4ce0-9e2a-ca7aee7d4747",
+              "leftValue": "={{ $json.data[0].workshop_id }}",
+              "rightValue": "={{ $('Webhook3').item.json.body.workshop_id }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "9e45148e-e2f0-4f18-80a2-8dc1f6ebde90",
+              "leftValue": "={{ $json.data[0].status }}",
+              "rightValue": "registered",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2144,
+        1536
+      ],
+      "id": "b2f92f92-97f7-4819-9546-6130e6000714",
+      "name": "If",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "table": {
+          "__rl": true,
+          "value": "workshop_registrations",
+          "mode": "list",
+          "cachedResultName": "workshop_registrations"
+        },
+        "returnAll": true,
+        "where": {
+          "values": [
+            {
+              "column": "email",
+              "value": "={{ $json.body.email }}"
+            },
+            {
+              "column": "workshop_id",
+              "value": "={{ $json.body.workshop_id }}"
+            }
+          ]
+        },
+        "options": {
+          "detailedOutput": true
+        }
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        1920,
+        1536
+      ],
+      "id": "0f66801a-8f94-486e-991b-4b6f451953bd",
+      "name": "Select rows from a table",
+      "alwaysOutputData": true,
+      "credentials": {
+        "mySql": {
+          "id": "iiau2wXB9qnecqXZ",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "join-workshop",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        1696,
+        1536
+      ],
+      "id": "dd26bc93-60cb-4b09-88d4-424ff2c930b5",
+      "name": "Webhook3",
+      "webhookId": "efe112f2-f1e8-446a-961f-bbf12dbf6161"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"status\": \"success\",\n  \"message\": \"Registration Complete!\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2592,
+        1632
+      ],
+      "id": "2e844a3f-9e79-41dc-a841-5f68dd79ff65",
+      "name": "Respond to Webhook4",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "table": {
+          "__rl": true,
+          "value": "workshop_registrations",
+          "mode": "list",
+          "cachedResultName": "workshop_registrations"
+        },
+        "dataMode": "defineBelow",
+        "valuesToSend": {
+          "values": [
+            {
+              "column": "email",
+              "value": "={{ $('Webhook3').item.json.body.email }}"
+            },
+            {
+              "column": "workshop_id",
+              "value": "={{ $('Webhook3').item.json.body.workshop_id }}"
+            },
+            {
+              "column": "status",
+              "value": "registered"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        2368,
+        1632
+      ],
+      "id": "1e9915ef-552e-4cdd-bb61-1a10bc6cd677",
+      "name": "Insert rows in a table2",
+      "credentials": {
+        "mySql": {
+          "id": "iiau2wXB9qnecqXZ",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "You are already registered for this workshop!",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2368,
+        1440
+      ],
+      "id": "c2f2aecb-af2b-4f80-afec-88deac54aa75",
+      "name": "Respond to Webhook5"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 30
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        1712,
+        2608
+      ],
+      "id": "4f9403fd-3d00-43ee-8290-9f1d02ef5704",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "chatId": "8586578167",
+        "text": "=Hello Swami 🥱,\n\nDevice: {{ $json.Device_Name }}\nSystem Up Time: {{ $json.System_Uptime }}\nCPU Load: {{ $json.CPU_Load_Average }}\nRam Used: {{ $json.RAM_Used }}\nRam Free: {{ $json.RAM_Free }}\nRam Usage: {{ $json.RAM_Usage_Percentage }}\nStatus: {{ $json.Status }}\n",
+        "additionalFields": {
+          "appendAttribution": true
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2160,
+        2608
+      ],
+      "id": "ad4d9ca7-2073-4b88-85a9-23d5cbe0dc72",
+      "name": "Send a text message",
+      "webhookId": "fdf01490-a588-4f30-8999-35fc239c6cbe",
+      "credentials": {
+        "telegramApi": {
+          "id": "aTE1k0oB4mSYKhQH",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const { execSync } = require('child_process');\n\n// হোস্টের র‍্যাম, সিপিইউ এবং আপটাইম ডাটা পড়া\nconst memInfo = execSync('cat /host/proc/meminfo').toString();\nconst loadAvgInfo = execSync('cat /host/proc/loadavg').toString();\nconst uptimeInfo = execSync('cat /host/proc/uptime').toString();\n\n// Regex দিয়ে শুধু সংখ্যাগুলো (kB) আলাদা করা\nconst totalKb = parseInt(memInfo.match(/MemTotal:\\s+(\\d+) kB/)[1]);\nconst availableKb = parseInt(memInfo.match(/MemAvailable:\\s+(\\d+) kB/)[1]);\n\n// হিসাব-নিকাশ (kB থেকে GB এবং Percentage)\nconst usedKb = totalKb - availableKb;\nconst usedPercentage = ((usedKb / totalKb) * 100).toFixed(2); // পার্সেন্টেজ বের করা\n\nconst totalGb = (totalKb / (1024 * 1024)).toFixed(2);\nconst usedGb = (usedKb / (1024 * 1024)).toFixed(2);\nconst freeGb = (availableKb / (1024 * 1024)).toFixed(2);\n\n// CPU Load এবং Uptime আলাদা করা\nconst cpuLoad = loadAvgInfo.split(' ')[0]; // ১ মিনিটের এভারেজ সিপিইউ লোড\nconst uptimeHours = (parseFloat(uptimeInfo.split(' ')[0]) / 3600).toFixed(2);\n\n// n8n এর জন্য সুন্দর করে সাজিয়ে আউটপুট দেওয়া\nreturn [{\n  json: {\n    \"Device_Name\": \"Asus VivoBook\",\n    \"System_Uptime\": uptimeHours + \" Hours\",\n    \"CPU_Load_Average\": cpuLoad,\n    \"RAM_Total\": totalGb + \" GB\",\n    \"RAM_Used\": usedGb + \" GB\",\n    \"RAM_Free\": freeGb + \" GB\",\n    \"RAM_Usage_Percentage\": usedPercentage + \"%\",\n    \"Status\": \"Perfectly Cleaned! 🎯\"\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1936,
+        2608
+      ],
+      "id": "a1409afe-c15d-4352-b817-cf385ff18029",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "content": "## Get Live Stats",
+        "height": 208,
+        "width": 672
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        2080
+      ],
+      "id": "9d38cbfe-6200-46ab-95f1-434f2b20b5c2",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "##  Data Fetch From YouTube",
+        "height": 224,
+        "width": 400
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        192,
+        2704
+      ],
+      "id": "e3538dd7-a43a-4104-8ee8-d9e24d973fbb",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Workshop Live Data",
+        "height": 208,
+        "width": 672
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        2304
+      ],
+      "id": "782f9b46-12da-4ba3-9593-b01ed1e82477",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## System Information Telegram Bot",
+        "height": 256,
+        "width": 672
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        2528
+      ],
+      "id": "b3bb19dc-f502-4480-9a69-a4680885efe7",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Hand Note Fetched by website",
+        "height": 224,
+        "width": 656
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        1824
+      ],
+      "id": "5ec4b971-0019-41af-81d0-4d1180bd9f55",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Workshop data post",
+        "height": 208,
+        "width": 272
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1632,
+        1472
+      ],
+      "id": "74e37dbb-9a8a-4a2e-b475-1c476fa78b9c",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "path": "get-course-data",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        1728,
+        2896
+      ],
+      "id": "0cf50021-66ab-44fd-90a0-4f22fa456603",
+      "name": "Webhook4",
+      "webhookId": "c903e69b-3893-4a26-b782-1a48b74c71aa",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM lessons WHERE course_code = '{{ $json.query.course_id }}' ORDER BY lesson_number ASC;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        1952,
+        2880
+      ],
+      "id": "7cd4277f-a3d0-49f6-a8c9-11bc8be29e6a",
+      "name": "Execute a SQL query3",
+      "alwaysOutputData": true,
+      "credentials": {
+        "mySql": {
+          "id": "iiau2wXB9qnecqXZ",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "get-all-courses",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        1744,
+        3136
+      ],
+      "id": "38db233a-a822-4d1f-a8f6-d9353f5a40df",
+      "name": "Webhook5",
+      "webhookId": "c903e69b-3893-4a26-b782-1a48b74c71aa"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM courses ORDER BY id DESC;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        2000,
+        3136
+      ],
+      "id": "9f7e0060-ae05-450e-95b9-7da152655c3b",
+      "name": "Execute a SQL query4",
+      "credentials": {
+        "mySql": {
+          "id": "iiau2wXB9qnecqXZ",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Course Lesson Data",
+        "height": 224,
+        "width": 672
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        2816
+      ],
+      "id": "dedb950c-b105-4b79-816b-b71f1d37ec5d",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "## Courses Data",
+        "height": 224,
+        "width": 672
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        3056
+      ],
+      "id": "b3455106-9647-4122-b276-505e525ea9c4",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "save-progress",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        1728,
+        3376
+      ],
+      "id": "3946b6d9-649b-4e92-b0da-284f62301bc2",
+      "name": "Webhook6",
+      "webhookId": "d8d54dd2-c8df-41b8-bc77-57add1076051"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT IGNORE INTO user_progress (user_email, course_code, lesson_number) \nVALUES ('{{ $json.body.user_email }}', '{{ $json.body.course_code }}', {{ $json.body.lesson_number }});",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        1952,
+        3360
+      ],
+      "id": "87f8cc85-6904-4ced-a153-3e4950a89f1b",
+      "name": "Execute a SQL query5",
+      "credentials": {
+        "mySql": {
+          "id": "iiau2wXB9qnecqXZ",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "verify-coupon",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        1696,
+        3616
+      ],
+      "id": "c7f1824d-caff-4161-9050-012324c97c87",
+      "name": "Webhook7",
+      "webhookId": "fe4f6f76-57ae-4b6e-83d0-299d1aff9ed3"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT discount_percent FROM coupons \nWHERE coupon_name = '{{ $json.query.coupon_name }}' \nAND course_code = '{{ $json.query.course_code }}' \nAND is_active = 1;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        1952,
+        3600
+      ],
+      "id": "c6613f9c-03f6-4fb2-80fd-23d08f569da5",
+      "name": "Execute a SQL query6",
+      "credentials": {
+        "mySql": {
+          "id": "iiau2wXB9qnecqXZ",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "grant-free-access",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        1712,
+        3856
+      ],
+      "id": "893d3317-8967-4892-9aba-f82dd84f1e6a",
+      "name": "Webhook8",
+      "webhookId": "fe4f6f76-57ae-4b6e-83d0-299d1aff9ed3"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE users \nSET access = CONCAT(access, ',', '{{ $json.body.course_code }}') \nWHERE email = '{{ $json.body.email }}';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        1936,
+        3840
+      ],
+      "id": "9c206d3d-46fc-4c09-a769-6e787ce5ae51",
+      "name": "Execute a SQL query7",
+      "credentials": {
+        "mySql": {
+          "id": "iiau2wXB9qnecqXZ",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"valid\": {{ $json.discount_percent ? true : false }},\n  \"discount_percent\": {{ $json.discount_percent || 0 }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2160,
+        3616
+      ],
+      "id": "77670f96-0907-436a-ae0e-375b9efb1143",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Access successfully granted without payment!\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2144,
+        3856
+      ],
+      "id": "f016e97f-5fec-4341-8691-b05a7604d4db",
+      "name": "Respond to Webhook6"
+    },
+    {
+      "parameters": {
+        "path": "check-access",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        1728,
+        4112
+      ],
+      "id": "99eb34e7-5118-46b9-a697-4f7676bd7668",
+      "name": "Webhook9",
+      "webhookId": "fe4f6f76-57ae-4b6e-83d0-299d1aff9ed3"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT access FROM users WHERE email = '{{ $json.query.email }}';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        1936,
+        4080
+      ],
+      "id": "d95a87a6-25a4-41dd-ac01-d8ec60d17640",
+      "name": "Execute a SQL query8",
+      "credentials": {
+        "mySql": {
+          "id": "iiau2wXB9qnecqXZ",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n\"success\":true,\n\"access\":\"{{ $json.access }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2160,
+        4096
+      ],
+      "id": "7c29e76a-0676-459c-9863-44114a20f24f",
+      "name": "Respond to Webhook7"
+    },
+    {
+      "parameters": {
+        "content": "## Saving User Progress",
+        "height": 224,
+        "width": 672
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        3296
+      ],
+      "id": "021b0a2f-8253-4f89-aac4-c94bf191b026",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "content": "## Coupon Varify",
+        "height": 224,
+        "width": 672
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        3536
+      ],
+      "id": "358cd6b3-479b-4a1c-9205-0eebbf7a8157",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "content": "## Courses Free Access",
+        "height": 224,
+        "width": 672
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        3776
+      ],
+      "id": "31071a96-7c4c-4e1c-a97c-7d6e8de9f7aa",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "content": "## Check Access",
+        "height": 224,
+        "width": 672
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        4016
+      ],
+      "id": "aae8659f-ab7b-4014-8e00-f824cfba4c3a",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2176,
+        2880
+      ],
+      "id": "a83da5e5-cc3f-42e4-82d6-a808772596f2",
+      "name": "Respond to Webhook8"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2192,
+        3136
+      ],
+      "id": "168d0a25-69f4-4c6b-9fda-06cf27a58e4e",
+      "name": "Respond to Webhook9"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2176,
+        3360
+      ],
+      "id": "91abcbd9-0aee-4c2b-be72-c9a4a3bf6463",
+      "name": "Respond to Webhook10"
+    },
+    {
+      "parameters": {
+        "path": "get-user-progress",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        1728,
+        4336
+      ],
+      "id": "13780ed4-02cf-467c-9bcd-448f817a241a",
+      "name": "Webhook10",
+      "webhookId": "fe4f6f76-57ae-4b6e-83d0-299d1aff9ed3"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT lesson_number FROM user_progress WHERE user_email = '{{ $json.query.user_email }}' AND course_code = '{{ $json.query.course_code }}';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        1936,
+        4304
+      ],
+      "id": "46e661f4-c7ca-4073-8474-eb5f79b9757b",
+      "name": "Execute a SQL query9",
+      "credentials": {
+        "mySql": {
+          "id": "iiau2wXB9qnecqXZ",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2160,
+        4320
+      ],
+      "id": "aa56a0d1-7d7e-4e49-bb5d-8e2010596a0d",
+      "name": "Respond to Webhook11"
+    },
+    {
+      "parameters": {
+        "content": "## Get User Progress",
+        "height": 224,
+        "width": 672
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        4256
+      ],
+      "id": "a0be6c53-ea11-45ba-a354-07b0c8566226",
+      "name": "Sticky Note12"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "submit-payment",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        1728,
+        4592
+      ],
+      "id": "cdcedd0e-dd92-4340-a3af-6ec5de1c977d",
+      "name": "Webhook11",
+      "webhookId": "fe4f6f76-57ae-4b6e-83d0-299d1aff9ed3"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO pending_orders (user_email, course_code, transaction_id, promo_code) \nVALUES (\n    '{{ $json.body.email }}', \n    '{{ $json.body.course_id }}', \n    '{{ $json.body.transaction_id }}', \n    '{{ $json.body.applied_promo }}'\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        1936,
+        4560
+      ],
+      "id": "da9a51d0-0b81-4571-90e4-5e3adc5f1d20",
+      "name": "Execute a SQL query10",
+      "credentials": {
+        "mySql": {
+          "id": "iiau2wXB9qnecqXZ",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"আপনার পেমেন্ট রিসিভ হয়েছে। আগামী ২৪ ঘণ্টার মধ্যে ভেরিফাই করে কোর্সের অ্যাক্সেস দেওয়া হবে।\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2160,
+        4576
+      ],
+      "id": "1e015efd-6a6a-4071-9271-e0b66951966d",
+      "name": "Respond to Webhook12"
+    },
+    {
+      "parameters": {
+        "content": "## Get User Payment",
+        "height": 224,
+        "width": 672
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        4512
+      ],
+      "id": "9e460fe9-cc4d-4fbb-8259-be4d1111ffe9",
+      "name": "Sticky Note13"
     }
   ],
   "pinData": {},
@@ -642,6 +1877,11 @@
             "node": "Action Router",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Action Router1",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
@@ -650,14 +1890,14 @@
       "main": [
         [
           {
-            "node": "Get All Users",
+            "node": "Get All Users1",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Check Existing",
+            "node": "Check Existing1",
             "type": "main",
             "index": 0
           }
@@ -671,32 +1911,7 @@
         ],
         [
           {
-            "node": "Sync Lookup",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Respond Contact",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Notify Admin (Cert)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Get All Users": {
-      "main": [
-        [
-          {
-            "node": "Verify Credentials",
+            "node": "Notify Admin (Cert)1",
             "type": "main",
             "index": 0
           }
@@ -708,17 +1923,6 @@
         [
           {
             "node": "Respond Login",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Check Existing": {
-      "main": [
-        [
-          {
-            "node": "Validate New User",
             "type": "main",
             "index": 0
           }
@@ -740,7 +1944,7 @@
       "main": [
         [
           {
-            "node": "Save to DB",
+            "node": "Save to DB1",
             "type": "main",
             "index": 0
           }
@@ -748,17 +1952,6 @@
         [
           {
             "node": "Respond Error",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Save to DB": {
-      "main": [
-        [
-          {
-            "node": "Send Welcome Email",
             "type": "main",
             "index": 0
           }
@@ -791,44 +1984,16 @@
       "main": [
         [
           {
-            "node": "Query User Access",
+            "node": "Notify Admin",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Query User Access1",
             "type": "main",
             "index": 0
           }
         ],
-        [
-          {
-            "node": "Notify Admin",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Query User Access": {
-      "main": [
-        [
-          {
-            "node": "Calc Update",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Calc Update": {
-      "main": [
-        [
-          {
-            "node": "Update Access",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Update Access": {
-      "main": [
         [
           {
             "node": "Notify Admin",
@@ -860,28 +2025,6 @@
         ]
       ]
     },
-    "Sync Lookup": {
-      "main": [
-        [
-          {
-            "node": "Sync Response Logic",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Sync Response Logic": {
-      "main": [
-        [
-          {
-            "node": "Respond Sync",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Notify Admin (Cert)": {
       "main": [
         [
@@ -903,6 +2046,509 @@
           }
         ]
       ]
+    },
+    "Calc Update": {
+      "main": [
+        [
+          {
+            "node": "Update Access",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Access Logic": {
+      "main": [
+        [
+          {
+            "node": "Respond Purchase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify User (Cert)1": {
+      "main": [
+        [
+          {
+            "node": "Respond Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Admin (Cert)1": {
+      "main": [
+        [
+          {
+            "node": "Notify User (Cert)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Action Router1": {
+      "main": [
+        [],
+        [],
+        [],
+        [
+          {
+            "node": "Notify Admin (Cert)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond Success": {
+      "main": [
+        []
+      ]
+    },
+    "Get All Users1": {
+      "main": [
+        [
+          {
+            "node": "Verify Credentials",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Existing1": {
+      "main": [
+        [
+          {
+            "node": "Validate New User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to DB1": {
+      "main": [
+        [
+          {
+            "node": "Send Welcome Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query User Access1": {
+      "main": [
+        [
+          {
+            "node": "Calc Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Access": {
+      "main": [
+        [
+          {
+            "node": "Update Access Logic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond Purchase": {
+      "main": [
+        []
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook2": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Get many playlist items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Chat",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Insert rows in a table1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many playlist items": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert rows in a table2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook3": {
+      "main": [
+        [
+          {
+            "node": "Select rows from a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert rows in a table2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook4": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook5": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook6": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook7": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook8": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query5": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query6": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query7": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook9": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query8": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query3": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query4": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook10": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query9": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook11": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query10": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook12",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -911,11 +2557,11 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "ca4e6d3d-8304-4f98-b572-a8463809be32",
+  "versionId": "379cce1f-5b5e-489f-add5-faa488653155",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "06620af26bfdfe2c2571de833429de50760a60a839f0d1425bed5bb3cdf2d56a"
+    "instanceId": "0d9011de4d62e6814ec521811442be9fba5abbb4718222bf75b901e8d35644f7"
   },
-  "id": "vuEDYMjdGBMAGA6O8mNgZ",
+  "id": "6hyH5BCaKGfD7Anx",
   "tags": []
 }
