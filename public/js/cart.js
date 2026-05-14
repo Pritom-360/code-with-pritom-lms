@@ -43,7 +43,7 @@ const Cart = {
             return;
         }
 
-        const priceNum = typeof price === 'string' ? parseFloat(price.replace('$', '')) : price;
+        const priceNum = typeof price === 'string' ? parseFloat(price.replace(/[৳$]/g, '')) : price;
 
         this.state.items.push({
             id: id,
@@ -80,11 +80,15 @@ const Cart = {
 
     getDiscountAmount() {
         if (!this.state.promoCode) return 0;
+        // Prioritize high-precision pre-calculated discount returned by server math
+        if (this.state.promoCode.cachedAmount !== undefined) {
+            return parseFloat(this.state.promoCode.cachedAmount);
+        }
         const subtotal = this.getSubtotal();
-        if (this.state.promoCode.type === 'percent') {
+        if (this.state.promoCode.type === 'percentage') {
             return (subtotal * this.state.promoCode.discount) / 100;
         }
-        return this.state.promoCode.discount;
+        return parseFloat(this.state.promoCode.discount || 0); // Fixed cash fallback
     },
 
     getTotal() {
@@ -209,21 +213,51 @@ const Cart = {
     },
 
     async applyPromo() {
-        const code = document.getElementById('promo-code-input').value;
-        if (!code) return;
+        const input = document.getElementById('promo-code-input');
+        const code = input ? input.value.trim() : '';
+        if (!code) {
+            if (window.UI) UI.showToast('Please input a promotional code.', 'info');
+            return;
+        }
 
         try {
-            const res = await fetch(`/api/promo-codes?code=${code}`);
+            // Extract physical course IDs from items
+            const courseIds = this.state.items.map(i => i.id).join(',');
+            const payload = {
+                code: code.toUpperCase(),
+                cartTotal: this.getSubtotal(),
+                courseCode: courseIds // Provide list of items in cart for backend parsing
+            };
+
+            const res = await fetch('/api/coupons/validate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
             const data = await res.json();
-            if (data.success) {
-                this.state.promoCode = data.promo;
-                if (window.UI) UI.showToast(`Applied ${data.promo.code}`, 'success');
+            
+            if (data.valid) {
+                this.state.promoCode = {
+                    code: code.toUpperCase(),
+                    discount: parseFloat(data.discountValue || 0),
+                    type: data.discountType, // 'percentage' or 'fixed'
+                    cachedAmount: parseFloat(data.discountAmount || 0) // Standardized float
+                };
+                
+                if (window.UI) UI.showToast(data.message || `Applied ${code.toUpperCase()}`, 'success');
+                
+                // Persist the coupon code field to prevent visual overrides
+                if (input) input.value = code.toUpperCase();
+                
                 this.updateCheckoutSummary();
             } else {
-                if (window.UI) UI.showToast(data.message, 'error');
+                this.state.promoCode = null; // Reset invalid code state
+                this.updateCheckoutSummary();
+                if (window.UI) UI.showToast(data.message || 'Invalid promo code', 'error');
             }
         } catch (e) {
-            console.error(e);
+            console.error('Promo verification routing failure:', e);
+            if (window.UI) UI.showToast('Connection synchronization loss.', 'error');
         }
     },
 
@@ -237,18 +271,27 @@ const Cart = {
         const disc = this.getDiscountAmount();
         const total = this.getTotal();
 
-        document.querySelectorAll('.checkout-subtotal').forEach(el => el.textContent = '$' + sub.toFixed(2));
-        document.querySelectorAll('.checkout-total').forEach(el => el.textContent = '$' + total.toFixed(2));
+        document.querySelectorAll('.checkout-subtotal').forEach(el => el.textContent = '৳' + sub.toFixed(2));
+        document.querySelectorAll('.checkout-total').forEach(el => el.textContent = '৳' + total.toFixed(2));
 
-        const discRow = document.getElementById('checkout-discount-row');
-        if (discRow) {
-            if (disc > 0) {
-                discRow.classList.remove('hidden');
-                document.getElementById('checkout-discount-amount').textContent = '-$' + disc.toFixed(2);
-            } else {
-                discRow.classList.add('hidden');
-            }
+        // Primary Standalone Cart Page elements
+        const pageDiscRow = document.getElementById('cart-page-discount-row');
+        const pageDiscVal = document.getElementById('cart-page-discount-amount');
+        
+        // Secondary Modal Drawer elements
+        const modalDiscRow = document.getElementById('checkout-discount-row');
+        const modalDiscVal = document.getElementById('checkout-discount-amount');
+
+        if (disc > 0) {
+            if (pageDiscRow) pageDiscRow.classList.remove('hidden');
+            if (pageDiscVal) pageDiscVal.textContent = '-$' + disc.toFixed(2);
+            if (modalDiscRow) modalDiscRow.classList.remove('hidden');
+            if (modalDiscVal) modalDiscVal.textContent = '-$' + disc.toFixed(2);
+        } else {
+            if (pageDiscRow) pageDiscRow.classList.add('hidden');
+            if (modalDiscRow) modalDiscRow.classList.add('hidden');
         }
+
         this.handleFreeMode(total === 0);
     },
 
@@ -292,14 +335,14 @@ const Cart = {
                 <div class="flex justify-between p-4 border-b">
                     <div>
                         <div class="font-bold text-sm">${i.title}</div>
-                        <div class="text-xs text-gray-500">$${i.price}</div>
+                        <div class="text-xs text-gray-500">৳${i.price}</div>
                     </div>
                     <button onclick="Cart.remove('${i.id}')" class="text-red-500"><i class="fa-solid fa-trash"></i></button>
                 </div>
             `).join('');
 
             const subEl = document.getElementById('cart-subtotal');
-            if (subEl) subEl.textContent = '$' + this.getSubtotal().toFixed(2);
+            if (subEl) subEl.textContent = '৳' + this.getSubtotal().toFixed(2);
         }
 
         const checkList = document.getElementById('checkout-cart-list');
@@ -307,7 +350,7 @@ const Cart = {
             checkList.innerHTML = this.state.items.map(i => `
                 <div class="flex justify-between py-2 border-b last:border-0 border-gray-100">
                     <span class="text-sm">${i.title}</span>
-                    <span class="font-bold text-sm">$${i.price}</span>
+                    <span class="font-bold text-sm">৳${i.price}</span>
                 </div>
             `).join('');
         }
@@ -315,7 +358,7 @@ const Cart = {
 
     async submitOrder() {
         const total = this.getTotal();
-        const txn = document.getElementById('bkash-txn-input') ? document.getElementById('bkash-txn-input').value : '';
+        const txn = document.getElementById('bkash-txn-input') ? document.getElementById('bkash-txn-input').value.trim() : '';
 
         if (total > 0 && !txn) {
             if (window.UI) UI.showToast('Please enter Transaction ID', 'error');
@@ -325,37 +368,72 @@ const Cart = {
         const btn = document.getElementById('btn-place-order');
         if (btn) {
             btn.disabled = true;
-            btn.innerHTML = 'Processing...';
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin" style="margin-right:8px"></i> Processing...';
         }
 
+        // 1. Capture cart context before clearing to maintain metadata strings
+        const courseTitle = this.state.items.map(item => item.title).join(', ');
+        const finalTrxId = total === 0 ? `FREE-${Date.now()}` : txn;
+
         try {
-            const payload = {
-                action: 'checkout',
-                items: this.state.items,
-                billing: this.state.billing,
-                payment: {
-                    method: total === 0 ? 'free' : 'bkash',
-                    txnId: total === 0 ? 'FREE-ORDER' : txn,
-                    total: total
-                }
+            // Adapt nested cart format into relational SQL flat structure
+            const dbPayload = {
+                user_email: this.state.billing.email,
+                user_name: this.state.billing.name,
+                user_phone: this.state.billing.phone,
+                course_code: this.state.items.map(item => item.id).join(','),
+                transaction_id: finalTrxId,
+                promo_code: this.state.promoCode ? this.state.promoCode.code : null,
+                method: total === 0 ? 'free' : 'bkash',
+                amount: total,
+                total_paid: total
             };
 
-            await fetch('/api/checkout', {
+            // 2. Commit relational data ledger strictly to new aliased route
+            const response = await fetch('/api/checkout/submit', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: JSON.stringify(dbPayload)
             });
 
-            this.setStep(4);
-            this.clear();
-            const orderIdEl = document.getElementById('conf-order-id');
-            if (orderIdEl) orderIdEl.textContent = 'ORD-' + Date.now();
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                // 3. Fire dynamic instant WhatsApp verification handoff in new tab
+                const userEmail = this.state.billing.email;
+                const whatsappText = `New Order: ${courseTitle}. User: ${userEmail}. TrxID: ${finalTrxId}.`;
+                const whatsappUrl = `https://wa.me/8801853343176?text=${encodeURIComponent(whatsappText)}`;
+                
+                try {
+                    window.open(whatsappUrl, '_blank');
+                } catch (waErr) {
+                    console.error('Popup blocking intercepted WhatsApp bridge:', waErr);
+                }
+
+                // 4. Flush cache and execute UI success views
+                this.clear();
+                
+                const orderIdEl = document.getElementById('conf-order-id');
+                if (orderIdEl) orderIdEl.textContent = 'ORD-' + Date.now();
+                if (window.UI) UI.showToast('Order submitted successfully!', 'success');
+                
+                // 5. Execute atomic in-page transition & summary hide
+                this.setStep(4);
+                if (typeof updateStepper === 'function') {
+                    updateStepper(4);
+                }
+            } else {
+                throw new Error(data.message || 'Transaction submission rejected.');
+            }
 
         } catch (e) {
-            if (window.UI) UI.showToast('Submission failed', 'error');
-            console.error(e);
+            if (window.UI) UI.showToast(e.message || 'Submission failed', 'error');
+            console.error('Order Submission Error:', e);
         } finally {
-            if (btn) btn.disabled = false;
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = total === 0 ? 'Confirm Order (Free) <i class="fa-solid fa-gift ml-2"></i>' : 'Confirm Payment <i class="fa-solid fa-check ml-2"></i>';
+            }
         }
     }
 };

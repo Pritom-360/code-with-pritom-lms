@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Asset Viewer — Code With Pritom</title>
+    <!-- Google Fonts & FA Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- PDF.js Minified CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        // Configure global PDF.js Worker source mapping
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            user-select: none; /* Extreme measure to block basic text drag selection */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+        /* Force-hide standard scrollbar in modern browsers */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #f97316; }
+
+        /* Secure Overlay to completely intercept and destroy basic viewport screenshot traps and printing triggers */
+        @media print {
+            body { display: none !important; }
+            * { display: none !important; }
+        }
+
+        /* Dark Glassmorphism Effects */
+        .glass-header {
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+        }
+        .glass-sidebar {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border-left: 1px solid rgba(51, 65, 85, 0.5);
+        }
+        
+        /* Page Canvas Isolation styling */
+        .pdf-page-canvas {
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
+            margin: 24px auto;
+            display: block;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        /* Premium Ad slots placeholders */
+        .ad-banner-slot {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+            border: 1px dashed rgba(249, 115, 22, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        .ad-banner-slot::before {
+            content: ''; position: absolute; inset: 0; 
+            background: linear-gradient(90deg, transparent, rgba(249, 115, 22, 0.05), transparent);
+            animation: shimmer 3s infinite linear;
+        }
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-200 h-screen flex flex-col overflow-hidden selection:bg-orange-500/30">
+
+    <!-- ================= HEADER & ADSENSE LEADERBOARD ================= -->
+    <header class="glass-header w-full z-40 shrink-0 flex flex-col relative">
+        <!-- Upper Control Bar -->
+        <div class="px-6 py-3.5 flex items-center justify-between gap-4 bg-slate-950/40">
+            <div class="flex items-center gap-3 select-none">
+                <div class="bg-orange-500 text-white w-8 h-8 rounded-lg flex items-center justify-center shadow-lg shadow-orange-500/20">
+                    <i class="fa-solid fa-shield-halved text-sm"></i>
+                </div>
+                <div>
+                    <h1 class="text-sm font-black text-white tracking-tight flex items-center gap-2">
+                        SECURE READER <span class="text-[10px] font-bold text-orange-500 px-1.5 py-0.5 bg-orange-500/10 border border-orange-500/20 rounded">PROTETCED</span>
+                    </h1>
+                    <p id="doc-name" class="text-[11px] text-slate-400 font-medium truncate max-w-xs md:max-w-md">Scanning asset streams...</p>
+                </div>
+            </div>
+
+            <!-- Pagination & Zoom Controllers -->
+            <div class="flex items-center bg-slate-900/80 border border-slate-800 rounded-xl px-2 py-1 gap-1.5 shadow-inner shadow-black/40">
+                <button onclick="prevPage()" class="text-slate-400 hover:text-white hover:bg-slate-800 w-7 h-7 rounded-lg transition flex items-center justify-center text-xs disabled:opacity-30 disabled:cursor-not-allowed" id="prev-btn">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <div class="text-xs font-black text-slate-300 px-2 select-none flex items-center gap-1 min-w-[70px] justify-center">
+                    <span id="current-page">0</span> <span class="opacity-40">/</span> <span id="total-pages">0</span>
+                </div>
+                <button onclick="nextPage()" class="text-slate-400 hover:text-white hover:bg-slate-800 w-7 h-7 rounded-lg transition flex items-center justify-center text-xs disabled:opacity-30 disabled:cursor-not-allowed" id="next-btn">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+                <div class="w-px h-4 bg-slate-800 mx-1"></div>
+                
+                <button onclick="zoomOut()" class="text-slate-400 hover:text-white hover:bg-slate-800 w-7 h-7 rounded-lg transition flex items-center justify-center text-xs">
+                    <i class="fa-solid fa-magnifying-glass-minus"></i>
+                </button>
+                <span id="zoom-display" class="text-[10px] font-bold text-slate-500 w-10 text-center">100%</span>
+                <button onclick="zoomIn()" class="text-slate-400 hover:text-white hover:bg-slate-800 w-7 h-7 rounded-lg transition flex items-center justify-center text-xs">
+                    <i class="fa-solid fa-magnifying-glass-plus"></i>
+                </button>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button onclick="window.close()" class="bg-slate-800 hover:bg-slate-700 text-xs font-bold px-4 py-1.5 rounded-lg border border-slate-700 transition shadow flex items-center gap-1">
+                    <i class="fa-solid fa-right-to-bracket rotate-180"></i> Close
+                </button>
+            </div>
+        </div>
+
+        <!-- TOP DEDICATED AD SLOT (Leaderboard 728x90 Placeholder) -->
+        <div class="w-full bg-slate-950/80 flex justify-center py-2.5 px-4 border-t border-slate-900">
+            <div class="ad-banner-slot w-full max-w-3xl h-16 rounded-xl flex items-center justify-center shadow-inner relative overflow-hidden">
+                <div class="absolute top-1 left-2 text-[8px] font-black tracking-widest text-orange-500 opacity-60 select-none">SPONSORED CONTENT</div>
+                <div class="text-center z-10 select-none pointer-events-none">
+                    <span class="text-slate-400 text-xs font-extrabold opacity-80"><i class="fa-solid fa-rectangle-ad text-orange-500 mr-1.5"></i> Super Leaderboard Banner Slot</span>
+                    <p class="text-[9px] text-slate-500 font-medium mt-0.5">Synchronize with Google AdSense Responsive Unit</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ================= MAIN WORKSPACE ================= -->
+    <div class="flex-1 flex w-full overflow-hidden relative">
+        
+        <!-- 1. LEFT COLUMN: SECURE SCROLL VIEWPORT -->
+        <main class="flex-1 overflow-y-auto bg-slate-900/40 relative custom-scroll flex flex-col items-center justify-start" id="viewer-viewport" onscroll="handleViewportScroll()">
+            
+            <!-- Secure Watermark Foreground DRM Tiled Overlay -->
+            <div class="fixed inset-0 pointer-events-none select-none z-20 opacity-[0.08]" 
+                 style="background-image: url(&quot;data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='360' height='280'><text x='50%' y='50%' font-size='24' font-family='Impact, Inter, sans-serif' fill='%23ffffff' font-weight='900' transform='rotate(-30, 180, 140)' text-anchor='middle'>CODE WITH PRITOM</text></svg>&quot;); background-repeat: repeat;">
+            </div>
+
+            <!-- Render Container -->
+            <div id="pdf-render-container" class="relative z-10 w-full max-w-5xl px-6 flex flex-col items-center">
+                <!-- Loading Ring -->
+                <div id="reader-loader" class="my-32 flex flex-col items-center justify-center gap-4">
+                    <div class="w-12 h-12 rounded-full border-4 border-orange-500/20 border-t-orange-500 animate-spin"></div>
+                    <p class="text-xs font-bold text-slate-400 tracking-wider">Decrypting binary physical stream...</p>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- 2. RIGHT COLUMN: FLOATING WIDE SKYSCRAPER AD SIDEBAR (300px) -->
+        <aside class="glass-sidebar w-80 shrink-0 hidden xl:flex flex-col p-6 select-none z-30">
+            <div class="flex flex-col h-full gap-6">
+                
+                <!-- Information Card -->
+                <div class="bg-slate-950/60 rounded-2xl border border-slate-800/50 p-4 shadow-xl">
+                    <div class="flex items-center gap-2.5 text-orange-500 mb-2.5">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <span class="text-xs font-black uppercase tracking-wider text-slate-200">Asset Metadata</span>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-[10px] border-b border-slate-900 pb-1.5">
+                            <span class="text-slate-500 font-bold">Format:</span>
+                            <span class="text-slate-300 font-black">PDF stream/octet</span>
+                        </div>
+                        <div class="flex justify-between text-[10px] border-b border-slate-900 pb-1.5">
+                            <span class="text-slate-500 font-bold">Security:</span>
+                            <span class="text-emerald-500 font-black flex items-center gap-1"><i class="fa-solid fa-shield-halved"></i> Sealed Canvas</span>
+                        </div>
+                        <div class="flex justify-between text-[10px]">
+                            <span class="text-slate-500 font-bold">DRM Status:</span>
+                            <span class="text-amber-500 font-black">Non-Printable</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VERTICAL SKYSCRAPER AD SLOT (300x600 Placeholder) -->
+                <div class="flex-1 rounded-2xl ad-banner-slot shadow-inner flex flex-col items-center justify-center p-6 border border-dashed border-orange-500/20 overflow-hidden min-h-[400px]">
+                    <div class="absolute top-2 left-3 text-[8px] font-black tracking-widest text-orange-500 opacity-60 select-none">COMMERCIAL ANNOUNCEMENT</div>
+                    
+                    <div class="text-center space-y-3 z-10 max-w-[240px]">
+                        <div class="w-14 h-14 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-2xl text-orange-500 mx-auto shadow-xl">
+                            <i class="fa-solid fa-rectangle-ad"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-slate-200 text-xs font-black leading-tight">Wide Skyscraper Custom Banner</h3>
+                            <p class="text-[10px] text-slate-500 font-semibold leading-relaxed mt-1">Synchronized optimized display block for Google AdSense (300x600) units.</p>
+                        </div>
+                        <button class="mt-2 bg-orange-600/20 hover:bg-orange-600/30 border border-orange-500/30 text-orange-400 font-bold text-[10px] px-4 py-1.5 rounded-lg transition tracking-wider uppercase select-none">Advertise with Us</button>
+                    </div>
+                </div>
+
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- ================= BACKEND & PDF.js ENGINE ================= -->
+    <script>
+        let pdfDoc = null;
+        let pagesRendering = {};
+        let pageCanvasMap = {};
+        let currentScale = 1.2;
+        let activeViewportPage = 1;
+        let totalRenderedPages = 0;
+
+        // 1. EXTREME SECURITY HARDEINING
+        // Block browser-level mouse contexts and system keys
+        window.addEventListener('contextmenu', (e) => e.preventDefault());
+
+        window.addEventListener('keydown', (e) => {
+            // Prevent Ctrl+P, Ctrl+S, Ctrl+U, Ctrl+Shift+I, F12, Command combinations
+            if (
+                (e.ctrlKey && (e.key === 'p' || e.key === 'P' || e.key === 's' || e.key === 'S' || e.key === 'u' || e.key === 'U' || e.key === 'c' || e.key === 'C')) ||
+                (e.metaKey && (e.key === 'p' || e.key === 'P' || e.key === 's' || e.key === 'S' || e.key === 'u' || e.key === 'U' || e.key === 'c' || e.key === 'C')) ||
+                (e.key === 'F12') ||
+                (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c'))
+            ) {
+                e.preventDefault();
+                e.stopPropagation();
+                alert('❌ Secure Viewer Alert: Downloading, copying, and printing is strictly restricted under DRM policies.');
+                return false;
+            }
+        });
+
+        // 2. INIT ENGINE: Parse & Pull Physical Steam
+        document.addEventListener('DOMContentLoaded', async () => {
+            const params = new URLSearchParams(window.location.search);
+            const filename = params.get('file');
+
+            if (!filename) {
+                renderSystemError('Missing file parameter in viewer request.');
+                return;
+            }
+
+            document.getElementById('doc-name').textContent = `File Resource: ${filename}`;
+
+            try {
+                // 1. Formulate secure stream endpoint supporting Cloud URLs and legacy local assets
+                let secureStreamUrl = '';
+                if (filename.includes('http://') || filename.includes('https://')) {
+                    secureStreamUrl = `/api/proxy-pdf?url=${encodeURIComponent(filename)}`;
+                } else {
+                    secureStreamUrl = `/api/view-note/${encodeURIComponent(filename)}`;
+                }
+                
+                // Retrieve Document with raw buffer streaming
+                const loadingTask = pdfjsLib.getDocument(secureStreamUrl);
+                
+                pdfDoc = await loadingTask.promise;
+                document.getElementById('reader-loader').remove();
+                
+                const total = pdfDoc.numPages;
+                document.getElementById('total-pages').textContent = total;
+                document.getElementById('current-page').textContent = 1;
+
+                // Initiate dynamic incremental catalog rendering
+                await bootstrapReaderView(total);
+
+            } catch (err) {
+                console.error('DRM stream decapsulation failure:', err);
+                renderSystemError('Authentication or storage drift: Handnote resource is inaccessible.');
+            }
+        });
+
+        // 3. Dynamic DOM Canvas Blueprint Provisioning
+        async function bootstrapReaderView(numPages) {
+            const container = document.getElementById('pdf-render-container');
+            container.innerHTML = ''; // Clear placeholders
+
+            for (let i = 1; i <= numPages; i++) {
+                // Each page gets its physical canvas viewport element
+                const canvas = document.createElement('canvas');
+                canvas.id = `pdf-canvas-page-${i}`;
+                canvas.className = 'pdf-page-canvas select-none pointer-events-none'; // Prevents selection & clicks
+                container.appendChild(canvas);
+
+                // Render immediately or lazily
+                await renderPage(i, canvas);
+            }
+            
+            updateNavControls();
+        }
+
+        // 4. Render Loop executing vector-to-bitmap canvas translation
+        async function renderPage(pageNumber, canvas) {
+            try {
+                const page = await pdfDoc.getPage(pageNumber);
+                const viewport = page.getViewport({ scale: currentScale });
+                
+                const ctx = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                const renderContext = {
+                    canvasContext: ctx,
+                    viewport: viewport
+                };
+
+                await page.render(renderContext).promise;
+                pageCanvasMap[pageNumber] = canvas;
+            } catch (e) {
+                console.warn(`Page render fault ${pageNumber}`);
+            }
+        }
+
+        // 5. Active Navigation & Viewport Intercept Controls
+        function handleViewportScroll() {
+            const viewport = document.getElementById('viewer-viewport');
+            const container = document.getElementById('pdf-render-container');
+            const scrollTop = viewport.scrollTop;
+            
+            // Simple viewport height tracker to identify active visible page
+            let closestPage = 1;
+            let minDiff = Infinity;
+
+            for (let i = 1; i <= pdfDoc.numPages; i++) {
+                const canvas = document.getElementById(`pdf-canvas-page-${i}`);
+                if (canvas) {
+                    const diff = Math.abs(canvas.offsetTop - scrollTop - 80);
+                    if (diff < minDiff) {
+                        minDiff = diff;
+                        closestPage = i;
+                    }
+                }
+            }
+            
+            if (closestPage !== activeViewportPage) {
+                activeViewportPage = closestPage;
+                document.getElementById('current-page').textContent = closestPage;
+                updateNavControls();
+            }
+        }
+
+        function scrollToPage(num) {
+            const canvas = document.getElementById(`pdf-canvas-page-${num}`);
+            if (canvas) {
+                canvas.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                activeViewportPage = num;
+                document.getElementById('current-page').textContent = num;
+                updateNavControls();
+            }
+        }
+
+        function prevPage() {
+            if (activeViewportPage > 1) {
+                scrollToPage(activeViewportPage - 1);
+            }
+        }
+
+        function nextPage() {
+            if (pdfDoc && activeViewportPage < pdfDoc.numPages) {
+                scrollToPage(activeViewportPage + 1);
+            }
+        }
+
+        function updateNavControls() {
+            const prev = document.getElementById('prev-btn');
+            const next = document.getElementById('next-btn');
+            if (!pdfDoc) return;
+
+            prev.disabled = activeViewportPage === 1;
+            next.disabled = activeViewportPage === pdfDoc.numPages;
+        }
+
+        // 6. Dynamic Zoom Scalar Vector scaling
+        async function applyZoom() {
+            if (!pdfDoc) return;
+            document.getElementById('zoom-display').textContent = `${Math.round(currentScale * 100)}%`;
+            
+            // Show Loader
+            const loader = document.createElement('div');
+            loader.id = 'zoom-loader';
+            loader.className = 'fixed inset-0 bg-slate-950/80 backdrop-filter blur-sm flex items-center justify-center z-50 text-xs font-black text-orange-500 tracking-widest uppercase select-none';
+            loader.innerHTML = '<div class="flex flex-col items-center gap-3"><div class="w-10 h-10 border-4 border-orange-500/20 border-t-orange-500 rounded-full animate-spin"></div>Rescaling Vector Raster...</div>';
+            document.body.appendChild(loader);
+
+            // Re-render active Blueprint
+            for (let i = 1; i <= pdfDoc.numPages; i++) {
+                const canvas = document.getElementById(`pdf-canvas-page-${i}`);
+                if (canvas) {
+                    await renderPage(i, canvas);
+                }
+            }
+
+            // Remove Loader
+            setTimeout(() => {
+                const l = document.getElementById('zoom-loader');
+                if (l) l.remove();
+            }, 300);
+        }
+
+        function zoomIn() {
+            if (currentScale < 3.0) {
+                currentScale += 0.25;
+                applyZoom();
+            }
+        }
+
+        function zoomOut() {
+            if (currentScale > 0.5) {
+                currentScale -= 0.25;
+                applyZoom();
+            }
+        }
+
+        function renderSystemError(msg) {
+            const container = document.getElementById('pdf-render-container');
+            container.innerHTML = `
+                <div class="my-32 bg-slate-950/80 border border-rose-500/20 p-8 rounded-3xl shadow-2xl text-center max-w-md animate-fade-in-up">
+                    <div class="w-16 h-16 bg-rose-500/10 text-rose-500 flex items-center justify-center rounded-full text-2xl mx-auto mb-4"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    <h3 class="font-bold text-lg text-slate-200 mb-1">Secure Stream Pipeline Interrupted</h3>
+                    <p class="text-xs text-slate-500 leading-relaxed mb-6">${msg}</p>
+                    <button onclick="window.close()" class="btn bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold py-2 px-6 rounded-xl shadow shadow-rose-900/30 transition w-full">Exit Secure View</button>
+                </div>
+            `;
+            const loader = document.getElementById('reader-loader');
+            if (loader) loader.remove();
+        }
+    </script>
+
+</body>
+</html>

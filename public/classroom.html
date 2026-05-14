@@ -15,7 +15,13 @@
     <!-- Auth Guard -->
     <script src="js/ui.js"></script>
     <script src="js/auth.js"></script>
-    <script>if (!Auth.isLoggedIn()) window.location.href = 'index.html';</script>
+    <script src="js/cart.js"></script>
+    <script>
+        if (!Auth.isLoggedIn()) window.location.href = 'index.html';
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof Cart !== 'undefined') Cart.init();
+        });
+    </script>
 </head>
 
 <body class="bg-gray-900 text-white h-screen flex flex-col overflow-hidden font-['Inter'] antialiased">
@@ -95,7 +101,7 @@
                         <h2 class="text-2xl font-extrabold mb-3">Access Denied</h2>
                         <p class="text-gray-400 mb-8 text-sm leading-relaxed">You haven't enrolled in this course yet.
                             Purchase it to unlock all lessons.</p>
-                        <button onclick="Cart.addItem(courseDB[courseId])" class="btn btn-primary btn-lg btn-pill">
+                        <button id="btn-lock-action" onclick="handleLockAction()" class="btn btn-primary btn-lg btn-pill">
                             <i class="fa-solid fa-cart-plus text-sm"></i> Add to Cart
                         </button>
                     </div>
@@ -146,8 +152,8 @@
                 <div id="handnotes-list"></div>
             </div>
 
-            <!-- Quick Notes -->
-            <div class="border-t border-gray-700 p-4">
+            <!-- Quick Notes (Standard User Access) -->
+            <div id="notes-section" class="border-t border-gray-700 p-4">
                 <h4 class="font-bold text-xs text-gray-400 uppercase tracking-wider mb-3">
                     <i class="fa-solid fa-sticky-note mr-1 text-yellow-500"></i> My Notes
                 </h4>
@@ -158,6 +164,52 @@
                     class="mt-2 text-xs text-orange-500 font-bold hover:text-orange-400 transition">
                     <i class="fa-solid fa-floppy-disk mr-1"></i> Save Note
                 </button>
+            </div>
+
+            <!-- Course Review Section (Unlocked conditionally at 100%) -->
+            <div id="reviews-section" class="border-t border-gray-700 p-4 hidden">
+                <h4 class="font-bold text-xs text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                    <i class="fa-solid fa-award text-yellow-500"></i> Rate This Course
+                </h4>
+                
+                <!-- Input Frame Wrapper -->
+                <div id="review-form-container">
+                    <!-- Interactive 5 Star Cluster -->
+                    <div class="flex items-center gap-1.5 mb-4 select-none">
+                        <i class="fa-solid fa-star star-btn text-gray-600 hover:text-yellow-500 cursor-pointer transition text-[15px]" onclick="setRating(1)"></i>
+                        <i class="fa-solid fa-star star-btn text-gray-600 hover:text-yellow-500 cursor-pointer transition text-[15px]" onclick="setRating(2)"></i>
+                        <i class="fa-solid fa-star star-btn text-gray-600 hover:text-yellow-500 cursor-pointer transition text-[15px]" onclick="setRating(3)"></i>
+                        <i class="fa-solid fa-star star-btn text-gray-600 hover:text-yellow-500 cursor-pointer transition text-[15px]" onclick="setRating(4)"></i>
+                        <i class="fa-solid fa-star star-btn text-gray-600 hover:text-yellow-500 cursor-pointer transition text-[15px]" onclick="setRating(5)"></i>
+                        <span id="rating-value-display" class="ml-1 text-[10px] font-black text-gray-500 uppercase tracking-wider">(Choose Rating)</span>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div>
+                            <textarea id="commentText"
+                                class="w-full bg-gray-800 text-gray-300 border border-gray-700 rounded-lg p-2.5 text-xs resize-none outline-none focus:border-yellow-500 transition leading-relaxed"
+                                rows="3" placeholder="How did you like this course?"></textarea>
+                        </div>
+                        <div>
+                            <textarea id="suggestionText"
+                                class="w-full bg-gray-800 text-gray-300 border border-gray-700 rounded-lg p-2.5 text-xs resize-none outline-none focus:border-yellow-500 transition leading-relaxed"
+                                rows="3" placeholder="What can we improve? (Your opinion matters!)"></textarea>
+                        </div>
+                        <button id="btn-submit-review" onclick="submitReview()"
+                            class="w-full bg-yellow-500 hover:bg-yellow-600 text-slate-950 font-black text-xs tracking-wider py-2.5 rounded-lg transition shadow-md uppercase mt-1">
+                            Submit Review
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Success Matrix Block -->
+                <div id="review-success-msg" class="hidden text-center py-4 animate-pulse">
+                    <div class="w-10 h-10 bg-green-500/20 border border-green-500/30 text-green-400 flex items-center justify-center rounded-full mx-auto mb-2">
+                        <i class="fa-solid fa-check text-sm"></i>
+                    </div>
+                    <h5 class="text-green-400 font-black text-xs uppercase tracking-wider mb-1">Feedback Recorded</h5>
+                    <p class="text-[10px] text-gray-400 px-2">✅ Your feedback has been recorded. Thank you!</p>
+                </div>
             </div>
         </aside>
     </div>
@@ -183,7 +235,7 @@
         <div id="cart-content" class="cart-footer">
             <div class="cart-total-row final">
                 <span>Total</span>
-                <span id="cart-subtotal">$0.00</span>
+                <span id="cart-subtotal">৳0.00</span>
             </div>
             <button onclick="Cart.openCheckout()" class="btn btn-primary w-full mt-4">
                 Proceed to Checkout
@@ -225,7 +277,7 @@
                 <div id="checkout-cart-list" class="bg-white p-4 rounded-lg border border-gray-100 mb-6"></div>
                 <div class="flex justify-between font-bold text-lg">
                     <span>Total To Pay</span>
-                    <span class="checkout-total">$0.00</span>
+                    <span class="checkout-total">৳0.00</span>
                 </div>
                 <div class="mt-8 flex justify-end">
                     <button onclick="Cart.setStep(2)" class="btn btn-primary">
@@ -273,7 +325,7 @@
                     <div>
                         <div class="bg-slate-50 p-6 rounded-xl border border-dashed border-slate-300">
                             <h4 class="font-bold text-slate-600 mb-2">Total Amount</h4>
-                            <div class="text-3xl font-black text-slate-900 checkout-total">$0.00</div>
+                            <div class="text-3xl font-black text-slate-900 checkout-total">৳0.00</div>
                             <p class="text-xs text-slate-400 mt-2">Next step: Payment & Promo</p>
                         </div>
                         <div class="mt-4 flex flex-col gap-3">
@@ -322,17 +374,17 @@
                             <h4 class="font-bold text-slate-600 mb-4 border-b pb-2">Final Summary</h4>
                             <div class="flex justify-between mb-2 text-sm text-slate-500">
                                 <span>Subtotal</span>
-                                <span class="checkout-subtotal">$0.00</span>
+                                <span class="checkout-subtotal">৳0.00</span>
                             </div>
                             <div id="checkout-discount-row"
                                 class="flex justify-between mb-2 text-sm text-green-600 font-bold hidden">
                                 <span>Discount</span>
-                                <span id="checkout-discount-amount">-$0.00</span>
+                                <span id="checkout-discount-amount">-৳0.00</span>
                             </div>
                             <div
                                 class="flex justify-between mt-4 pt-4 border-t border-slate-200 text-xl font-black text-slate-900">
                                 <span>Total</span>
-                                <span class="checkout-total">$0.00</span>
+                                <span class="checkout-total">৳0.00</span>
                             </div>
                         </div>
                         <div class="mt-4 flex flex-col gap-3">
@@ -372,98 +424,34 @@
 
     <!-- ===================== CLASSROOM LOGIC ===================== -->
     <script>
+        // Load Youtube Player API script dynamically to intercept end events natively
+        (function loadYTAPI() {
+            const tag = document.createElement('script');
+            tag.src = "https://www.youtube.com/iframe_api";
+            const firstScriptTag = document.getElementsByTagName('script')[0];
+            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        })();
+
         const user = Auth.getUser();
         const accessList = user?.access ? user.access.toString().split(',').map(s => s.trim()) : [];
         const urlParams = new URLSearchParams(window.location.search);
         const courseId = urlParams.get('id');
 
-        // Course + Lesson Database (Refactored with Prices & PDFs)
-        const courseDB = {
-            "1": {
-                id: "1", title: "n8n Fundamentals", price: "0", handnote: "https://codewithpritom.blogspot.com/2026/02/bandit-level-31-walkthrough.html",
-                lessons: [
-                    { id: "1-1", title: "Welcome & Setup", video: "dQw4w9WgXcQ", duration: "8:24" },
-                    { id: "1-2", title: "Understanding Nodes", video: "dQw4w9WgXcQ", duration: "12:10" },
-                    { id: "1-3", title: "Triggers & Webhooks", video: "dQw4w9WgXcQ", duration: "15:32" },
-                    { id: "1-4", title: "JSON & Data Flow", video: "dQw4w9WgXcQ", duration: "18:05" },
-                    { id: "1-5", title: "Conditional Logic (IF/Switch)", video: "dQw4w9WgXcQ", duration: "14:48" },
-                    { id: "1-6", title: "Loops & Iterations", video: "dQw4w9WgXcQ", duration: "11:22" },
-                    { id: "1-7", title: "Error Handling", video: "dQw4w9WgXcQ", duration: "9:55" },
-                    { id: "1-8", title: "Your First Workflow Project", video: "dQw4w9WgXcQ", duration: "20:30" }
-                ]
-            },
-            "2": { // Missing price in prompt, assumed standard or free
-                id: "2", title: "Advanced Webhooks & APIs", price: "39", handnote: "api-guide.pdf",
-                lessons: [
-                    { id: "2-1", title: "HTTP Request Basics", video: "M7lc1UVf-VE", duration: "10:15" },
-                    { id: "2-2", title: "REST vs GraphQL", video: "M7lc1UVf-VE", duration: "14:30" },
-                    { id: "2-3", title: "Authentication Methods", video: "M7lc1UVf-VE", duration: "18:45" },
-                    { id: "2-4", title: "Webhook Security", video: "M7lc1UVf-VE", duration: "12:20" },
-                    { id: "2-5", title: "Building a Payment Gateway", video: "M7lc1UVf-VE", duration: "22:10" },
-                    { id: "2-6", title: "API Rate Limiting", video: "M7lc1UVf-VE", duration: "11:55" }
-                ]
-            },
-            "3": {
-                id: "3", title: "SaaS Automation Masterclass", price: "59", handnote: "saas-notes.pdf",
-                lessons: [
-                    { id: "3-1", title: "SaaS Architecture Overview", video: "jNQXAC9IVRw", duration: "15:00" },
-                    { id: "3-2", title: "User Registration Flow", video: "jNQXAC9IVRw", duration: "20:30" },
-                    { id: "3-3", title: "Payment Processing", video: "jNQXAC9IVRw", duration: "25:15" },
-                    { id: "3-4", title: "Email Automation", video: "jNQXAC9IVRw", duration: "18:40" },
-                    { id: "3-5", title: "Dashboard & Analytics", video: "jNQXAC9IVRw", duration: "22:10" },
-                    { id: "3-6", title: "Deployment & Launch", video: "jNQXAC9IVRw", duration: "16:50" }
-                ]
-            },
-            "4": {
-                id: "4", title: "Linux Fundamentals", price: "49", handnote: "linux-fundamentals.pdf",
-                lessons: [
-                    { id: "4-1", title: "Linux History & Distros", video: "dQw4w9WgXcQ", duration: "10:00" },
-                    { id: "4-2", title: "File Operations (ls, cp, mv)", video: "dQw4w9WgXcQ", duration: "15:00" },
-                    { id: "4-3", title: "Permissions (chmod, chown)", video: "dQw4w9WgXcQ", duration: "20:00" }
-                ]
-            },
-            "5": {
-                id: "5", title: "C Programming Language", price: "59", handnote: "c-programming.pdf",
-                lessons: [
-                    { id: "5-1", title: "Hello World in C", video: "dQw4w9WgXcQ", duration: "5:00" },
-                    { id: "5-2", title: "Variables & Data Types", video: "dQw4w9WgXcQ", duration: "12:00" },
-                    { id: "5-3", title: "Pointers Explained", video: "dQw4w9WgXcQ", duration: "25:00" }
-                ]
-            },
-            "6": {
-                id: "6", title: "Discrete Mathematics", price: "49", handnote: "discrete-math.pdf",
-                lessons: [
-                    { id: "6-1", title: "Propositional Logic", video: "dQw4w9WgXcQ", duration: "18:00" },
-                    { id: "6-2", title: "Set Theory", video: "dQw4w9WgXcQ", duration: "22:00" },
-                    { id: "6-3", title: "Graph Theory Intro", video: "dQw4w9WgXcQ", duration: "30:00" }
-                ]
-            },
-            "7": {
-                id: "7", title: "Java Programming", price: "69", handnote: "java-basics.pdf",
-                lessons: [
-                    { id: "7-1", title: "Setting up JDK", video: "dQw4w9WgXcQ", duration: "8:00" },
-                    { id: "7-2", title: "Java Syntax Basics", video: "dQw4w9WgXcQ", duration: "15:00" },
-                    { id: "7-3", title: "Classes & Objects", video: "dQw4w9WgXcQ", duration: "20:00" }
-                ]
-            },
-            "8": {
-                id: "8", title: "Java OOP Mastery", price: "59", handnote: "java-oop.pdf",
-                lessons: [
-                    { id: "8-1", title: "Inheritance", video: "dQw4w9WgXcQ", duration: "18:00" },
-                    { id: "8-2", title: "Polymorphism", video: "dQw4w9WgXcQ", duration: "16:00" },
-                    { id: "8-3", title: "Encapsulation", video: "dQw4w9WgXcQ", duration: "14:00" }
-                ]
-            },
-            "9": {
-                id: "9", title: "Scripting & Automation", price: "49", handnote: "scripting-automation.pdf",
-                lessons: [
-                    { id: "9-1", title: "Python Basics", video: "dQw4w9WgXcQ", duration: "10:00" },
-                    { id: "9-2", title: "Shell Scripting Intro", video: "dQw4w9WgXcQ", duration: "12:00" },
-                    { id: "9-3", title: "Automating Tasks", video: "dQw4w9WgXcQ", duration: "25:00" }
-                ]
-            },
-            "NEW_19": { id: "NEW_19", title: "Generated YouTube Course", price: "49", handnote: "", lessons: [ { id: "NEW_19-1", title: "Day 1 of Learning AI Agents in Hindi AI AGENTS Are Changing The Game !", video: "dhhVxJ_qUPc", duration: "10:00" }, { id: "NEW_19-2", title: "Day 2 Ai Agents Masterclass - What tools to use ?", video: "R2HsJuNr-ac", duration: "10:00" }, { id: "NEW_19-3", title: "Day 3 Ai Agents Masterclass - What if you Mastered Ai Agents in 2025 (Hindi)", video: "iQSZIOoe8P4", duration: "10:00" }, { id: "NEW_19-4", title: "Day 4 AI Agents Masterclass - 5 Types of nodes in N8n You need to KNOW", video: "a1eY8x8P09Y", duration: "10:00" }, { id: "NEW_19-5", title: "Day 5 - Building AI Agents Masterclass - Get Ready to build expert AI Agents - Hindi N8n Tutorial", video: "EHbAA8aERYc", duration: "10:00" }, { id: "NEW_19-6", title: "Day 6 - AI Agents Masterclass - Going more in-depth with nodes in Hindi", video: "9nckPa2EvRw", duration: "10:00" }, { id: "NEW_19-7", title: "Day 7 - Building A Agents Masterclass - WATCH THIS Even before you start building your first agent!", video: "fILw8-MYrvA", duration: "10:00" }, { id: "NEW_19-8", title: "Day 8 - AI Agents Masterclass - Lets Build a bit Complex Agent in Hindi", video: "ec5SwU5qj_k", duration: "10:00" }, { id: "NEW_19-9", title: "Day 8 Update Video on Day 8's Complex Workflow", video: "cyqleaWKWkA", duration: "10:00" }, { id: "NEW_19-10", title: "Day 9 Ai Agents Masterclass - n8n and Lovable - Power of webhooks", video: "umpPee57unw", duration: "10:00" }, { id: "NEW_19-11", title: "Day 10 Ai Agents Masterclass - n8n Email Reply Agent", video: "kg6YGlLF0Nk", duration: "10:00" }, { id: "NEW_19-12", title: "Day 11 Ai Agents Masterclass - MOST IMPORTANT VIDEO", video: "JOmWSuKP-Tg", duration: "10:00" }, { id: "NEW_19-13", title: "Day 12 Part 1 AI Agents Masterclass - CREATING WORKFLOW WITHOUT JSON", video: "VhxYxKOPMr4", duration: "10:00" }, { id: "NEW_19-14", title: "Day 12 Part 2 AI Agents Masterclass - SUPERPOWER FOR YOUR AI AGENTS", video: "p1eW2_XZleo", duration: "10:00" }, { id: "NEW_19-15", title: "Day 12 Part 3 AI Agents Masterclass - Spent 30 Days using JSON's and it chnaged my life", video: "D6rtkyArbYA", duration: "10:00" }, { id: "NEW_19-16", title: "Day 13 AI Agents Masterclass - Data Processing in N8n in Hindi", video: "aNHHr1IjsEk", duration: "10:00" }, { id: "NEW_19-17", title: "Day 14 AI Agents Masterclass - What is RAG and why it Matters", video: "ERg2my7c8SA", duration: "10:00" }, { id: "NEW_19-18", title: "Day 15 Part 1 AI Agents Masterclass - What is RAG, Embedding and Vectors", video: "Rohm5agdQn8", duration: "10:00" }, { id: "NEW_19-19", title: "Day 15 - Build your First RAG Agent in Hindi", video: "NTwM3V-mdzc", duration: "10:00" }, { id: "NEW_19-20", title: "How MCP Makes your AI Agents Super Smart — Explained in Detail — In Hindi", video: "P7hcFHVu-xs", duration: "10:00" }, { id: "NEW_19-21", title: "DAY 16 - Building Your First Voice AI Agent - Simplest Way HINDI", video: "MOj0mtInC84", duration: "10:00" } ] },
+        // Basic fallback meta for locked screens (Add to cart support)
+        const publicCourseMeta = {
+            "1": { id: "1", title: "n8n Fundamentals", price: 0, image: "images/brand.png" },
+            "2": { id: "2", title: "Advanced Webhooks & APIs", price: 39, image: "images/brand.png" },
+            "3": { id: "3", title: "SaaS Automation Masterclass", price: 59, image: "images/brand.png" },
+            "4": { id: "4", title: "Linux Fundamentals", price: 49, image: "images/brand.png" },
+            "5": { id: "5", title: "C Programming Language", price: 59, image: "images/brand.png" },
+            "6": { id: "6", title: "Discrete Mathematics", price: 49, image: "images/brand.png" },
+            "7": { id: "7", title: "Java Programming", price: 69, image: "images/brand.png" },
+            "8": { id: "8", title: "Java OOP Mastery", price: 59, image: "images/brand.png" },
+            "9": { id: "9", title: "Scripting & Automation", price: 49, image: "images/brand.png" },
+            "NEW_19": { id: "NEW_19", title: "Generated YouTube Course", price: 49, image: "images/brand.png" }
         };
+
+        let course = null; // Will hold complete secured course database from backend
 
         // DOM Elements
         const wrapper = document.getElementById('video-wrapper');
@@ -537,40 +525,111 @@
 
             // Update course meta
             if (metaEl) metaEl.textContent = `${course.lessons.length} Lessons · ${pct}% complete`;
+
+            // ===== PROGRESS MILESTONE: COURSE REVIEWS GATE =====
+            // Transition sidebar focus strictly upon 100% syllabus mastery.
+            const notesBox = document.getElementById('notes-section');
+            const reviewsBox = document.getElementById('reviews-section');
+            if (notesBox && reviewsBox) {
+                if (pct === 100) {
+                    notesBox.classList.add('hidden');
+                    reviewsBox.classList.remove('hidden');
+                } else {
+                    notesBox.classList.remove('hidden');
+                    reviewsBox.classList.add('hidden');
+                }
+            }
+        }
+
+        // ===== NAVIGATION LOCK CONSTRAINTS =====
+        function updateNavigationLocks() {
+            if (!course) return;
+            
+            // 1. Prev is open
+            btnPrev.style.display = currentLessonIndex > 0 ? 'inline-flex' : 'none';
+            
+            // 2. Next handles conditional state (Must complete current)
+            if (currentLessonIndex < course.lessons.length - 1) {
+                btnNext.style.display = 'inline-flex';
+                const isCurrentDone = isLessonCompleted(currentLessonIndex);
+                
+                if (isCurrentDone) {
+                    btnNext.disabled = false;
+                    btnNext.classList.remove('opacity-40', 'cursor-not-allowed');
+                    btnNext.innerHTML = `Next <i class="fa-solid fa-chevron-right text-xs"></i>`;
+                } else {
+                    btnNext.disabled = true;
+                    btnNext.classList.add('opacity-40', 'cursor-not-allowed');
+                    btnNext.innerHTML = `Next <i class="fa-solid fa-lock text-[10px] ml-1.5"></i>`;
+                }
+            } else {
+                btnNext.style.display = 'none';
+            }
         }
 
         // ===== MARK AS COMPLETE =====
-        function markComplete() {
-            const course = courseDB[courseId];
-            if (!course) return;
+        async function markComplete() {
+            if (!course || !user?.email) return;
 
             let completed = getCompletedLessons();
             const alreadyDone = completed.includes(currentLessonIndex);
+            
+            // Prepare tracking network package
+            const progressPayload = {
+                email: user.email,
+                course_code: courseId,
+                lesson_number: currentLessonIndex
+            };
 
-            if (alreadyDone) {
-                // Uncomplete (toggle off)
-                completed = completed.filter(i => i !== currentLessonIndex);
-                localStorage.setItem(getProgressKey(), JSON.stringify(completed));
-                updateCompleteButton(false);
-                UI.showToast('Lesson unmarked.', 'info');
-            } else {
-                // Mark complete
-                completed.push(currentLessonIndex);
-                localStorage.setItem(getProgressKey(), JSON.stringify(completed));
-                updateCompleteButton(true);
+            try {
+                if (alreadyDone) {
+                    // Uncomplete (toggle off)
+                    completed = completed.filter(i => i !== currentLessonIndex);
+                    localStorage.setItem(getProgressKey(), JSON.stringify(completed));
+                    updateCompleteButton(false);
+                    UI.showToast('Lesson unmarked.', 'info');
 
-                // Check if all lessons done
-                if (completed.length === course.lessons.length) {
-                    UI.showToast('🎉 Course 100% Complete! Amazing!', 'success');
-                    launchConfetti();
+                    // Propagate to backend synchronously to prevent state desync
+                    fetch('/api/delete-progress', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(progressPayload)
+                    }).catch(err => console.warn('[Desync Warn]: Deletion propagate failed:', err));
+
                 } else {
-                    UI.showToast('✅ Lesson completed!', 'success');
+                    // Mark complete
+                    completed.push(currentLessonIndex);
+                    localStorage.setItem(getProgressKey(), JSON.stringify(completed));
+                    updateCompleteButton(true);
+
+                    // Propagate to backend and show specific success toast afterwards
+                    fetch('/api/save-progress', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(progressPayload)
+                    })
+                    .then(r => r.json())
+                    .then(res => {
+                        if (res.success) {
+                            UI.showToast('Progress Saved', 'success');
+                        }
+                    })
+                    .catch(err => console.warn('[Desync Warn]: Record propagate failed:', err));
+
+                    // Check if all lessons done
+                    if (completed.length === course.lessons.length) {
+                        UI.showToast('🎉 Course 100% Complete! Amazing!', 'success');
+                        launchConfetti();
+                    }
                 }
+            } catch(e) {
+                console.error('Progression transmission fail:', e);
             }
 
-            // Refresh UI
-            renderLessons(course);
+            // Refresh UI to show real-time checkmarks and fill-states
+            renderLessons();
             updateProgressUI(course);
+            updateNavigationLocks();
         }
 
         function updateCompleteButton(isDone) {
@@ -604,45 +663,63 @@
 
         // ===== NAVIGATION =====
         function nextLesson() {
-            const course = courseDB[courseId];
+            if (!course) return;
             if (currentLessonIndex < course.lessons.length - 1) {
-                loadLesson(currentLessonIndex + 1, course);
+                loadLesson(currentLessonIndex + 1);
             }
         }
 
         function prevLesson() {
-            const course = courseDB[courseId];
+            if (!course) return;
             if (currentLessonIndex > 0) {
-                loadLesson(currentLessonIndex - 1, course);
+                loadLesson(currentLessonIndex - 1);
             }
         }
 
         // ===== RENDER =====
-        function renderLessons(course) {
+        function renderLessons() {
+            if (!course) return;
             const completed = getCompletedLessons();
             lessonList.innerHTML = '';
-            course.lessons.forEach((lesson, idx) => {
-                const isActive = idx === currentLessonIndex;
-                const isDone = completed.includes(idx);
-                lessonList.innerHTML += `
-                    <button onclick="loadLesson(${idx}, courseDB['${courseId}'])" 
-                        class="lesson-item ${isActive ? 'active' : ''}" id="lesson-btn-${idx}">
-                        <div class="lesson-icon ${isActive ? 'bg-orange-600 text-white' : isDone ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-400'}">
-                            ${isActive
-                        ? '<i class="fa-solid fa-play text-[10px]"></i>'
-                        : isDone
-                            ? '<i class="fa-solid fa-check text-[10px]"></i>'
-                            : `<span class="text-xs font-bold">${idx + 1}</span>`
-                    }
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="text-sm font-medium truncate ${isDone && !isActive ? 'line-through opacity-60' : ''}">${lesson.title}</div>
-                            <div class="text-xs text-gray-500 mt-0.5">${lesson.duration}</div>
-                        </div>
-                        ${isDone ? '<div class="lesson-check check-pop"><i class="fa-solid fa-check text-[8px]"></i></div>' : ''}
-                    </button>
+
+            if (!course.lessons || course.lessons.length === 0) {
+                lessonList.innerHTML = `
+                    <div class="p-8 text-center text-gray-500 flex flex-col items-center justify-center gap-2">
+                        <i class="fa-solid fa-box-open text-2xl opacity-20"></i>
+                        <p class="text-xs">Curriculum pending upload.</p>
+                    </div>
                 `;
-            });
+            } else {
+                course.lessons.forEach((lesson, idx) => {
+                    const isActive = idx === currentLessonIndex;
+                    const isDone = completed.includes(idx);
+                    // Security Lock Enforcer: Sequentially constrain access (Previous must be completed)
+                    const isLocked = idx > 0 && !completed.includes(idx - 1);
+
+                    lessonList.innerHTML += `
+                        <button 
+                            ${isLocked ? 'disabled' : `onclick="loadLesson(${idx})"`} 
+                            class="lesson-item ${isActive ? 'active' : ''} ${isLocked ? 'opacity-40 cursor-not-allowed' : ''}" 
+                            id="lesson-btn-${idx}">
+                            <div class="lesson-icon ${isActive ? 'bg-orange-600 text-white' : isDone ? 'bg-green-600 text-white' : isLocked ? 'bg-gray-800 text-gray-500' : 'bg-gray-700 text-gray-400'}">
+                                ${isActive
+                                    ? '<i class="fa-solid fa-play text-[10px]"></i>'
+                                    : isDone
+                                        ? '<i class="fa-solid fa-check text-[10px]"></i>'
+                                        : isLocked
+                                            ? '<i class="fa-solid fa-lock text-[10px]"></i>'
+                                            : `<span class="text-xs font-bold">${idx + 1}</span>`
+                                }
+                            </div>
+                            <div class="flex-1 min-w-0 text-left">
+                                <div class="text-sm font-medium truncate ${isDone && !isActive ? 'line-through opacity-60' : ''}">${lesson.title}</div>
+                                <div class="text-xs text-gray-500 mt-0.5">${lesson.duration} ${isLocked ? '· <i class="fa-solid fa-lock text-[8px]"></i> Locked' : ''}</div>
+                            </div>
+                            ${isDone ? '<div class="lesson-check check-pop"><i class="fa-solid fa-check text-[8px]"></i></div>' : ''}
+                        </button>
+                    `;
+                });
+            }
 
             // Render Hand Notes in Sidebar
             const notesSection = document.getElementById('handnotes-section');
@@ -664,33 +741,111 @@
             }
         }
 
-        function loadLesson(index, course) {
+        // ===== YOUTUBE URL SANITIZATION HELPER =====
+        function extractYoutubeId(urlOrId) {
+            if (!urlOrId) return '';
+            const str = String(urlOrId).trim();
+            if (str === '') return '';
+
+            // Case A: Standard clean 11-character ID direct match
+            if (str.length === 11 && !str.includes('/') && !str.includes('?')) {
+                return str;
+            }
+
+            // Case B: Complete links (youtube.com/watch?v=..., youtu.be/..., embed/..., etc.)
+            try {
+                const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+                const match = str.match(regExp);
+                return (match && match[2].length === 11) ? match[2] : '';
+            } catch (e) {
+                console.warn('[YT Extractor Warning]: Domain parsing fault:', e.message);
+                return '';
+            }
+        }
+
+        function loadLesson(index) {
+            if (!course) return;
+            
+            // Logical sequence boundary enforcement: Hardened security guard
+            const completed = getCompletedLessons();
+            const isLocked = index > 0 && !completed.includes(index - 1);
+            if (isLocked) {
+                UI.showToast('🔒 Complete previous lessons to unlock this session.', 'error');
+                return;
+            }
+
             currentLessonIndex = index;
             const lesson = course.lessons[index];
 
-            // Update video
-            wrapper.innerHTML = `<iframe class="w-full h-full" src="https://www.youtube.com/embed/${lesson.video}?autoplay=1&modestbranding=1&rel=0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
-            videoLoader.style.display = 'none';
+            // Extract and resolve clean 11-char Video ID to block player crashes on full URLs
+            const videoId = extractYoutubeId(lesson.video);
 
-            // Update header
+            if (!videoId) {
+                // Edge Case: Explicit placeholder UI if no video URL/ID exists in Supabase yet
+                videoLoader.style.display = 'none';
+                wrapper.innerHTML = `
+                    <div class="w-full h-full flex flex-col items-center justify-center bg-gray-950 text-slate-400 text-center p-8 relative z-10 border border-gray-800/60 rounded-xl animate-fade-in">
+                        <div class="w-16 h-16 bg-slate-800/40 rounded-2xl flex items-center justify-center mb-4 text-slate-500 border border-slate-700/30 shadow-lg animate-pulse">
+                            <i class="fa-solid fa-video-slash text-2xl"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-200 text-lg mb-1.5 tracking-tight">Video Pending Upload</h3>
+                        <p class="text-xs text-slate-500 max-w-xs leading-relaxed">
+                            This lesson syllabus is currently processing. Our instructor is finalizing materials. Check back shortly!
+                        </p>
+                    </div>
+                `;
+            } else {
+                // Dynamically mount the active interactive YouTube frameset interceptor
+                wrapper.innerHTML = '<div id="player" class="w-full h-full"></div>';
+                videoLoader.style.display = 'flex';
+                
+                if (window.YT && window.YT.Player) {
+                    try {
+                        new YT.Player('player', {
+                            height: '100%',
+                            width: '100%',
+                            videoId: videoId,
+                            playerVars: { 'autoplay': 1, 'modestbranding': 1, 'rel': 0 },
+                            events: {
+                                'onReady': () => { videoLoader.style.display = 'none'; },
+                                'onStateChange': (event) => {
+                                    if (event.data === 0) { // YT.PlayerState.ENDED (naturally finished)
+                                        console.log('[Player Core] Video reached terminal playback node. Auto-propagating complete state...');
+                                        if (!isLessonCompleted(currentLessonIndex)) {
+                                            markComplete();
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    } catch (ytErr) {
+                        console.error('[YT API Instance Crash]: Using frame fallback:', ytErr);
+                        wrapper.innerHTML = `<iframe class="w-full h-full" src="https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen onload="document.getElementById('video-loader').style.display='none'"></iframe>`;
+                    }
+                } else {
+                    // Native load fallback handler
+                    wrapper.innerHTML = `<iframe class="w-full h-full" src="https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen onload="document.getElementById('video-loader').style.display='none'"></iframe>`;
+                }
+            }
+
+            // Update header titles
             lessonCounter.textContent = `Lesson ${index + 1} of ${course.lessons.length}`;
             document.title = `${lesson.title} | Code With Pritom`;
 
-            // Show/hide nav buttons
-            btnPrev.style.display = index > 0 ? 'inline-flex' : 'none';
-            btnNext.style.display = index < course.lessons.length - 1 ? 'inline-flex' : 'none';
+            // Refresh adaptive lock status badges for navigational triggers
+            updateNavigationLocks();
 
             // Update complete button state
             updateCompleteButton(isLessonCompleted(index));
 
-            // Re-render lesson list
-            renderLessons(course);
+            // Refresh UI matrices
+            renderLessons();
             updateProgressUI(course);
 
-            // Load saved notes
+            // Fetch cached notes
             loadNotes();
 
-            // Scroll active lesson into view in sidebar
+            // Auto-snap viewport tracking
             setTimeout(() => {
                 const activeBtn = document.getElementById(`lesson-btn-${index}`);
                 if (activeBtn) activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -700,58 +855,208 @@
         // ===== HANDNOTE VIEWER =====
         function openHandnote(link) {
             if (!link) return;
-            // If it starts with http, open directly
-            if (link.trim().startsWith('http')) {
-                window.open(link, '_blank');
-            } else {
-                // Legacy PDF filename support
-                window.open(`/api/handnotes/${link}`, '_blank');
-            }
+            // Extract clean filename string from the provided URL path (e.g., guide.pdf)
+            const filename = link.split('/').pop();
+            const readerUrl = `reader.html?file=${encodeURIComponent(filename)}`;
+            
+            // Stream file inside secure DRM Canvas Viewport wrapper
+            window.open(readerUrl, '_blank', 'noopener,noreferrer');
         }
 
-        // ===== INIT =====
-        if (courseDB[courseId]) {
-            const course = courseDB[courseId];
-            const isUnlocked = accessList.includes(courseId);
+        // ===== SECURE LOAD & INIT =====
+        // ===== SECURE LOAD & INIT =====
+        async function initClassroom() {
+            if (!courseId) {
+                titleEl.textContent = 'Missing Parameter';
+                metaEl.textContent = 'Course ID query parameter is required.';
+                showLockedState(null);
+                return;
+            }
 
-            titleEl.textContent = course.title;
-            sidebarTitle.textContent = course.title;
-            document.title = `${course.title} | Code With Pritom`;
+            const metaFallback = publicCourseMeta[courseId] || { title: 'Curriculum Content', id: courseId };
+            
+            titleEl.textContent = 'Synchronizing Access...';
+            sidebarTitle.textContent = 'Authenticating Matrix...';
 
-            if (isUnlocked) {
+            // Logic Gate: Flag confirmed API identities to prevent technical faults from triggering lock screens
+            let authorizationVerified = false;
+
+            try {
+                // 1. VERIFY RELIABLE AUTHORIZATION: Synchronize access string from cloud server
+                const checkRes = await fetch(`/api/check-access?email=${encodeURIComponent(user?.email || '')}&course_id=${encodeURIComponent(courseId)}`);
+                const checkData = await checkRes.json();
+
+                if (!checkRes.ok || !checkData.success) {
+                    throw new Error(checkData.message || 'Identity synchronization failed.');
+                }
+
+                // 2. SYNC LOCAL STORAGE: If user profile local storage is stale, update it dynamically
+                if (user && checkData.access !== undefined) {
+                    user.access = checkData.access;
+                    localStorage.setItem('user', JSON.stringify(user));
+                    console.log('[Sync] Local identity records successfully hydrated from backend registry.');
+                }
+
+                // If the server asserts user does not have access, fail fast
+                if (!checkData.hasAccess) {
+                    showLockedState(metaFallback);
+                    return;
+                }
+
+                // ✅ SECURITY UNLOCKED: Any physical crash after this is isolated asset load/video syntax faults
+                authorizationVerified = true;
+
+                // 3. LOAD CONTENT SECURELY: Pull authorized lessons and resources
+                const response = await fetch(`/api/classroom/${courseId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        email: user?.email || '',
+                        token: user?.token || localStorage.getItem('token') || ''
+                    })
+                });
+
+                const data = await response.json();
+
+                // Check for authorization barriers (403 Forbidden or 401 Unauthorized)
+                if (response.status === 403 || response.status === 401) {
+                    authorizationVerified = false; // Revoke check to prompt lockout screen
+                    showLockedState(metaFallback);
+                    return;
+                }
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || 'Secure resource load aborted.');
+                }
+
+                course = data.course;
+
+                // 4. HYDRATE LOCAL PROGRESS CACHE: Fetch permanent history records from DB to prevent resets
+                try {
+                    const progRes = await fetch('/api/get-user-progress', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: user?.email || '', course_code: courseId })
+                    });
+                    const progData = await progRes.json();
+                    if (progData.success && Array.isArray(progData.data)) {
+                        localStorage.setItem(getProgressKey(), JSON.stringify(progData.data));
+                        console.log('[Progress] Local progression matrix hydrated successfully from remote cloud records.');
+                    }
+                } catch (e) {
+                    console.warn('[Progress Hydration Warning]: Using local cache fallback:', e.message);
+                }
+
+                // Overwrite headers with fresh server titles
+                titleEl.textContent = course ? course.title : 'Curriculum Content';
+                sidebarTitle.textContent = course ? course.title : 'Classroom';
+                document.title = `${course ? course.title : 'Curriculum'} | Code With Pritom`;
+
                 completeBar.style.display = 'flex';
-                document.getElementById('course-progress-badge').classList.remove('hidden');
-                renderLessons(course);
-                loadLesson(0, course);
-                updateProgressUI(course);
-            } else {
-                lockScreen.classList.remove('hidden');
-                wrapper.innerHTML = '';
-                videoLoader.style.display = 'none';
-                metaEl.textContent = `${course.lessons.length} Lessons · Locked`;
+                renderLessons();
+                
+                // Standardized validation check: Verify physical existence of array indexes
+                if (course && Array.isArray(course.lessons) && course.lessons.length > 0) {
+                    document.getElementById('course-progress-badge').classList.remove('hidden');
+                    loadLesson(0);
+                    updateProgressUI(course);
+                    
+                    // Verify student review history dynamically upon bootstrap
+                    checkReviewStatus();
+                } else {
+                    showEmptyCurriculumState();
+                }
 
-                course.lessons.forEach(lesson => {
-                    lessonList.innerHTML += `
-                        <div class="lesson-item locked">
-                            <div class="lesson-icon bg-gray-700 text-gray-500"><i class="fa-solid fa-lock text-[10px]"></i></div>
-                            <div class="flex-1">
-                                <div class="text-sm text-gray-500">${lesson.title}</div>
-                                <div class="text-xs text-gray-600 mt-0.5">${lesson.duration}</div>
+            } catch (e) {
+                console.error('[Loader] Secure classroom synchronization fault:', e);
+                
+                if (!authorizationVerified) {
+                    // Fails identification barrier
+                    titleEl.textContent = 'Sync Fail';
+                    sidebarTitle.textContent = 'Access Evaluation Fault';
+                    showLockedState(metaFallback);
+                } else {
+                    // Fails structural assets (Confirmed user, but bad database record or API format)
+                    videoLoader.style.display = 'none';
+                    wrapper.innerHTML = `
+                        <div class="w-full h-full flex flex-col items-center justify-center bg-slate-950 text-center p-8 relative z-10 border border-slate-800 rounded-xl animate-fade-in">
+                            <div class="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center mb-5 text-red-500 border border-red-900/30 shadow-xl">
+                                <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
                             </div>
+                            <h2 class="text-xl font-black text-slate-100 mb-2 tracking-tight">Technical Payload Error</h2>
+                            <p class="text-sm text-slate-400 mb-8 max-w-sm leading-relaxed font-medium">
+                                Access is authorized! However, the visual asset pipeline failed to synchronize or delivered an invalid ID format.
+                                <br><span class="text-xs text-red-400 font-mono bg-red-950/60 px-2 py-0.5 rounded mt-2.5 inline-block border border-red-900/30">Diagnostics: ${e.message}</span>
+                            </p>
+                            <button onclick="window.location.reload()" class="btn btn-dark py-2.5 px-6 text-xs tracking-wider uppercase font-black flex items-center gap-2 border border-slate-800 hover:bg-slate-900 transition">
+                                <i class="fa-solid fa-rotate-right text-[10px]"></i> Reconnect Stream
+                            </button>
                         </div>
                     `;
-                });
+                    titleEl.textContent = 'Asset Sync Broken';
+                    sidebarTitle.textContent = 'Decoder Fault';
+                }
             }
-        } else {
-            titleEl.textContent = 'Course Not Found';
-            metaEl.textContent = 'This course does not exist.';
-            lockScreen.classList.remove('hidden');
-            videoLoader.style.display = 'none';
-            wrapper.innerHTML = '';
-            // Hide purchase button if course not found
-            const btn = lockScreen.querySelector('.btn-primary');
-            if (btn) btn.style.display = 'none';
         }
+
+        function showEmptyCurriculumState() {
+            videoLoader.style.display = 'none';
+            wrapper.innerHTML = `
+                <div class="w-full h-full flex flex-col items-center justify-center bg-gray-900/50 text-center p-8 relative z-10">
+                    <div class="w-20 h-20 bg-orange-500/10 rounded-2xl flex items-center justify-center mb-5 text-orange-500 animate-pulse">
+                        <i class="fa-solid fa-rocket text-3xl"></i>
+                    </div>
+                    <h3 class="font-bold text-2xl text-gray-100 mb-3 tracking-tight">Curriculum Assembling</h3>
+                    <p class="text-sm text-gray-400 max-w-md leading-relaxed">
+                        Enrollment is active! However, our team is currently finalizing the recorded visual materials for 
+                        <strong class="text-gray-200 font-bold">${course.title}</strong>. Access will initialize automatically within 24 hours.
+                    </p>
+                    <button onclick="window.location.href='dashboard.html'" class="btn btn-dark mt-8 btn-sm flex items-center gap-2 border border-gray-700">
+                        <i class="fa-solid fa-arrow-left text-xs"></i> Return to Dashboard
+                    </button>
+                </div>
+            `;
+            completeBar.style.display = 'none';
+            metaEl.textContent = `0 Lessons · Planning Milestone`;
+            lessonCounter.textContent = `Curriculum Empty`;
+            document.getElementById('course-progress-badge').classList.add('hidden');
+        }
+
+        function showLockedState(meta) {
+            lockScreen.classList.remove('hidden');
+            wrapper.innerHTML = '';
+            videoLoader.style.display = 'none';
+            metaEl.textContent = `Locked · Enroll Required`;
+
+            const actionBtn = document.getElementById('btn-lock-action');
+            if (actionBtn) {
+                if (publicCourseMeta[courseId]) {
+                    actionBtn.innerHTML = `<i class="fa-solid fa-cart-plus text-sm"></i> Add to Cart`;
+                } else {
+                    actionBtn.innerHTML = `<i class="fa-solid fa-magnifying-glass text-sm"></i> Explore Courses`;
+                }
+            }
+            
+            // Clean state inside sidebar list
+            lessonList.innerHTML = `
+                <div class="p-8 text-center text-gray-500 flex flex-col items-center gap-2">
+                    <i class="fa-solid fa-circle-info text-2xl opacity-20"></i>
+                    <p class="text-xs leading-relaxed">Complete enrollment to unlock the curriculum.</p>
+                </div>
+            `;
+        }
+
+        function handleLockAction() {
+            const meta = publicCourseMeta[courseId];
+            if (meta) {
+                Cart.addItem(meta);
+            } else {
+                window.location.href = 'dashboard.html';
+            }
+        }
+
+        // Initialize
+        initClassroom();
 
         // ===== NOTES =====
         function saveNotes() {
@@ -766,6 +1071,115 @@
         }
 
         loadNotes();
+
+        // ===== COURSE REVIEWS SYSTEM =====
+        let currentSelectedRating = 0;
+
+        function setRating(val) {
+            currentSelectedRating = val;
+            const stars = document.querySelectorAll('.star-btn');
+            const display = document.getElementById('rating-value-display');
+            
+            const labelMap = {
+                1: 'Poor 😞',
+                2: 'Fair 😐',
+                3: 'Good 🙂',
+                4: 'Great! 😁',
+                5: 'Excellent! 🌟'
+            };
+            
+            display.textContent = labelMap[val] || `(${val} / 5)`;
+            display.classList.remove('text-gray-500');
+            display.classList.add('text-yellow-500');
+
+            stars.forEach((star, index) => {
+                if (index < val) {
+                    star.classList.remove('text-gray-600');
+                    star.classList.add('text-yellow-500');
+                } else {
+                    star.classList.remove('text-yellow-500');
+                    star.classList.add('text-gray-600');
+                }
+            });
+        }
+
+        // ===== REVIEW INTEGRITY CONSTRAINTS =====
+        async function checkReviewStatus() {
+            const user = Auth.getUser();
+            if (!user?.email || !courseId) return;
+
+            try {
+                const response = await fetch(`/api/reviews/check?user_email=${encodeURIComponent(user.email)}&course_code=${encodeURIComponent(courseId)}`);
+                const data = await response.json();
+                
+                if (data.hasReviewed) {
+                    // Transition element display to lock container and reveal visual confirmation instantly
+                    const f = document.getElementById('review-form-container');
+                    const s = document.getElementById('review-success-msg');
+                    if (f) f.classList.add('hidden');
+                    if (s) s.classList.remove('hidden');
+                }
+            } catch (e) {
+                console.warn('[Review Status Exception]: Fetch boundary alert:', e);
+            }
+        }
+
+        async function submitReview() {
+            const currentRating = currentSelectedRating;
+            if (!currentRating) {
+                UI.showToast('Please choose a star rating.', 'error');
+                return;
+            }
+
+            const revText = document.getElementById('commentText').value.trim();
+            const btn = document.getElementById('btn-submit-review');
+
+            if (!revText) {
+                UI.showToast('Please tell us what you liked about the course.', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            const origContent = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin text-xs mr-1"></i> Sending...';
+
+            const user = Auth.getUser();
+
+            // The exact payload structure requested by the developer
+            const payload = {
+                user_email: user ? user.email : '', // Ensure user variable is correctly parsed
+                course_code: new URLSearchParams(window.location.search).get('id'),
+                rating: currentRating,
+                comment: document.getElementById('commentText').value,
+                suggestions: document.getElementById('suggestionText').value
+            };
+
+            // Verify physical integrity of state inputs in browser console before handshake
+            console.log('Initiating secure Review Transmission — payload:', payload);
+
+            try {
+                const response = await fetch('/api/reviews/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const json = await response.json();
+
+                if (json.success) {
+                    // Paint structural success state instantly
+                    document.getElementById('review-form-container').classList.add('hidden');
+                    document.getElementById('review-success-msg').classList.remove('hidden');
+                    UI.showToast('✓ Review submitted successfully!', 'success');
+                } else {
+                    throw new Error(json.message || 'Cloud feedback submit crashed.');
+                }
+            } catch (e) {
+                UI.showToast(e.message, 'error');
+                btn.disabled = false;
+                btn.innerHTML = origContent;
+            }
+        }
 
         // ===== MOBILE SIDEBAR TOGGLE =====
         function toggleClassroomSidebar() {

@@ -34,19 +34,22 @@ class Auth {
 
             const data = await response.json();
 
-            if (data.success) {
-                if (data.user) {
-                    this.setUser(data.user);
+            // 1. Intercept Active OTP Verification Gateways
+            if (data.requiresVerification) {
+                UI.showToast(data.message, 'info');
+                if (typeof window.openOtpModal === 'function') {
+                    window.openOtpModal(data.email);
                 }
+                return; // Block default redirection routines
+            }
 
-                // Show success message
-                UI.showToast(data.message || 'Success!', 'success');
-
-                // Redirect to dashboard for login/register
-                if (payload.action === 'login' || payload.action === 'register') {
-                    setTimeout(() => {
-                        window.location.href = 'dashboard.html';
-                    }, 800);
+            if (data.success) {
+                localStorage.setItem('user', JSON.stringify(data.user)); // role সহ পুরো অবজেক্ট সেভ করবে
+                console.log('Logged in user role:', data.user.role); // ডিবাগ করার জন্য
+                if (data.user.role === 'admin') {
+                    window.location.href = 'admin.html';
+                } else {
+                    window.location.href = 'dashboard.html';
                 }
             } else {
                 throw new Error(data.message || 'Something went wrong');
@@ -87,9 +90,11 @@ class Auth {
             if (data.success && data.user) {
                 const localAccess = (user.access || '').toString();
                 const remoteAccess = (data.user.access || '').toString();
+                const localRole = user.role || '';
+                const remoteRole = data.user.role || '';
 
-                if (localAccess !== remoteAccess) {
-                    console.log('[Auth] New course access detected. Updating...');
+                if (localAccess !== remoteAccess || localRole !== remoteRole) {
+                    console.log('[Auth] Account state drift detected. Updating local user session...');
                     this.setUser(data.user);
 
                     // Mark sync as done for today

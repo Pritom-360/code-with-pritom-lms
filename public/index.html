@@ -32,6 +32,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="css/style.css">
+    <!-- AOS Animation Core -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
@@ -44,7 +46,7 @@
     </div>
 
     <!-- ===================== NAVBAR ===================== -->
-    <nav class="fixed w-full z-50 glass-nav transition-all duration-300" id="navbar">
+    <nav class="sticky top-0 z-[100] bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm w-full transition-all duration-300" id="navbar">
         <div class="max-w-7xl mx-auto px-4 md:px-6 py-4 flex justify-between items-center">
             <a href="#" class="text-xl md:text-2xl font-extrabold tracking-tight select-none z-50 relative">
                 Code With <span class="text-orange-600">Pritom</span>
@@ -54,17 +56,22 @@
             <div class="hidden lg:flex items-center gap-8">
                 <a href="#courses"
                     class="text-slate-500 hover:text-slate-800 font-medium text-sm transition">Courses</a>
-                <a href="#projects"
-                    class="text-slate-500 hover:text-slate-800 font-medium text-sm transition">Projects</a>
+                <a href="library.html"
+                    class="text-slate-500 hover:text-slate-800 font-medium text-sm transition flex items-center gap-1.5">Library <span class="bg-orange-100 text-orange-600 text-[9px] font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider animate-pulse">Free</span></a>
+                <a href="workshops.html"
+                    class="text-slate-500 hover:text-slate-800 font-medium text-sm transition">Workshops</a>
                 <a href="#testimonials"
                     class="text-slate-500 hover:text-slate-800 font-medium text-sm transition">Reviews</a>
                 <a href="#faq" class="text-slate-500 hover:text-slate-800 font-medium text-sm transition">FAQ</a>
-                <button onclick="UI.openModal('login')"
-                    class="text-slate-600 hover:text-orange-600 font-semibold text-sm transition">Log In</button>
-                <button onclick="UI.openModal('register')"
-                    class="btn btn-primary btn-pill btn-sm shadow-lg hover:shadow-orange-500/25">
-                    Get Started Free
-                </button>
+                <a href="javascript:void(0)" onclick="UI.openModal('login')" class="text-slate-500 hover:text-slate-800 font-medium text-sm transition">Dashboard</a>
+                <div id="nav-auth-group" class="flex items-center gap-6">
+                    <button onclick="UI.openModal('login')"
+                        class="text-slate-600 hover:text-orange-600 font-semibold text-sm transition">Log In</button>
+                    <button onclick="UI.openModal('register')"
+                        class="btn btn-primary btn-pill btn-sm shadow-lg hover:shadow-orange-500/25">
+                        Get Started Free
+                    </button>
+                </div>
             </div>
 
             <!-- Mobile Menu Button -->
@@ -84,9 +91,14 @@
         </button>
         <div class="flex flex-col space-y-2 mt-4">
             <a href="#courses" class="mobile-nav-link" onclick="UI.closeMobileNav()">Courses</a>
-            <a href="#projects" class="mobile-nav-link" onclick="UI.closeMobileNav()">Projects</a>
+            <a href="library.html" class="mobile-nav-link flex items-center justify-between" onclick="UI.closeMobileNav()">
+                <span>Library</span>
+                <span class="bg-orange-100 text-orange-600 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">Free</span>
+            </a>
+            <a href="workshops.html" class="mobile-nav-link" onclick="UI.closeMobileNav()">Workshops</a>
             <a href="#testimonials" class="mobile-nav-link" onclick="UI.closeMobileNav()">Reviews</a>
             <a href="#faq" class="mobile-nav-link" onclick="UI.closeMobileNav()">FAQ</a>
+            <a href="javascript:void(0)" onclick="UI.closeMobileNav();UI.openModal('login')" class="mobile-nav-link">Dashboard</a>
         </div>
         <div class="mt-auto space-y-4 pb-8">
             <button onclick="UI.closeMobileNav();UI.openModal('login')"
@@ -97,8 +109,13 @@
     </div>
 
     <!-- ===================== HERO SECTION ===================== -->
-    <header class="hero relative overflow-hidden pt-32 pb-16 lg:pt-48 lg:pb-32">
+    <header class="hero relative overflow-hidden pt-28 pb-16 lg:pt-36 lg:pb-32">
         <div class="hero-bg absolute inset-0 z-0 opacity-50 pointer-events-none"></div>
+
+        <!-- Dynamic Promoted Live Workshop Countdown Ribbon -->
+        <div id="hero-workshop-banner" class="max-w-7xl mx-auto px-4 md:px-6 mb-8 md:mb-12 relative z-20 hidden" data-aos="fade-down">
+            <!-- Built Dynamically inside main.js -->
+        </div>
 
         <!-- Blobs -->
         <div class="hero-blob animate-blob absolute rounded-full filter blur-3xl opacity-30"
@@ -142,124 +159,38 @@
                         </a>
                     </div>
 
-                    <!-- Social Proof -->
-                    <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 animate-fade-in-up delay-500"
-                        style="opacity:0">
-                        <div class="avatar-stack flex -space-x-3">
-                            <div class="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-white flex items-center justify-center text-white font-bold text-xs"
-                                style="background:linear-gradient(135deg,#f97316,#dc2626)">A</div>
-                            <div class="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-white flex items-center justify-center text-white font-bold text-xs"
-                                style="background:linear-gradient(135deg,#7c3aed,#3b82f6)">B</div>
-                            <div class="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-white flex items-center justify-center text-white font-bold text-xs"
-                                style="background:linear-gradient(135deg,#10b981,#06b6d4)">C</div>
-                            <div
-                                class="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-white flex items-center justify-center text-white font-bold text-xs bg-slate-600">
-                                +500</div>
-                        </div>
-                        <div class="text-sm text-slate-500 text-center sm:text-left">
-                            <div class="font-bold text-slate-700">500+ learners enrolled</div>
-                            <div
-                                class="text-yellow-500 text-xs mt-0.5 flex items-center justify-center sm:justify-start gap-1">
-                                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
-                                    class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
-                                    class="fa-solid fa-star"></i>
-                                <span class="text-slate-400 ml-1">(4.9/5 Rating)</span>
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
 
                 <!-- Hero Image (Hidden on Mobile) -->
                 <div class="hero-image-container hidden lg:block relative">
                     <img src="images/brand.png" alt="Code With Pritom" class="hero-img w-full max-w-lg mx-auto">
-
-                    <!-- Floating Badge 1 -->
-                    <div class="absolute -top-6 -right-6 bg-white p-4 rounded-2xl shadow-xl animate-bounce-slow hidden xl:block"
-                        style="animation-delay:1s">
-                        <div class="flex items-center gap-3">
-                            <div
-                                class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
-                                <i class="fa-solid fa-check"></i>
-                            </div>
-                            <div>
-                                <div class="text-xs text-slate-500 font-medium">Courses Completed</div>
-                                <div class="text-lg font-bold text-slate-800">120+</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Floating Badge 2 -->
-                    <div class="absolute -bottom-10 left-10 bg-white p-4 rounded-2xl shadow-xl animate-bounce-slow hidden xl:block"
-                        style="animation-delay:0s">
-                        <div class="flex items-center gap-3">
-                            <div
-                                class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                                <i class="fa-solid fa-code"></i>
-                            </div>
-                            <div>
-                                <div class="text-xs text-slate-500 font-medium">Lines of Code</div>
-                                <div class="text-lg font-bold text-slate-800">1M+</div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
     </header>
 
     <!-- ===================== STATS BAR ===================== -->
-    <section class="bg-white border-y border-slate-100 py-8 md:py-10">
-        <!-- ... (stats content) ... -->
+    <section class="bg-white border-y border-slate-100 py-8 md:py-12">
         <div class="max-w-7xl mx-auto px-4 md:px-6">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-                <div class="stat-item reveal">
-                    <div class="text-3xl md:text-4xl font-black text-slate-800 mb-1" data-count="9" data-suffix="+">0
-                    </div>
-                    <div class="text-xs md:text-sm text-slate-500 font-bold uppercase tracking-wider">Pro Courses</div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-12 text-center">
+                <div class="stat-item" data-aos="fade-up" data-aos-delay="0">
+                    <div id="stat-total-students" class="text-3xl md:text-4xl font-black text-slate-900 mb-1">...</div>
+                    <div class="text-[10px] md:text-xs text-slate-400 font-black uppercase tracking-wider">Total Students</div>
                 </div>
-                <div class="stat-item reveal delay-100">
-                    <div class="text-3xl md:text-4xl font-black text-slate-800 mb-1" data-count="500" data-suffix="+">0
-                    </div>
-                    <div class="text-xs md:text-sm text-slate-500 font-bold uppercase tracking-wider">Active Learners
-                    </div>
+                <div class="stat-item" data-aos="fade-up" data-aos-delay="100">
+                    <div id="stat-active-courses" class="text-3xl md:text-4xl font-black text-orange-600 mb-1">...</div>
+                    <div class="text-[10px] md:text-xs text-slate-400 font-black uppercase tracking-wider">Active Courses</div>
                 </div>
-                <div class="stat-item reveal delay-200">
-                    <div class="text-3xl md:text-4xl font-black text-slate-800 mb-1" data-count="120" data-suffix="+">0
-                    </div>
-                    <div class="text-xs md:text-sm text-slate-500 font-bold uppercase tracking-wider">Video Lessons
-                    </div>
-                </div>
-                <div class="stat-item reveal delay-300">
-                    <div class="text-3xl md:text-4xl font-black text-slate-800 mb-1" data-count="98" data-suffix="%">0
-                    </div>
-                    <div class="text-xs md:text-sm text-slate-500 font-bold uppercase tracking-wider">Satisfaction Rate
-                    </div>
+                <div class="stat-item" data-aos="fade-up" data-aos-delay="200">
+                    <div id="stat-free-handnotes" class="text-3xl md:text-4xl font-black text-slate-900 mb-1">...</div>
+                    <div class="text-[10px] md:text-xs text-slate-400 font-black uppercase tracking-wider">Learning Resources</div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- ===================== USER ANALYTICS CHART ===================== -->
-    <section class="bg-slate-50 py-16 md:py-20 border-b border-slate-200">
-        <div class="max-w-7xl mx-auto px-4 md:px-6">
-            <div class="text-center mb-10 reveal">
-                <span
-                    class="inline-block px-3 py-1 bg-orange-100 text-orange-600 rounded-full text-xs font-bold uppercase tracking-wider mb-2">Live
-                    Data</span>
-                <h2 class="text-3xl md:text-4xl font-black tracking-tight mb-3 text-slate-900">Top Learners Leaderboard
-                </h2>
-                <p class="text-slate-500 max-w-lg mx-auto">Real-time stats of our most dedicated students completing
-                    courses.</p>
-            </div>
 
-            <div
-                class="bg-white rounded-3xl shadow-xl shadow-slate-200 border border-slate-100 p-4 md:p-8 reveal delay-100">
-                <div class="relative w-full h-[300px] md:h-[400px]">
-                    <canvas id="userAnalyticsChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <!-- ===================== WORKSHOP SECTION ===================== -->
     <section id="workshop" class="py-20 bg-slate-900 text-white relative overflow-hidden">
@@ -297,292 +228,117 @@
                     expert.</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                <!-- 1. n8n Fundamentals -->
-                <div class="card card-glow reveal delay-100 relative group cursor-pointer"
-                    onclick="openCourseModal('1')">
-                    <div class="absolute top-4 right-4"><span class="badge badge-free">FREE</span></div>
-                    <div
-                        class="mb-6 w-14 h-14 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
-                        <i class="fa-solid fa-bolt"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-2">n8n Fundamentals</h3>
-                    <p class="text-slate-500 mb-6 text-sm leading-relaxed line-clamp-2">Master nodes, triggers, JSON
-                        logic, and workflow basics.</p>
-                    <div class="mt-auto">
-                        <div class="flex items-center gap-4 text-xs text-slate-400 font-medium mb-4">
-                            <span><i class="fa-solid fa-list-ul mr-1"></i> 15 Lessons</span>
-                            <span><i class="fa-solid fa-clock mr-1"></i> 2h 30m</span>
-                        </div>
-                        <button class="btn btn-outline w-full text-sm">View Roadmap</button>
-                    </div>
-                </div>
-
-                <!-- 2. Linux Fundamentals -->
-                <div class="card card-glow reveal delay-200 relative group cursor-pointer"
-                    onclick="openCourseModal('4')">
-                    <div
-                        class="mb-6 w-14 h-14 rounded-xl bg-slate-800 text-white flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
-                        <i class="fa-brands fa-linux"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-2">Linux Fundamentals</h3>
-                    <p class="text-slate-500 mb-6 text-sm leading-relaxed line-clamp-2">Master the command line, file
-                        systems, and server management.</p>
-                    <div class="mt-auto">
-                        <div class="flex items-center gap-4 text-xs text-slate-400 font-medium mb-4">
-                            <span><i class="fa-solid fa-list-ul mr-1"></i> 12 Lessons</span>
-                            <span><i class="fa-solid fa-clock mr-1"></i> 3h 15m</span>
-                        </div>
-                        <button class="btn btn-outline w-full text-sm">View Roadmap</button>
-                    </div>
-                </div>
-
-                <!-- 3. SaaS Automation -->
-                <div class="card card-glow reveal delay-300 relative group cursor-pointer"
-                    onclick="openCourseModal('3')">
-                    <div class="absolute top-4 right-4"><span class="badge badge-premium">PREMIUM</span></div>
-                    <div
-                        class="mb-6 w-14 h-14 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
-                        <i class="fa-solid fa-rocket"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-2">SaaS Automation</h3>
-                    <p class="text-slate-500 mb-6 text-sm leading-relaxed line-clamp-2">Build a complete SaaS backend
-                        using low-code tools.</p>
-                    <div class="mt-auto">
-                        <div class="flex items-center gap-4 text-xs text-slate-400 font-medium mb-4">
-                            <span><i class="fa-solid fa-list-ul mr-1"></i> 20 Lessons</span>
-                            <span><i class="fa-solid fa-clock mr-1"></i> 5h 45m</span>
-                        </div>
-                        <button class="btn btn-outline w-full text-sm">View Roadmap</button>
-                    </div>
-                </div>
-
-                <!-- 4. Java Programming -->
-                <div class="card card-glow reveal delay-100 relative group cursor-pointer"
-                    onclick="openCourseModal('7')">
-                    <div
-                        class="mb-6 w-14 h-14 rounded-xl bg-red-50 text-red-600 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
-                        <i class="fa-brands fa-java"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-2">Java Programming</h3>
-                    <p class="text-slate-500 mb-6 text-sm leading-relaxed line-clamp-2">Complete guide to Java syntax,
-                        OOP, and development.</p>
-                    <div class="mt-auto">
-                        <div class="flex items-center gap-4 text-xs text-slate-400 font-medium mb-4">
-                            <span><i class="fa-solid fa-list-ul mr-1"></i> 18 Lessons</span>
-                            <span><i class="fa-solid fa-clock mr-1"></i> 6h 20m</span>
-                        </div>
-                        <button class="btn btn-outline w-full text-sm">View Roadmap</button>
-                    </div>
-                </div>
-
-                <!-- 5. Scripting & Automation -->
-                <div class="card card-glow reveal delay-200 relative group cursor-pointer"
-                    onclick="openCourseModal('9')">
-                    <div
-                        class="mb-6 w-14 h-14 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
-                        <i class="fa-solid fa-scroll"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-2">Scripting & Automation</h3>
-                    <p class="text-slate-500 mb-6 text-sm leading-relaxed line-clamp-2">Python and Shell scripting for
-                        real-world DevOps.</p>
-                    <div class="mt-auto">
-                        <div class="flex items-center gap-4 text-xs text-slate-400 font-medium mb-4">
-                            <span><i class="fa-solid fa-list-ul mr-1"></i> 11 Lessons</span>
-                            <span><i class="fa-solid fa-clock mr-1"></i> 4h 00m</span>
-                        </div>
-                        <button class="btn btn-outline w-full text-sm">View Roadmap</button>
-                    </div>
-                </div>
-
-                <!-- 6. Discrete Mathematics -->
-                <div class="card card-glow reveal delay-300 relative group cursor-pointer"
-                    onclick="openCourseModal('6')">
-                    <div
-                        class="mb-6 w-14 h-14 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
-                        <i class="fa-solid fa-calculator"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-2">Discrete Mathematics</h3>
-                    <p class="text-slate-500 mb-6 text-sm leading-relaxed line-clamp-2">Logic, sets, graph theory, and
-                        algorithms for CS.</p>
-                    <div class="mt-auto">
-                        <div class="flex items-center gap-4 text-xs text-slate-400 font-medium mb-4">
-                            <span><i class="fa-solid fa-list-ul mr-1"></i> 14 Lessons</span>
-                            <span><i class="fa-solid fa-clock mr-1"></i> 5h 00m</span>
-                        </div>
-                        <button class="btn btn-outline w-full text-sm">View Roadmap</button>
-                    </div>
+            <!-- Courses Grid Injected Dynamically -->
+            <div id="landing-courses-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                <div class="col-span-full text-center py-16 bg-slate-50/30 border border-dashed rounded-3xl animate-pulse">
+                    <div class="w-12 h-12 rounded-full border-4 border-orange-500/20 border-t-orange-500 animate-spin mx-auto mb-4"></div>
+                    <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Syncing Curriculum Matrix...</p>
                 </div>
             </div>
 
             <div class="text-center mt-12">
-                <button onclick="UI.openModal('register')" class="btn btn-outline btn-pill">View All Courses <i
-                        class="fa-solid fa-arrow-right ml-2"></i></button>
+                <a href="#courses" class="btn btn-outline btn-pill inline-flex items-center justify-center transition-all duration-300">View All Courses <i
+                        class="fa-solid fa-arrow-right ml-2"></i></a>
             </div>
         </div>
     </section>
 
-    <!-- ===================== PROJECTS SECTION ===================== -->
-    <section id="projects" class="section-padding bg-slate-50 py-16 md:py-24">
-        <div class="max-w-7xl mx-auto px-4 md:px-6">
-            <div class="text-center mb-12 md:mb-16 reveal">
-                <span class="badge badge-premium mb-4">Showcase</span>
-                <h2 class="text-3xl md:text-4xl font-extrabold mb-4 tracking-tight">Built by the Community</h2>
-                <p class="text-slate-500 max-w-lg mx-auto">See what our students (and I) are building with these skills.
-                </p>
-            </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                <!-- Project 1 -->
-                <a href="https://github.com" target="_blank" class="project-card reveal delay-100 group block">
-                    <div class="project-image">
-                        <i class="fa-brands fa-github"></i>
-                        <span class="absolute bottom-4 right-4 bg-black/80 text-white text-xs px-2 py-1 rounded">By
-                            Pritom</span>
-                    </div>
-                    <div class="project-content">
-                        <h3 class="font-bold text-lg mb-2 group-hover:text-orange-600 transition-colors">LMS Automation
-                            System</h3>
-                        <p class="text-slate-500 text-sm mb-4 line-clamp-2">A complete Learning Management System built
-                            with Node.js and n8n based backend.</p>
-                        <div class="project-tags mt-auto relative">
-                            <span class="project-tag">Node.js</span>
-                            <span class="project-tag">n8n</span>
-                            <span class="project-tag">HTML5</span>
-                        </div>
-                    </div>
-                </a>
-
-                <!-- Project 2 -->
-                <a href="https://github.com" target="_blank" class="project-card reveal delay-200 group block">
-                    <div class="project-image">
-                        <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=500"
-                            alt="Dashboard">
-                    </div>
-                    <div class="project-content">
-                        <h3 class="font-bold text-lg mb-2 group-hover:text-orange-600 transition-colors">SaaS Analytics
-                            Dashboard</h3>
-                        <p class="text-slate-500 text-sm mb-4 line-clamp-2">Real-time revenue tracking dashboard
-                            connected to Stripe API.</p>
-                        <div class="project-tags mt-auto relative">
-                            <span class="project-tag">Vue.js</span>
-                            <span class="project-tag">Tailwind</span>
-                            <span class="project-tag">Stripe</span>
-                        </div>
-                    </div>
-                </a>
-
-                <!-- Project 3 -->
-                <a href="https://github.com" target="_blank" class="project-card reveal delay-300 group block">
-                    <div class="project-image">
-                        <i class="fa-solid fa-robot"></i>
-                    </div>
-                    <div class="project-content">
-                        <h3 class="font-bold text-lg mb-2 group-hover:text-orange-600 transition-colors">Discord Support
-                            Bot</h3>
-                        <p class="text-slate-500 text-sm mb-4 line-clamp-2">AI-powered support bot that answers user
-                            queries automatically.</p>
-                        <div class="project-tags mt-auto relative">
-                            <span class="project-tag">Python</span>
-                            <span class="project-tag">Discord.py</span>
-                            <span class="project-tag">OpenAI</span>
-                        </div>
-                    </div>
-                </a>
-            </div>
-
-            <div class="text-center mt-12 reveal">
-                <p class="text-slate-500 mb-4">Have a project to share?</p>
-                <a href="mailto:submit@example.com" class="font-bold text-orange-600 hover:underline">Submit your
-                    project used in our courses!</a>
-            </div>
-        </div>
-    </section>
 
     <!-- ===================== TESTIMONIALS ===================== -->
     <section id="testimonials" class="section-padding bg-white py-16 md:py-24">
         <div class="max-w-7xl mx-auto px-4 md:px-6">
-            <div class="text-center mb-12 md:mb-16 reveal">
+            <div class="text-center mb-12 md:mb-16" data-aos="fade-up">
                 <span class="badge badge-paid mb-4">Reviews</span>
                 <h2 class="text-3xl md:text-4xl font-extrabold mb-4 tracking-tight">Student Success Stories</h2>
+                <p class="text-slate-500 text-sm">Read real feedback verified automatically from our learning portal.</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                <!-- Review 1 -->
-                <div class="testimonial-card reveal delay-100">
-                    <div class="text-yellow-400 text-sm mb-4">★★★★★</div>
-                    <p class="testimonial-text">"Code With Pritom completely changed how I work. I automated my entire
-                        email pipeline in one weekend. The free course alone is worth more than most paid courses!"</p>
-                    <div class="testimonial-author mt-6">
-                        <div class="testimonial-avatar">SA</div>
+            <div id="testimonials-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                <!-- Testimonial 1: Tanvir Rahman -->
+                <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full relative group" data-aos="fade-up" data-aos-delay="0">
+                    <div class="absolute top-8 right-8 text-slate-100 group-hover:text-orange-100 transition-colors duration-300">
+                        <i class="fa-solid fa-quote-right text-4xl md:text-5xl"></i>
+                    </div>
+                    <div class="flex gap-1 text-amber-400 text-xs mb-5 relative z-10">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                    </div>
+                    <p class="text-slate-700 text-[15px] md:text-[16px] leading-relaxed font-semibold flex-1 mb-6 relative z-10">
+                        "n8n অটোমেশন কোর্সটি করার পর আমার ফ্রিল্যান্সিং ক্যারিয়ারে আমূল পরিবর্তন এসেছে। প্রীতম ভাইয়ের বোঝানোর ধরণ অসাধারণ!"
+                    </p>
+                    <div class="flex items-center gap-4 pt-5 border-t border-slate-50 mt-auto relative z-10">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80" alt="Tanvir Rahman" class="w-12 h-12 rounded-full object-cover border-2 border-orange-500/20 shadow-sm shrink-0">
                         <div>
-                            <div class="font-bold text-sm text-slate-800">Sabrina A.</div>
-                            <div class="text-xs text-slate-400">Digital Marketer</div>
+                            <h4 class="font-extrabold text-slate-900 tracking-tight text-sm">Tanvir Rahman</h4>
+                            <p class="text-orange-600 text-[10px] font-black uppercase tracking-widest flex items-center gap-1 mt-0.5">
+                                <span class="w-1.5 h-1.5 bg-orange-500 rounded-full inline-block"></span> Freelancer / n8n Alum
+                            </p>
                         </div>
                     </div>
                 </div>
-                <!-- Review 2 -->
-                <div class="testimonial-card reveal delay-200">
-                    <div class="text-yellow-400 text-sm mb-4">★★★★★</div>
-                    <p class="testimonial-text">"The Linux Fundamentals course cleared up so many concepts I struggled
-                        with for years. The visual examples are top-notch."</p>
-                    <div class="testimonial-author mt-6">
-                        <div class="testimonial-avatar bg-gradient-to-br from-blue-500 to-purple-500">DK</div>
+
+                <!-- Testimonial 2: Sadia Islam -->
+                <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full relative group" data-aos="fade-up" data-aos-delay="150">
+                    <div class="absolute top-8 right-8 text-slate-100 group-hover:text-orange-100 transition-colors duration-300">
+                        <i class="fa-solid fa-quote-right text-4xl md:text-5xl"></i>
+                    </div>
+                    <div class="flex gap-1 text-amber-400 text-xs mb-5 relative z-10">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                    </div>
+                    <p class="text-slate-700 text-[15px] md:text-[16px] leading-relaxed font-semibold flex-1 mb-6 relative z-10">
+                        "বাংলায় এত গুছিয়ে ডিসক্রিট ম্যাথমেটিক্স আর সি-প্রোগ্রামিং আগে কোথাও পাইনি। বিশেষ করে ফ্রি হ্যান্ডনোটগুলো পরীক্ষার আগে অনেক কাজে দেয়।"
+                    </p>
+                    <div class="flex items-center gap-4 pt-5 border-t border-slate-50 mt-auto relative z-10">
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80" alt="Sadia Islam" class="w-12 h-12 rounded-full object-cover border-2 border-orange-500/20 shadow-sm shrink-0">
                         <div>
-                            <div class="font-bold text-sm text-slate-800">David K.</div>
-                            <div class="text-xs text-slate-400">SysAdmin</div>
+                            <h4 class="font-extrabold text-slate-900 tracking-tight text-sm">Sadia Islam</h4>
+                            <p class="text-orange-600 text-[10px] font-black uppercase tracking-widest flex items-center gap-1 mt-0.5">
+                                <span class="w-1.5 h-1.5 bg-orange-500 rounded-full inline-block"></span> CSE Academic Scholar
+                            </p>
                         </div>
                     </div>
                 </div>
-                <!-- Review 3 -->
-                <div class="testimonial-card reveal delay-300">
-                    <div class="text-yellow-400 text-sm mb-4">★★★★★</div>
-                    <p class="testimonial-text">"I built my startup's backend using the SaaS Automation masterclass.
-                        Saved $5000 in dev costs. Pritom is a genius instructor."</p>
-                    <div class="testimonial-author mt-6">
-                        <div class="testimonial-avatar bg-gradient-to-br from-green-500 to-teal-500">JM</div>
+
+                <!-- Testimonial 3: Rakibul Hasan -->
+                <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full relative group" data-aos="fade-up" data-aos-delay="300">
+                    <div class="absolute top-8 right-8 text-slate-100 group-hover:text-orange-100 transition-colors duration-300">
+                        <i class="fa-solid fa-quote-right text-4xl md:text-5xl"></i>
+                    </div>
+                    <div class="flex gap-1 text-amber-400 text-xs mb-5 relative z-10">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                    </div>
+                    <p class="text-slate-700 text-[15px] md:text-[16px] leading-relaxed font-semibold flex-1 mb-6 relative z-10">
+                        "আমি একজন ডিজিটাল মার্কেটার, n8n ওয়ার্কশপটি করার পর আমার ক্লায়েন্টদের ডাটা এন্ট্রি কাজগুলো এখন আমি অটোমেশনে করি। জাস্ট অসাধারণ!"
+                    </p>
+                    <div class="flex items-center gap-4 pt-5 border-t border-slate-50 mt-auto relative z-10">
+                        <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80" alt="Rakibul Hasan" class="w-12 h-12 rounded-full object-cover border-2 border-orange-500/20 shadow-sm shrink-0">
                         <div>
-                            <div class="font-bold text-sm text-slate-800">Jessica M.</div>
-                            <div class="text-xs text-slate-400">Founder</div>
+                            <h4 class="font-extrabold text-slate-900 tracking-tight text-sm">Rakibul Hasan</h4>
+                            <p class="text-orange-600 text-[10px] font-black uppercase tracking-widest flex items-center gap-1 mt-0.5">
+                                <span class="w-1.5 h-1.5 bg-orange-500 rounded-full inline-block"></span> Digital Marketer
+                            </p>
                         </div>
                     </div>
                 </div>
-                <!-- Review 4 -->
-                <div class="testimonial-card reveal delay-100">
-                    <div class="text-yellow-400 text-sm mb-4">★★★★☆</div>
-                    <p class="testimonial-text">"Great clear audio and pacing. I love the interactive roadmaps feature
-                        in the new update!"</p>
-                    <div class="testimonial-author mt-6">
-                        <div class="testimonial-avatar">RJ</div>
-                        <div>
-                            <div class="font-bold text-sm text-slate-800">Rahul J.</div>
-                            <div class="text-xs text-slate-400">Student</div>
-                        </div>
+
+                <!-- Testimonial 4: Anika Tahsin -->
+                <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full relative group" data-aos="fade-up" data-aos-delay="450">
+                    <div class="absolute top-8 right-8 text-slate-100 group-hover:text-orange-100 transition-colors duration-300">
+                        <i class="fa-solid fa-quote-right text-4xl md:text-5xl"></i>
                     </div>
-                </div>
-                <!-- Review 5 -->
-                <div class="testimonial-card reveal delay-200">
-                    <div class="text-yellow-400 text-sm mb-4">★★★★★</div>
-                    <p class="testimonial-text">"Java OOP was finally explained in a way that makes sense. The hands-on
-                        projects were challenging but rewarding."</p>
-                    <div class="testimonial-author mt-6">
-                        <div class="testimonial-avatar bg-orange-500">TP</div>
-                        <div>
-                            <div class="font-bold text-sm text-slate-800">Tom P.</div>
-                            <div class="text-xs text-slate-400">Junior Dev</div>
-                        </div>
+                    <div class="flex gap-1 text-amber-400 text-xs mb-5 relative z-10">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
                     </div>
-                </div>
-                <!-- Review 6 -->
-                <div class="testimonial-card reveal delay-300">
-                    <div class="text-yellow-400 text-sm mb-4">★★★★★</div>
-                    <p class="testimonial-text">"Best investment I made this year. The community support is amazing
-                        too."</p>
-                    <div class="testimonial-author mt-6">
-                        <div class="testimonial-avatar bg-purple-500">AL</div>
+                    <p class="text-slate-700 text-[15px] md:text-[16px] leading-relaxed font-semibold flex-1 mb-6 relative z-10">
+                        "একাডেমির ইন্টারঅ্যাক্টিভ ড্যাশবোর্ড আর সার্টিফিকেট সিস্টেম আমাকে পড়ার প্রতি আরও আগ্রহী করে তুলেছে।"
+                    </p>
+                    <div class="flex items-center gap-4 pt-5 border-t border-slate-50 mt-auto relative z-10">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Anika Tahsin" class="w-12 h-12 rounded-full object-cover border-2 border-orange-500/20 shadow-sm shrink-0">
                         <div>
-                            <div class="font-bold text-sm text-slate-800">Ana L.</div>
-                            <div class="text-xs text-slate-400">Freelancer</div>
+                            <h4 class="font-extrabold text-slate-900 tracking-tight text-sm">Anika Tahsin</h4>
+                            <p class="text-orange-600 text-[10px] font-black uppercase tracking-widest flex items-center gap-1 mt-0.5">
+                                <span class="w-1.5 h-1.5 bg-orange-500 rounded-full inline-block"></span> Elite Academy Member
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -602,45 +358,38 @@
                 <div class="card reveal delay-100 cursor-pointer"
                     onclick="this.querySelector('.faq-answer').classList.toggle('hidden');this.querySelector('.faq-icon').classList.toggle('rotate-180')">
                     <div class="flex justify-between items-center">
-                        <h3 class="font-bold text-sm">Do I need coding experience?</h3>
+                        <h3 class="font-bold text-sm">What educational tools do you offer?</h3>
                         <i
                             class="fa-solid fa-chevron-down faq-icon text-slate-400 text-xs transition-transform duration-300"></i>
                     </div>
-                    <p class="faq-answer hidden text-slate-500 text-sm mt-3 leading-relaxed">No! Our foundational
-                        courses (Linux, n8n) start from absolute zero. For advanced programming courses (Java, C), we
-                        guide you step-by-step.</p>
+                    <p class="faq-answer hidden text-slate-500 text-sm mt-3 leading-relaxed">Through our Smart Classroom portal, we provide a wide range of tools including Calculus Calculators, EWU Admission model tests, Visual Bengali Typing trainers, and specialized Programming Contest Series.</p>
                 </div>
                 <div class="card reveal delay-200 cursor-pointer"
                     onclick="this.querySelector('.faq-answer').classList.toggle('hidden');this.querySelector('.faq-icon').classList.toggle('rotate-180')">
                     <div class="flex justify-between items-center">
-                        <h3 class="font-bold text-sm">Is the content updated?</h3>
+                        <h3 class="font-bold text-sm">Are there resources for language learning?</h3>
                         <i
                             class="fa-solid fa-chevron-down faq-icon text-slate-400 text-xs transition-transform duration-300"></i>
                     </div>
-                    <p class="faq-answer hidden text-slate-500 text-sm mt-3 leading-relaxed">Yes, we regularly update
-                        all courses to reflect the latest software versions and industry best practices. Updates are
-                        free for enrolled students.</p>
+                    <p class="faq-answer hidden text-slate-500 text-sm mt-3 leading-relaxed">Yes! We feature unique language apps like Comic Linguist for engaging study, comprehensive IELTS vocabulary lists, and interactive dictionaries to accelerate your communication skills.</p>
                 </div>
                 <div class="card reveal delay-300 cursor-pointer"
                     onclick="this.querySelector('.faq-answer').classList.toggle('hidden');this.querySelector('.faq-icon').classList.toggle('rotate-180')">
                     <div class="flex justify-between items-center">
-                        <h3 class="font-bold text-sm">How do I access the roadmaps?</h3>
+                        <h3 class="font-bold text-sm">Can I access interactive simulators?</h3>
                         <i
                             class="fa-solid fa-chevron-down faq-icon text-slate-400 text-xs transition-transform duration-300"></i>
                     </div>
-                    <p class="faq-answer hidden text-slate-500 text-sm mt-3 leading-relaxed">Simply click "View Roadmap"
-                        on any course card to see the interactive curriculum, lesson details, and what you'll build.</p>
+                    <p class="faq-answer hidden text-slate-500 text-sm mt-3 leading-relaxed">Absolutely. We believe in learning by doing. You can access immersive physics, math, and logic simulators to interact with core visual concepts rather than just reading textbooks.</p>
                 </div>
                 <div class="card reveal delay-400 cursor-pointer"
                     onclick="this.querySelector('.faq-answer').classList.toggle('hidden');this.querySelector('.faq-icon').classList.toggle('rotate-180')">
                     <div class="flex justify-between items-center">
-                        <h3 class="font-bold text-sm">Do you offer refunds?</h3>
+                        <h3 class="font-bold text-sm">Is there support for university students?</h3>
                         <i
                             class="fa-solid fa-chevron-down faq-icon text-slate-400 text-xs transition-transform duration-300"></i>
                     </div>
-                    <p class="faq-answer hidden text-slate-500 text-sm mt-3 leading-relaxed">We offer a 14-day
-                        satisfaction guarantee. If the course isn't right for you, contact support for a full refund.
-                    </p>
+                    <p class="faq-answer hidden text-slate-500 text-sm mt-3 leading-relaxed">Yes, our digital hub is integrated with the EWU Students Desk, job portals, and comprehensive free university course materials, assignments, and lecture notes for local students in Bangladesh.</p>
                 </div>
             </div>
         </div>
@@ -655,8 +404,7 @@
         <div class="max-w-3xl mx-auto px-4 text-center relative z-10">
             <h2 class="text-3xl md:text-4xl font-extrabold text-white mb-4 tracking-tight reveal">Ready to Start
                 Automating?</h2>
-            <p class="text-slate-400 mb-8 max-w-lg mx-auto reveal delay-100">Join 500+ learners who have already
-                transformed their workflow.</p>
+            <p class="text-slate-400 mb-8 max-w-lg mx-auto reveal delay-100">Join our growing learner community and transform your workflow today.</p>
             <button onclick="UI.openModal('register')"
                 class="btn btn-primary btn-lg btn-pill shadow-2xl reveal delay-200 animate-pulse-glow w-full sm:w-auto">
                 <i class="fa-solid fa-bolt"></i>
@@ -741,61 +489,132 @@
         </div>
     </section>
 
+    <!-- ===================== MEET THE FOUNDER ===================== -->
+    <section id="founder" class="bg-slate-50 py-20 md:py-28 border-t border-slate-200/50 overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 md:px-6">
+            <div class="grid lg:grid-cols-12 gap-12 md:gap-16 items-center">
+                <!-- Founder Visual Block -->
+                <div class="lg:col-span-5 flex justify-center relative order-2 lg:order-1" data-aos="fade-right">
+                    <div class="relative max-w-sm w-full group">
+                        <!-- Ambient Backdrop Aura -->
+                        <div class="absolute inset-0 bg-gradient-to-br from-orange-500 to-red-500 rounded-3xl rotate-3 opacity-10 group-hover:rotate-6 transition-all duration-500 scale-105"></div>
+                        
+                        <!-- Founder Image Wrapper -->
+                        <div class="relative aspect-[4/5] w-full bg-slate-200 rounded-3xl overflow-hidden border-4 border-white shadow-xl shadow-slate-200/50 group">
+                            <div class="absolute inset-0 bg-gradient-to-b from-transparent to-slate-900/30 pointer-events-none z-10"></div>
+                            <!-- Physical Portrait -->
+                            <img src="images/profile.jpg" alt="Arup Bhowmik Pritom" class="w-full h-full object-cover object-center group-hover:scale-105 transition duration-700 ease-in-out z-0">
+                        </div>
+                        
+                        <!-- Minimal Name Ribbon -->
+                        <div class="absolute -bottom-5 -right-5 bg-white px-6 py-4 rounded-2xl shadow-lg border border-slate-100 flex items-center gap-3 animate-bounce-slow z-20">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <div>
+                                <div class="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none">Academy Founder</div>
+                                <div class="text-sm font-black text-slate-800 tracking-tight mt-1">Arup Bhowmik Pritom</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Founder Content Block -->
+                <div class="lg:col-span-7 space-y-6 md:space-y-8 order-1 lg:order-2 text-center lg:text-left" data-aos="fade-left">
+                    <div class="space-y-2">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-orange-100 text-orange-600 text-[11px] font-black uppercase tracking-widest rounded-full">
+                            <i class="fa-solid fa-compass text-[9px]"></i> Visionary Leadership
+                        </span>
+                        <h2 class="text-3xl md:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight mt-2">Meet The Founder</h2>
+                    </div>
+
+                    <!-- Styled Quote / Bio -->
+                    <div class="relative pl-0 lg:pl-8">
+                        <!-- Elegant Quote bar -->
+                        <div class="hidden lg:block absolute left-0 top-2 bottom-2 w-1.5 bg-gradient-to-b from-orange-500 to-red-500 rounded-full"></div>
+                        <p class="text-slate-600 text-base md:text-xl font-medium leading-relaxed select-none italic font-sans">
+                            "Arup Bhowmik Pritom is a visionary tech-educator and automation expert from Bangladesh. With a passion for low-code tools like n8n and core computer science subjects, he founded Code With Pritom Academy to empower the next generation of Bangladeshi developers and entrepreneurs."
+                        </p>
+                    </div>
+
+                    <p class="text-slate-500 text-sm leading-relaxed font-semibold max-w-xl mx-auto lg:mx-0 uppercase tracking-wide">
+                        Bridging the digital divide through practical low-code workflows and elite software engineering methodologies.
+                    </p>
+
+                    <!-- Social Links -->
+                    <div class="flex flex-col sm:flex-row items-center gap-6 pt-6 border-t border-slate-200/70 justify-center lg:justify-start">
+                        <span class="text-[11px] font-black uppercase text-slate-400 tracking-widest">Connect Directly</span>
+                        <div class="flex items-center gap-4">
+                            <!-- Facebook -->
+                            <a href="https://www.facebook.com/pritom.rs.3/" target="_blank" class="w-10 h-10 bg-white text-slate-500 hover:text-blue-600 hover:border-blue-100 rounded-full flex items-center justify-center border border-slate-200 shadow-sm hover:shadow hover:-translate-y-0.5 transition-all duration-300" aria-label="Facebook">
+                                <i class="fa-brands fa-facebook-f"></i>
+                            </a>
+                            <!-- LinkedIn -->
+                            <a href="https://www.linkedin.com/in/arup-bhowmik-pritom-a7a7a23a4/" target="_blank" class="w-10 h-10 bg-white text-slate-500 hover:text-blue-500 hover:border-blue-100 rounded-full flex items-center justify-center border border-slate-200 shadow-sm hover:shadow hover:-translate-y-0.5 transition-all duration-300" aria-label="LinkedIn">
+                                <i class="fa-brands fa-linkedin-in"></i>
+                            </a>
+                            <!-- GitHub -->
+                            <a href="https://github.com/CodeWithPritom" target="_blank" class="w-10 h-10 bg-white text-slate-500 hover:text-black hover:border-slate-300 rounded-full flex items-center justify-center border border-slate-200 shadow-sm hover:shadow hover:-translate-y-0.5 transition-all duration-300" aria-label="GitHub">
+                                <i class="fa-brands fa-github text-lg"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- ===================== FOOTER ===================== -->
     <footer class="site-footer bg-white border-t border-slate-100 pt-16 pb-8">
         <div class="max-w-7xl mx-auto px-4 md:px-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
+                <!-- Col 1: Branding & Socials -->
                 <div>
-                    <div class="flex items-center gap-2 text-xl font-bold mb-4">Code With <span
-                            class="text-orange-600">Pritom</span></div>
-                    <p class="text-slate-500 text-sm leading-relaxed mb-6">Learn automation, build workflows, and
-                        accelerate your career with professional courses.</p>
+                    <div class="flex items-center gap-2 text-xl font-extrabold mb-4">Code With <span class="text-orange-600">Pritom</span></div>
+                    <p class="text-slate-500 text-sm leading-relaxed mb-6">Learn automation, master workflows, and accelerate your tech career with world-class courses.</p>
                     <div class="flex gap-4 text-slate-400">
                         <a href="https://www.youtube.com/@CodeWithPritom-360" target="_blank" aria-label="YouTube"
-                            class="hover:text-orange-600 transition"><i class="fa-brands fa-youtube text-xl"></i></a>
+                            class="hover:text-orange-600 transition-colors duration-300"><i class="fa-brands fa-youtube text-xl"></i></a>
                         <a href="https://discord.gg/spFQN2Zs" target="_blank" aria-label="Discord"
-                            class="hover:text-indigo-600 transition"><i class="fa-brands fa-discord text-xl"></i></a>
+                            class="hover:text-indigo-600 transition-colors duration-300"><i class="fa-brands fa-discord text-xl"></i></a>
                         <a href="https://www.linkedin.com/in/arup-bhowmik-pritom-a7a7a23a4/" target="_blank"
-                            aria-label="LinkedIn" class="hover:text-blue-600 transition"><i
-                                class="fa-brands fa-linkedin-in text-xl"></i></a>
+                            aria-label="LinkedIn" class="hover:text-blue-600 transition-colors duration-300"><i class="fa-brands fa-linkedin-in text-xl"></i></a>
                         <a href="https://github.com/CodeWithPritom" target="_blank" aria-label="Github"
-                            class="hover:text-black transition"><i class="fa-brands fa-github text-xl"></i></a>
+                            class="hover:text-black transition-colors duration-300"><i class="fa-brands fa-github text-xl"></i></a>
                     </div>
                 </div>
+                <!-- Col 2: Quick Links -->
                 <div>
-                    <div class="font-bold text-slate-800 mb-6 uppercase text-xs tracking-wider">Courses</div>
-                    <ul class="space-y-3 text-sm text-slate-500">
-                        <li><a href="#courses" class="hover:text-orange-600 transition">n8n Fundamentals</a></li>
-                        <li><a href="#courses" class="hover:text-orange-600 transition">Linux Admin</a></li>
-                        <li><a href="#courses" class="hover:text-orange-600 transition">Java Mastery</a></li>
-                        <li><a href="#courses" class="hover:text-orange-600 transition">SaaS Automation</a></li>
+                    <div class="font-black text-slate-800 mb-6 uppercase text-[11px] tracking-widest">Navigation</div>
+                    <ul class="space-y-3.5 text-sm text-slate-500 font-medium">
+                        <li><a href="#" class="hover:text-orange-600 transition-colors">Home</a></li>
+                        <li><a href="#courses" class="hover:text-orange-600 transition-colors">Courses</a></li>
+                        <li><a href="workshops.html" class="hover:text-orange-600 transition-colors">Workshops</a></li>
+                        <li><a href="library.html" class="hover:text-orange-600 transition-colors">Free Notes</a></li>
                     </ul>
                 </div>
+                <!-- Col 3: Contact Info -->
                 <div>
-                    <div class="font-bold text-slate-800 mb-6 uppercase text-xs tracking-wider">Platform</div>
-                    <ul class="space-y-3 text-sm text-slate-500">
-                        <li><a href="#community" class="hover:text-orange-600 transition">Projects</a></li>
-                        <li><a href="#testimonials" class="hover:text-orange-600 transition">Reviews</a></li>
-                        <li><a href="#faq" class="hover:text-orange-600 transition">FAQ</a></li>
-                        <li><a href="#community" class="hover:text-orange-600 transition">Community</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <div class="font-bold text-slate-800 mb-6 uppercase text-xs tracking-wider">Legal</div>
-                    <ul class="space-y-3 text-sm text-slate-500">
-                        <li><a href="#" class="hover:text-orange-600 transition">Privacy Policy</a></li>
-                        <li><a href="#" class="hover:text-orange-600 transition">Terms of Service</a></li>
-                        <li><a href="#" class="hover:text-orange-600 transition">Cookie Policy</a></li>
+                    <div class="font-black text-slate-800 mb-6 uppercase text-[11px] tracking-widest">Contact</div>
+                    <ul class="space-y-4 text-sm text-slate-500">
+                        <li class="flex flex-col gap-1">
+                            <span class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Direct Inquiries</span>
+                            <a href="mailto:arupbhowmikpritom@gmail.com" class="text-slate-700 font-bold hover:text-orange-600 transition-colors flex items-center gap-2">
+                                <i class="fa-solid fa-envelope text-orange-500 text-[12px]"></i> arupbhowmikpritom@gmail.com
+                            </a>
+                        </li>
+                        <li class="flex flex-col gap-1 pt-1">
+                            <span class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Location</span>
+                            <span class="text-slate-600 font-medium flex items-center gap-2">
+                                <i class="fa-solid fa-location-dot text-slate-400 text-[12px]"></i> Bangladesh
+                            </span>
+                        </li>
                     </ul>
                 </div>
             </div>
-            <div
-                class="border-t border-slate-100 pt-8 text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-4">
-                <p class="text-xs text-slate-400">&copy; 2026 Code With Pritom by Arup Bhowmik Pritom. All rights
-                    reserved.</p>
+            <div class="border-t border-slate-100 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-xs text-slate-400">&copy; 2026 Code With Pritom by Arup Bhowmik Pritom. All rights reserved.</p>
                 <div class="text-xs text-slate-400 flex gap-4">
-                    <a href="#" class="hover:text-slate-600">Privacy</a>
-                    <a href="#" class="hover:text-slate-600">Terms</a>
+                    <a href="#" class="hover:text-slate-600 font-medium">Privacy Policy</a>
+                    <a href="#" class="hover:text-slate-600 font-medium">Terms of Service</a>
                 </div>
             </div>
         </div>
@@ -806,6 +625,39 @@
         <div class="course-modal" onclick="event.stopPropagation()">
             <!-- Dynamic Content Injected Here -->
             <div id="course-modal-content" class="flex flex-col h-full"></div>
+        </div>
+    </div>
+
+    <!-- ===================== WORKSHOP ACCESS MODAL ===================== -->
+    <div id="modal-workshop" class="fixed inset-0 z-[150] hidden items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4 animate-fade-in" onclick="closeWorkshopModal()">
+        <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl shadow-black/30 border border-slate-100 overflow-hidden text-slate-800 animate-scale-in" onclick="event.stopPropagation()">
+            <!-- Gradient Top Context Banner -->
+            <div class="bg-slate-900 p-6 text-white flex justify-between items-center relative overflow-hidden">
+                <div class="z-10">
+                    <div class="inline-block px-2 py-0.5 rounded bg-orange-600 border border-orange-500 text-[9px] font-black uppercase tracking-widest mb-1.5 shadow-inner shadow-black/10">Webinar Firewalled Gate</div>
+                    <h3 id="w-modal-title" class="font-extrabold text-lg truncate pr-4 text-white tracking-tight">Secure Gateway Access</h3>
+                </div>
+                <button onclick="closeWorkshopModal()" class="text-slate-400 hover:text-white transition z-10"><i class="fa-solid fa-xmark text-xl"></i></button>
+                <div class="absolute top-0 right-0 w-1/3 h-full bg-orange-600/20 blur-[40px] rounded-full pointer-events-none"></div>
+            </div>
+
+            <!-- Reactive User Viewport -->
+            <div class="p-6 space-y-5">
+                <p id="w-modal-desc" class="text-xs text-slate-500 font-medium leading-relaxed">
+                    Provide your identity email. The core will instantly parse active indices to confirm your seat registration or secure a new entry.
+                </p>
+
+                <div id="w-input-block" class="space-y-1.5">
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">User Identity Address</label>
+                    <input type="email" id="w-user-email" placeholder="e.g. user@example.com" class="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-orange-500 transition shadow-inner">
+                </div>
+
+                <div id="w-action-container" class="pt-2 flex flex-col gap-3">
+                    <button onclick="verifyWorkshopAccess()" id="w-btn-verify" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-black py-3.5 rounded-xl shadow-xl shadow-orange-500/20 hover:shadow-orange-500/30 transition flex items-center justify-center gap-2 text-sm tracking-wider uppercase">
+                        Access Verification Signal
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -835,6 +687,9 @@
                             aria-label="Toggle password visibility">
                             <i class="fa-solid fa-eye"></i>
                         </button>
+                    </div>
+                    <div class="flex justify-end mt-1.5">
+                        <button type="button" onclick="window.openForgetModal()" class="text-xs text-orange-600 hover:text-orange-700 font-bold transition hover:underline">Forgot Password?</button>
                     </div>
                 </div>
                 <button type="submit" id="l_btn" class="btn btn-primary w-full btn-lg">
@@ -879,18 +734,331 @@
         </div>
     </div>
 
+    <!-- ===================== OTP VERIFICATION MODAL ===================== -->
+    <div id="otp-modal-backdrop" class="modal-backdrop" style="z-index:160 !important" onclick="window.closeOtpModal()"></div>
+    <div id="otp-modal-container" class="modal-container" style="z-index:170 !important; max-width: 400px;">
+        <div class="p-6 flex flex-col items-center text-center">
+            <div class="w-14 h-14 bg-orange-50 rounded-full flex items-center justify-center mb-4 border border-orange-100 text-orange-600 animate-pulse">
+                <i class="fa-solid fa-shield-halved text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-extrabold tracking-tight text-slate-900 mb-2">Verify Your Account</h3>
+            <p class="text-slate-500 text-sm mb-6 leading-relaxed">We sent a 6-digit confirmation code to <br><span id="otp-target-email" class="font-bold text-slate-800"></span></p>
+            
+            <form id="otpForm" onsubmit="window.handleOtpSubmit(event)" class="w-full space-y-5">
+                <div class="form-group text-left">
+                    <label class="form-label font-bold mb-2">Verification Code</label>
+                    <input type="text" id="otp-code-input" class="form-input text-center text-xl font-extrabold tracking-[0.4em] focus:ring-orange-500/40 py-3" placeholder="000000" maxlength="6" minlength="6" required autocomplete="one-time-code">
+                </div>
+                
+                <div class="flex flex-col gap-3">
+                    <button type="submit" id="otp-submit-btn" class="btn btn-primary w-full btn-lg">
+                        Verify & Activate
+                    </button>
+                    <button type="button" onclick="window.closeOtpModal()" class="text-slate-400 hover:text-slate-600 text-sm font-medium transition">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===================== FORGOT/RESET PASSWORD MODAL ===================== -->
+    <div id="forget-modal-backdrop" class="modal-backdrop" style="z-index:160 !important" onclick="window.closeForgetModal()"></div>
+    <div id="forget-modal-container" class="modal-container" style="z-index:170 !important; max-width: 400px;">
+        <div class="p-6 flex flex-col items-center text-center">
+            <div class="w-14 h-14 bg-orange-50 rounded-full flex items-center justify-center mb-4 border border-orange-100 text-orange-600 animate-pulse">
+                <i class="fa-solid fa-key text-xl"></i>
+            </div>
+            <h3 id="forget-modal-title" class="text-xl font-extrabold tracking-tight text-slate-900 mb-2">Reset Password</h3>
+            <p id="forget-modal-desc" class="text-slate-500 text-xs mb-6 leading-relaxed">Enter your email address to receive a secure verification code.</p>
+            
+            <!-- STEP 1: EMAIL CAPTURE -->
+            <form id="forgetForm" onsubmit="window.handleForgetSubmit(event)" class="w-full space-y-5">
+                <div class="form-group text-left">
+                    <label class="form-label font-bold mb-1">Email Address</label>
+                    <input type="email" id="forget-email-input" class="form-input" placeholder="you@example.com" required autocomplete="email">
+                </div>
+                
+                <div class="flex flex-col gap-3">
+                    <button type="submit" id="forget-email-btn" class="btn btn-primary w-full btn-lg">
+                        Send Recovery Code
+                    </button>
+                    <button type="button" onclick="window.closeForgetModal()" class="text-slate-400 hover:text-slate-600 text-sm font-medium transition">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+
+            <!-- STEP 2: VERIFICATION + CREDENTIAL OVERWRITE (Hidden by default) -->
+            <form id="resetForm" onsubmit="window.handleResetSubmit(event)" class="w-full space-y-4 hidden">
+                <div class="form-group text-left">
+                    <label class="form-label font-bold mb-1 text-xs tracking-wider uppercase text-slate-400">Verification Code</label>
+                    <input type="text" id="reset-otp-input" class="form-input text-center text-lg font-extrabold tracking-[0.3em] focus:ring-orange-500/40 py-2" placeholder="000000" maxlength="6" minlength="6" required autocomplete="one-time-code">
+                </div>
+                
+                <div class="form-group text-left">
+                    <label class="form-label font-bold mb-1 text-xs tracking-wider uppercase text-slate-400">New Password</label>
+                    <input type="password" id="reset-newpass-input" class="form-input" placeholder="Minimum 6 characters" minlength="6" required autocomplete="new-password">
+                </div>
+
+                <div class="flex flex-col gap-3 pt-2">
+                    <button type="submit" id="reset-submit-btn" class="btn btn-primary w-full btn-lg">
+                        Update Account Password
+                    </button>
+                    <button type="button" onclick="window.toggleForgetStep(1)" class="text-slate-400 hover:text-slate-600 text-xs font-semibold transition">
+                        <i class="fa-solid fa-arrow-left text-[9px] mr-1"></i> Change Email
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Toast Container -->
     <div id="toast-container" class="fixed bottom-5 right-5 z-[200] space-y-3"></div>
 
     <!-- Scripts -->
     <script src="js/ui.js"></script>
     <script src="js/auth.js"></script>
+    <!-- AOS Dynamic Ingest Engine -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script src="js/main.js"></script>
+    <script>
+        // Prime Animation Vector Matrices
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof AOS !== 'undefined') {
+                AOS.init({
+                    duration: 700,
+                    once: true,
+                    easing: 'ease-out-quint',
+                    offset: 100
+                });
+            }
+        });
+
+        // ===================== OTP VERIFICATION CONTROLLER =====================
+        let otpActiveEmail = null;
+
+        window.openOtpModal = (email) => {
+            otpActiveEmail = email;
+            document.getElementById('otp-target-email').textContent = email;
+            document.getElementById('otp-code-input').value = '';
+            
+            // Hide parent Auth window to isolate interaction path
+            UI.closeModal();
+            
+            // Transition OTP frames active
+            const backdrop = document.getElementById('otp-modal-backdrop');
+            const container = document.getElementById('otp-modal-container');
+            if (backdrop && container) {
+                backdrop.classList.add('active');
+                container.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        };
+
+        window.closeOtpModal = () => {
+            const backdrop = document.getElementById('otp-modal-backdrop');
+            const container = document.getElementById('otp-modal-container');
+            if (backdrop && container) {
+                backdrop.classList.remove('active');
+                container.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        };
+
+        window.handleOtpSubmit = async (event) => {
+            if (event) event.preventDefault();
+            
+            const codeInput = document.getElementById('otp-code-input');
+            const otp = codeInput.value.trim();
+            
+            if (!otp || otp.length !== 6) {
+                UI.showToast('Please enter the full 6-digit verification code.', 'error');
+                return;
+            }
+
+            UI.toggleLoading('otp-submit-btn', true);
+
+            try {
+                const response = await fetch('/api/verify-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: otpActiveEmail, otp })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.user) {
+                    UI.showToast('Account verified successfully! Re-routing...', 'success');
+                    
+                    // Sync newly-promoted credentials seamlessly into session variables
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    // Physical Close of viewport controls
+                    window.closeOtpModal();
+                    
+                    // Direct smooth transition to Dashboard
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1000);
+                } else {
+                    throw new Error(data.message || 'Invalid or expired verification code.');
+                }
+            } catch (error) {
+                UI.showToast(error.message || 'Network failure.', 'error');
+            } finally {
+                UI.toggleLoading('otp-submit-btn', false);
+            }
+        };
+
+        // ===================== FORGOT / RESET PASSWORD CONTROLLERS =====================
+        let forgetActiveEmail = null;
+
+        window.openForgetModal = () => {
+            // Close landing drawer to direct user focus
+            UI.closeModal();
+            
+            // Purge historical form cache
+            document.getElementById('forgetForm').classList.remove('hidden');
+            document.getElementById('resetForm').classList.add('hidden');
+            document.getElementById('forget-email-input').value = '';
+            document.getElementById('reset-otp-input').value = '';
+            document.getElementById('reset-newpass-input').value = '';
+            
+            document.getElementById('forget-modal-title').textContent = 'Reset Password';
+            document.getElementById('forget-modal-desc').textContent = 'Enter your email address to receive a secure verification code.';
+
+            const backdrop = document.getElementById('forget-modal-backdrop');
+            const container = document.getElementById('forget-modal-container');
+            if (backdrop && container) {
+                backdrop.classList.add('active');
+                container.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        };
+
+        window.closeForgetModal = () => {
+            const backdrop = document.getElementById('forget-modal-backdrop');
+            const container = document.getElementById('forget-modal-container');
+            if (backdrop && container) {
+                backdrop.classList.remove('active');
+                container.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        };
+
+        window.toggleForgetStep = (step) => {
+            const forgetF = document.getElementById('forgetForm');
+            const resetF = document.getElementById('resetForm');
+            const desc = document.getElementById('forget-modal-desc');
+
+            if (step === 1) {
+                forgetF.classList.remove('hidden');
+                resetF.classList.add('hidden');
+                desc.textContent = 'Enter your email address to receive a secure verification code.';
+            } else {
+                forgetF.classList.add('hidden');
+                resetF.classList.remove('hidden');
+                desc.innerHTML = `Enter the 6-digit code sent to <br><strong class="text-slate-800">${forgetActiveEmail}</strong> and set your new password.`;
+            }
+        };
+
+        window.handleForgetSubmit = async (event) => {
+            if (event) event.preventDefault();
+            
+            const emailInput = document.getElementById('forget-email-input');
+            const email = emailInput.value.trim();
+
+            if (!email) {
+                UI.showToast('Please enter a valid email address.', 'error');
+                return;
+            }
+
+            UI.toggleLoading('forget-email-btn', true);
+
+            try {
+                const response = await fetch('/api/forget-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    UI.showToast(data.message, 'success');
+                    forgetActiveEmail = email;
+                    // Dispatch automated step-two layout transition
+                    window.toggleForgetStep(2);
+                } else {
+                    throw new Error(data.message || 'Failed to initialize password recovery.');
+                }
+            } catch (error) {
+                UI.showToast(error.message, 'error');
+            } finally {
+                UI.toggleLoading('forget-email-btn', false);
+            }
+        };
+
+        window.handleResetSubmit = async (event) => {
+            if (event) event.preventDefault();
+
+            const codeInput = document.getElementById('reset-otp-input');
+            const passInput = document.getElementById('reset-newpass-input');
+
+            const otp = codeInput.value.trim();
+            const newPassword = passInput.value.trim();
+
+            if (!otp || otp.length !== 6) {
+                UI.showToast('Please enter the full 6-digit recovery code.', 'error');
+                return;
+            }
+            if (newPassword.length < 6) {
+                UI.showToast('New password must be at least 6 characters long.', 'error');
+                return;
+            }
+
+            UI.toggleLoading('reset-submit-btn', true);
+
+            try {
+                const response = await fetch('/api/reset-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: forgetActiveEmail, otp, newPassword })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    UI.showToast(data.message, 'success');
+                    
+                    // Dismiss recovery framework
+                    window.closeForgetModal();
+                    
+                    // Smooth automated link back into default Log In drawer
+                    setTimeout(() => {
+                        UI.openModal('login');
+                        UI.showToast('🔒 Secured! Please log in with your new credentials.', 'info');
+                    }, 1100);
+                } else {
+                    throw new Error(data.message || 'Credential overwrite rejected.');
+                }
+            } catch (error) {
+                UI.showToast(error.message || 'Connection error.', 'error');
+            } finally {
+                UI.toggleLoading('reset-submit-btn', false);
+            }
+        };
+    </script>
 
     <script>
-        // Redirect if already logged in
-        if (Auth.isLoggedIn()) {
-            window.location.href = 'dashboard.html';
+        // Handle frontside dynamic view toggles
+        if (typeof updateFrontNavbar === 'function') {
+            updateFrontNavbar();
+        } else {
+            document.addEventListener('DOMContentLoaded', () => {
+                if (typeof updateFrontNavbar === 'function') updateFrontNavbar();
+            });
         }
     </script>
 </body>

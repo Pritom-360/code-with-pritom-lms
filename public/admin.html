@@ -1,0 +1,2181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard — Code With Pritom</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 6.4 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .sidebar-link.active { background-color: #1e293b; border-left: 4px solid #f97316; color: #f8fafc; }
+        .dark-scrollbar::-webkit-scrollbar { width: 6px; }
+        .dark-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .dark-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 100; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+        .modal.active { display: flex; }
+        .toggle-checkbox:checked { right: 0; border-color: #10b981; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #10b981; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <!-- ADMIN GUARD -->
+    <script>
+        const userData = localStorage.getItem('user');
+        if (!userData) {
+            window.location.href = 'index.html';
+        } else {
+            const user = JSON.parse(userData);
+            console.log("Current User in LocalStorage:", user); // চেক করার জন্য
+
+            if (!user || !user.role || user.role.trim().toLowerCase() !== 'admin') {
+                alert('Access Denied! Your role is: ' + (user ? user.role : 'None'));
+                window.location.href = 'dashboard.html';
+            }
+        }
+    </script>
+
+    <!-- SIDEBAR -->
+    <aside class="w-64 bg-slate-900 text-slate-400 flex flex-col flex-shrink-0 h-full">
+        <div class="h-16 flex items-center gap-3 px-6 border-b border-slate-800">
+            <div class="bg-orange-500 text-white w-8 h-8 rounded-lg flex items-center justify-center shadow-lg">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <span class="text-white font-extrabold text-lg tracking-tight">CWP <span class="text-orange-500 font-medium">Admin</span></span>
+        </div>
+
+        <nav class="flex-1 py-6 px-3 space-y-1 overflow-y-auto dark-scrollbar">
+            <button onclick="switchTab('dashboard')" id="link-dashboard" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg hover:bg-slate-800 transition duration-200 active">
+                <i class="fa-solid fa-chart-pie text-lg w-5"></i> Dashboard
+            </button>
+            <button onclick="switchTab('users')" id="link-users" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg hover:bg-slate-800 transition duration-200">
+                <i class="fa-solid fa-user-graduate text-lg w-5"></i> Students
+            </button>
+            <button onclick="switchTab('payments')" id="link-payments" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg hover:bg-slate-800 transition duration-200">
+                <i class="fa-solid fa-receipt text-lg w-5"></i> Pending Orders
+            </button>
+            <button onclick="switchTab('courses')" id="link-courses" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg hover:bg-slate-800 transition duration-200">
+                <i class="fa-solid fa-book-bookmark text-lg w-5"></i> Course Catalog
+            </button>
+            <button onclick="switchTab('workshops')" id="link-workshops" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg hover:bg-slate-800 transition duration-200">
+                <i class="fa-solid fa-video text-lg w-5"></i> Workshops
+            </button>
+            <button onclick="switchTab('handnotes')" id="link-handnotes" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg hover:bg-slate-800 transition duration-200">
+                <i class="fa-solid fa-file-pdf text-lg w-5"></i> Hand Notes
+            </button>
+            <button onclick="switchTab('coupons')" id="link-coupons" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg hover:bg-slate-800 transition duration-200">
+                <i class="fa-solid fa-ticket text-lg w-5"></i> Promo Coupons
+            </button>
+            <button onclick="switchTab('announcements')" id="link-announcements" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg hover:bg-slate-800 transition duration-200">
+                <i class="fa-solid fa-bullhorn text-lg w-5"></i> Super Broadcasts
+            </button>
+            <button onclick="switchTab('reviews')" id="link-reviews" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg hover:bg-slate-800 transition duration-200">
+                <i class="fa-solid fa-star text-lg w-5"></i> Reviews & Feedback
+            </button>
+        </nav>
+
+        <div class="p-4 border-t border-slate-800">
+            <div class="flex items-center gap-3 px-2 py-3">
+                <div id="admin-avatar" class="w-9 h-9 rounded-full bg-orange-600 text-white font-bold text-sm flex items-center justify-center shadow-md">A</div>
+                <div class="flex-1 overflow-hidden">
+                    <h4 id="admin-name" class="text-white text-sm font-semibold truncate">Administrator</h4>
+                    <p class="text-xs text-slate-500">Management Engine</p>
+                </div>
+            </div>
+            <button onclick="adminLogout()" class="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold text-rose-400 hover:text-rose-300 bg-rose-950/30 rounded-lg border border-rose-900/50 hover:bg-rose-900/20 transition duration-200">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out
+            </button>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTAINER -->
+    <main class="flex-1 flex flex-col overflow-hidden h-full">
+        <!-- Top Bar -->
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 flex-shrink-0">
+            <h1 id="current-header" class="text-xl font-bold text-slate-800">Executive Dashboard</h1>
+            <div class="flex items-center gap-4">
+                <button onclick="window.location.href='dashboard.html'" class="text-slate-500 hover:text-slate-800 text-sm font-medium flex items-center gap-2 transition">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Student View
+                </button>
+                <span class="h-4 w-[1px] bg-slate-300"></span>
+                <button onclick="refreshCurrentTab()" class="text-orange-600 hover:text-orange-700 text-sm font-semibold flex items-center gap-1 transition">
+                    <i class="fa-solid fa-arrows-rotate"></i> Sync Data
+                </button>
+            </div>
+        </header>
+
+        <!-- Dynamic Tab Body -->
+        <div class="flex-1 overflow-y-auto p-8 dark-scrollbar">
+
+            <!-- =================== TAB: DASHBOARD =================== -->
+            <div id="tab-dashboard" class="tab-content active">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-5">
+                        <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl shadow-inner">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Students</p>
+                            <h2 id="stat-users" class="text-2xl font-extrabold text-slate-800 mt-1">Loading...</h2>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-5">
+                        <div class="w-12 h-12 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center text-xl shadow-inner">
+                            <i class="fa-solid fa-book"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Courses</p>
+                            <h2 id="stat-courses" class="text-2xl font-extrabold text-slate-800 mt-1">Loading...</h2>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-5">
+                        <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center text-xl shadow-inner">
+                            <i class="fa-solid fa-receipt"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Pending Orders</p>
+                            <h2 id="stat-invoices" class="text-2xl font-extrabold text-slate-800 mt-1">Loading...</h2>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-5">
+                        <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl shadow-inner">
+                            <i class="fa-solid fa-sack-dollar"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Pending Revenue</p>
+                            <h2 id="stat-revenue" class="text-2xl font-extrabold text-slate-800 mt-1">Loading...</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 bg-orange-600 rounded-2xl p-8 text-white flex items-center justify-between shadow-xl relative overflow-hidden">
+                    <div class="relative z-10">
+                        <h2 class="text-2xl font-extrabold mb-2">Super Administration Engine Ready</h2>
+                        <p class="text-orange-100 text-sm max-w-lg leading-relaxed">Physical assets engine activated. Send system announcements and host webinar sessions instantly.</p>
+                    </div>
+                    <div class="absolute right-[-50px] top-[-50px] text-[160px] text-orange-500 opacity-30 z-0">
+                        <i class="fa-solid fa-satellite-dish"></i>
+                    </div>
+                </div>
+
+                <!-- Notification Broadcaster inside Dashboard -->
+                <div class="mt-8 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm max-w-xl">
+                    <h3 class="font-bold text-slate-800 text-lg mb-3 flex items-center gap-2"><i class="fa-solid fa-bullhorn text-orange-500"></i> Push Announcement Broadcast</h3>
+                    <form onsubmit="event.preventDefault(); handleSendAnnouncement();" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Target User Selection</label>
+                            <select id="notif-target" class="w-full border p-2 rounded-xl text-sm bg-slate-50">
+                                <option value="all">📢 Public Broadcast (All Students)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Message Context</label>
+                            <textarea id="notif-msg" rows="2" required placeholder="Write something relevant e.g. Course java_advanced updated with 2 new videos!" class="w-full border border-slate-200 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-orange-500"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Action Redirect URL (Optional)</label>
+                            <input type="text" id="notif-link" placeholder="e.g. /classroom.html?id=1" class="w-full border border-slate-200 p-2 text-sm rounded-xl focus:ring-2 focus:ring-orange-500 outline-none">
+                        </div>
+                        <button type="submit" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-2.5 rounded-xl shadow transition text-sm">
+                            Transmit Broadcast Signal
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- =================== TAB: USERS =================== -->
+            <div id="tab-users" class="tab-content">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div>
+                            <h3 class="font-bold text-slate-800">Student Registry Database</h3>
+                            <p class="text-xs text-slate-400 mt-0.5" id="user-count-badge">0 students total</p>
+                        </div>
+                        <div class="relative w-full md:w-72">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                            <input type="text" id="user-search-input" oninput="filterStudents()" placeholder="Search students..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 text-sm rounded-xl focus:ring-2 focus:ring-orange-500 outline-none">
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-xs uppercase font-bold tracking-wider border-b border-slate-200">
+                                    <th class="px-6 py-4">ID</th>
+                                    <th class="px-6 py-4">Information</th>
+                                    <th class="px-6 py-4">Status</th>
+                                    <th class="px-6 py-4">Access</th>
+                                    <th class="px-6 py-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table-body" class="divide-y divide-slate-100 text-slate-700 text-sm">
+                                <tr><td colspan="5" class="px-6 py-10 text-center">Connecting database...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =================== TAB: PAYMENTS =================== -->
+            <div id="tab-payments" class="tab-content">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="p-6 border-b border-slate-100">
+                        <h3 class="font-bold text-slate-800">Accounts Receivable Log</h3>
+                        <p class="text-xs text-slate-400">Approve payments to release dynamic licenses.</p>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-xs uppercase font-bold tracking-wider border-b border-slate-200">
+                                    <th class="px-6 py-4">Order ID</th>
+                                    <th class="px-6 py-4">Account</th>
+                                    <th class="px-6 py-4">Course</th>
+                                    <th class="px-6 py-4">Transaction ID</th>
+                                    <th class="px-6 py-4">Total</th>
+                                    <th class="px-6 py-4 text-right">Operations</th>
+                                </tr>
+                            </thead>
+                            <tbody id="payments-table-body" class="divide-y divide-slate-100 text-slate-700 text-sm">
+                                <tr><td colspan="6" class="px-6 py-10 text-center">Checking balance...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =================== TAB: COURSES =================== -->
+            <div id="tab-courses" class="tab-content">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-bold text-slate-800">Curriculum Matrix</h3>
+                    <button onclick="openAddCourseModal()" class="bg-orange-600 hover:bg-orange-700 text-white font-bold text-sm px-4 py-2 rounded-xl shadow transition">
+                        <i class="fa-solid fa-circle-plus mr-1"></i> Catalog Course
+                    </button>
+                </div>
+                <div class="bg-white rounded-2xl shadow border overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-xs font-bold border-b">
+                                    <th class="px-6 py-4">Code</th>
+                                    <th class="px-6 py-4">Title</th>
+                                    <th class="px-6 py-4">Duration</th>
+                                    <th class="px-6 py-4">Price</th>
+                                    <th class="px-6 py-4">Status</th>
+                                    <th class="px-6 py-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="courses-table-body" class="divide-y divide-slate-100 text-slate-700">
+                                <tr><td colspan="6" class="px-6 py-10 text-center">Loading catalog...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =================== TAB: WORKSHOPS =================== -->
+            <div id="tab-workshops" class="tab-content">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Left Create workshop -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm self-start space-y-4">
+                        <h3 class="font-bold text-slate-800 text-lg"><i class="fa-solid fa-calendar-check text-orange-500 mr-1"></i> Catalog Webinar Event</h3>
+                        <form id="workshop-form" onsubmit="event.preventDefault(); handleCreateWorkshop();" class="space-y-3">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Event Title</label>
+                                <input type="text" id="w-title" required placeholder="e.g., Git & GitHub Workshop" class="w-full border p-2 text-xs rounded-lg outline-none focus:ring-1 focus:ring-orange-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Short Description</label>
+                                <textarea id="w-desc" rows="2" placeholder="Syllabus notes..." class="w-full border p-2 text-xs rounded-lg outline-none focus:ring-1 focus:ring-orange-500"></textarea>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Schedule Date</label>
+                                    <input type="text" id="w-date" placeholder="Pick date and time..." class="w-full border p-2 text-xs rounded-lg outline-none focus:ring-1 focus:ring-orange-500 bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Status</label>
+                                    <select id="w-status" class="w-full border p-2 text-xs rounded-lg outline-none">
+                                        <option value="active">Active</option>
+                                        <option value="archived">Archived</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Meeting Link (Zoom/Meet)</label>
+                                <input type="text" id="w-link" placeholder="https://meet.google.com/..." class="w-full border p-2 text-xs rounded-lg outline-none focus:ring-1 focus:ring-orange-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Webinar Cover Banner (Upload Image)</label>
+                                <input type="file" id="w-file" accept="image/*" class="w-full border p-2 text-xs rounded-lg bg-slate-50 focus:ring-1">
+                                <p class="text-[9px] text-slate-400 mt-0.5">Image processes via Multer storage natively.</p>
+                            </div>
+                            <button type="submit" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs py-2.5 rounded-lg shadow transition flex items-center justify-center gap-1">
+                                <i class="fa-solid fa-circle-play"></i> Activate Live Session
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Right Workshops Table -->
+                    <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="p-6 border-b border-slate-100">
+                            <h3 class="font-bold text-slate-800">Active Master Event Calendar</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50 text-slate-500 text-[11px] uppercase font-bold border-b border-slate-200">
+                                        <th class="px-4 py-3">Banner</th>
+                                        <th class="px-4 py-3">Session Module</th>
+                                        <th class="px-4 py-3">Trigger Date</th>
+                                        <th class="px-4 py-3">Status</th>
+                                        <th class="px-4 py-3 text-right">Operations</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="workshops-table-body" class="divide-y divide-slate-100 text-sm text-slate-700">
+                                    <tr><td colspan="5" class="px-4 py-10 text-center text-slate-400">Querying webinars...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 2: Archived Workshops Historical Log -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mt-8">
+                    <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/40">
+                        <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-box-archive text-amber-500"></i> Archived Master Webinar History
+                        </h3>
+                        <span class="text-[10px] font-black bg-slate-200 text-slate-600 px-2.5 py-1 rounded-full uppercase">Student Recording Repository</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-[11px] uppercase font-bold border-b border-slate-200">
+                                    <th class="px-6 py-3.5">Banner</th>
+                                    <th class="px-6 py-3.5">Historical Event</th>
+                                    <th class="px-6 py-3.5">Broadcast Date</th>
+                                    <th class="px-6 py-3.5">YouTube Connection</th>
+                                    <th class="px-6 py-3.5 text-right">Operations</th>
+                                </tr>
+                            </thead>
+                            <tbody id="archived-workshops-table-body" class="divide-y divide-slate-100 text-sm text-slate-700">
+                                <tr><td colspan="5" class="px-6 py-10 text-center text-slate-400 font-medium">Querying archival registers...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =================== TAB: HANDNOTES =================== -->
+            <div id="tab-handnotes" class="tab-content">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm self-start">
+                        <h3 class="font-bold text-slate-800 mb-4"><i class="fa-solid fa-file-circle-plus text-orange-500 mr-1"></i> Catalog Physical PDF</h3>
+                        <form id="handnote-form" onsubmit="event.preventDefault(); handleCreateHandnote();" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Linked Course Code</label>
+                                <input type="text" id="hn-course-code" placeholder="e.g., 1" required class="w-full border px-4 py-2 text-sm rounded-xl outline-none focus:ring-2 focus:ring-orange-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Document Title</label>
+                                <input type="text" id="hn-title" placeholder="e.g. Master Sheet" required class="w-full border px-4 py-2 text-sm rounded-xl outline-none focus:ring-2 focus:ring-orange-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Physical PDF File Upload</label>
+                                <input type="file" id="hn-file" accept=".pdf" required class="w-full border p-2 text-xs rounded-xl bg-slate-50 focus:ring-2 focus:ring-orange-500">
+                                <p class="text-[9px] text-slate-400 mt-0.5">PDFs index inside isolated handnotes storage.</p>
+                            </div>
+                            <button type="submit" class="w-full bg-orange-600 hover:bg-orange-700 text-white text-sm font-bold py-2.5 rounded-xl shadow transition flex items-center justify-center gap-1">
+                                <i class="fa-solid fa-cloud-arrow-up"></i> Secure Direct Upload
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+                            <h3 class="font-bold text-slate-800">Active Secure Paths</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50 text-slate-500 text-xs uppercase font-bold border-b">
+                                        <th class="px-6 py-4">ID</th>
+                                        <th class="px-6 py-4">Course</th>
+                                        <th class="px-6 py-4">Label</th>
+                                        <th class="px-6 py-4">Secure Filename</th>
+                                        <th class="px-6 py-4 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="handnotes-table-body" class="divide-y divide-slate-100 text-slate-700">
+                                    <tr><td colspan="5" class="px-6 py-10 text-center">Loading secure assets...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =================== TAB: COUPONS =================== -->
+            <div id="tab-coupons" class="tab-content">
+                <div class="mb-6 flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                    <div>
+                        <h2 class="font-extrabold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-ticket text-orange-500"></i> Promotional Campaign Vault</h2>
+                        <p class="text-xs text-slate-400 mt-0.5">Generate, limit, monitor, and manage checkout markdown codes dynamically.</p>
+                    </div>
+                    <button onclick="openModal('modal-add-coupon')" class="bg-slate-900 hover:bg-orange-600 text-white text-xs font-extrabold px-5 py-2.5 rounded-xl shadow transition flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Mint New Promo Coupon
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-[11px] uppercase font-bold border-b border-slate-200">
+                                    <th class="px-6 py-4">Code Detail</th>
+                                    <th class="px-6 py-4">Deduction Value</th>
+                                    <th class="px-6 py-4">Limit Threshold</th>
+                                    <th class="px-6 py-4">Usage Logs</th>
+                                    <th class="px-6 py-4">Expiration Guard</th>
+                                    <th class="px-6 py-4">Status</th>
+                                    <th class="px-6 py-4 text-right">Operations</th>
+                                </tr>
+                            </thead>
+                            <tbody id="coupons-table-body" class="divide-y divide-slate-100 text-sm text-slate-700">
+                                <tr><td colspan="7" class="px-6 py-16 text-center text-slate-400 font-medium"><i class="fa-solid fa-circle-notch fa-spin mr-2"></i>Syncing promotion nodes...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =================== TAB: ANNOUNCEMENTS =================== -->
+            <div id="tab-announcements" class="tab-content">
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                    
+                    <!-- Left Control: Creation Form & Visualizer -->
+                    <div class="space-y-6">
+                        <!-- Form Module -->
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                            <div class="border-b border-slate-100 pb-3">
+                                <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2"><i class="fa-solid fa-bullhorn text-orange-500"></i> Launch Fresh Broadcast</h3>
+                                <p class="text-[11px] text-slate-400">Creates modal popup and pushes notification bell copies.</p>
+                            </div>
+                            
+                            <form id="announcement-form" onsubmit="event.preventDefault(); handleCreateAnnouncement();" class="space-y-3">
+                                <div>
+                                    <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Campaign Title</label>
+                                    <input type="text" id="ann-title" required placeholder="e.g., Mega Ramadan Clearance Sale!" class="w-full border border-slate-200 px-3 py-2 text-xs rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition" oninput="updateAnnPreview()">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Message Body</label>
+                                    <textarea id="ann-message" rows="3" required placeholder="Write compelling copy..." class="w-full border border-slate-200 px-3 py-2 text-xs rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition" oninput="updateAnnPreview()"></textarea>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Start Moment</label>
+                                        <input type="text" id="ann-start" placeholder="Commencement..." required class="w-full border border-slate-200 px-3 py-2 text-xs rounded-xl focus:ring-1 focus:border-orange-500 outline-none bg-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Expiration Moment</label>
+                                        <input type="text" id="ann-end" placeholder="Expiration..." required class="w-full border border-slate-200 px-3 py-2 text-xs rounded-xl focus:ring-1 focus:border-orange-500 outline-none bg-white">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Action / Learn More Link</label>
+                                    <input type="url" id="ann-url" placeholder="https://codewithpritom.com/offers" class="w-full border border-slate-200 px-3 py-2 text-xs rounded-xl focus:ring-1 focus:border-orange-500 outline-none" oninput="updateAnnPreview()">
+                                </div>
+
+                                <div>
+                                    <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Banner Media (Upload Image)</label>
+                                    <input type="file" id="ann-file" accept="image/*" class="w-full text-[10px] text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-extrabold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 cursor-pointer" onchange="handleAnnFilePreview(event)">
+                                </div>
+
+                                <button type="submit" class="w-full bg-slate-900 hover:bg-orange-600 text-white font-extrabold text-xs py-3 rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-paper-plane"></i> Instantiate Campaign
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Live Mobile Preview Layer (Visual Simulator) -->
+                        <div class="bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-800 relative overflow-hidden hidden xl:block">
+                            <div class="absolute top-0 right-0 bg-slate-800 text-[9px] font-black text-slate-400 px-3 py-1 rounded-bl-xl uppercase tracking-widest">Live Mobile Simulation</div>
+                            <h4 class="text-xs font-black text-white/40 mb-4 uppercase tracking-widest mt-1">Interface Preview</h4>
+                            
+                            <!-- Visual Device -->
+                            <div class="mx-auto max-w-[260px] bg-slate-800/30 p-2 border border-slate-700/50 rounded-[2rem] shadow-2xl relative scale-95 origin-top">
+                                <div class="bg-white rounded-2xl overflow-hidden relative shadow-inner text-[10px] leading-tight">
+                                    <!-- Close Icon -->
+                                    <div class="absolute top-2 right-2 w-5 h-5 bg-black/20 rounded-full flex items-center justify-center text-black/40"><i class="fa-solid fa-xmark"></i></div>
+                                    
+                                    <!-- Banner -->
+                                    <div id="prev-media" class="aspect-video bg-slate-100 flex items-center justify-center text-slate-300 relative overflow-hidden">
+                                        <i class="fa-solid fa-image text-2xl"></i>
+                                        <img id="prev-img-tag" class="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-300">
+                                    </div>
+                                    
+                                    <!-- Content -->
+                                    <div class="p-4 space-y-2">
+                                        <div class="inline-flex items-center gap-1 text-[7px] font-black uppercase tracking-widest bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">
+                                            <i class="fa-solid fa-bullhorn scale-75"></i> Broadcast Alert
+                                        </div>
+                                        <h5 id="prev-title" class="font-black text-slate-800 text-xs truncate">Title Preview</h5>
+                                        <p id="prev-desc" class="text-slate-500 text-[9px] leading-snug line-clamp-3">Live message preview will load here dynamically as you type inside the inputs.</p>
+                                        
+                                        <div class="flex gap-1.5 mt-2 pt-1">
+                                            <div id="prev-cta-box" class="flex-1 text-center py-1.5 px-2 bg-slate-900 text-white font-black text-[8px] rounded-lg opacity-30 transition duration-300">Learn More</div>
+                                            <div class="flex-1 text-center py-1.5 px-2 bg-slate-100 text-slate-800 font-black text-[8px] rounded-lg border border-slate-200">Dismiss</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Control: Management Table -->
+                    <div class="xl:col-span-2 bg-white border border-slate-200 shadow-sm rounded-2xl overflow-hidden self-start">
+                        <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/40">
+                            <div>
+                                <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                                    <i class="fa-solid fa-server text-slate-500"></i> Campaign Audit Ledger
+                                </h3>
+                                <p class="text-[11px] text-slate-400 mt-0.5">History of system broadcast modals deployed.</p>
+                            </div>
+                            <span class="text-[9px] font-black bg-slate-200 text-slate-600 px-2.5 py-1 rounded-full uppercase">Archives</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50 text-slate-500 text-[10px] uppercase font-bold border-b border-slate-200">
+                                        <th class="px-5 py-3">Banner</th>
+                                        <th class="px-5 py-3">Details</th>
+                                        <th class="px-5 py-3">Duration limits</th>
+                                        <th class="px-5 py-3">System Status</th>
+                                        <th class="px-5 py-3 text-right">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="announcements-table-body" class="divide-y divide-slate-100 text-xs text-slate-700">
+                                    <tr><td colspan="5" class="px-6 py-16 text-center text-slate-400"><i class="fa-solid fa-circle-notch fa-spin mr-2"></i>Consulting nodes...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+
+            <!-- =================== TAB: REVIEWS =================== -->
+            <div id="tab-reviews" class="tab-content">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-star text-orange-500"></i> Reviews & Student Feedback</h3>
+                            <p class="text-xs text-slate-400 mt-0.5">Manage course ratings and highlight verified testimonials to appear on the homepage.</p>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-[11px] uppercase font-black tracking-wider border-b border-slate-200">
+                                    <th class="px-6 py-4">Student Email</th>
+                                    <th class="px-6 py-4">Course Code</th>
+                                    <th class="px-6 py-4">Rating</th>
+                                    <th class="px-6 py-4">Feedback</th>
+                                    <th class="px-6 py-4">Suggestions</th>
+                                    <th class="px-6 py-4 text-right">Timestamp</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reviews-table-body" class="divide-y divide-slate-100 text-slate-700 text-sm">
+                                <tr><td colspan="6" class="px-6 py-16 text-center text-slate-400 font-medium"><i class="fa-solid fa-circle-notch fa-spin mr-2"></i>Reconciling student feedback matrix...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ========================================================
+                          DYNAMIC MODALS
+    ======================================================== -->
+
+    <!-- ===================== MODAL: ADD COUPON ===================== -->
+    <div id="modal-add-coupon" class="modal">
+        <div class="bg-white rounded-3xl border border-slate-100 shadow-2xl w-full max-w-md z-10 overflow-hidden animate-scale-up relative">
+            <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <div class="flex items-center gap-3 text-orange-600">
+                    <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-ticket"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-black text-slate-800 text-sm leading-tight">Mint Promotional Code</h3>
+                        <p class="text-[9px] text-slate-400 font-bold">INSTANTIATE CART MARKDOWN OFFER</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('modal-add-coupon')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <form id="add-coupon-form" onsubmit="event.preventDefault(); submitAddCoupon();" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-[10px] font-extrabold text-slate-500 uppercase mb-1">Promotional Code Name</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="ac-name" required placeholder="SUMMERSALE" class="flex-1 border px-4 py-2.5 text-sm rounded-xl outline-none focus:ring-2 focus:ring-orange-500 font-bold uppercase">
+                        <button type="button" onclick="generateRandomPromoCode()" class="bg-slate-100 hover:bg-slate-200 border text-slate-700 font-bold text-xs px-4 rounded-xl transition">Generate</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-slate-500 uppercase mb-1">Markdown Type</label>
+                        <select id="ac-type" class="w-full border px-4 py-2.5 text-sm rounded-xl outline-none bg-white focus:ring-2 focus:ring-orange-500">
+                            <option value="percentage">Percentage (%)</option>
+                            <option value="fixed">Fixed Cash ($)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-slate-500 uppercase mb-1">Discount Value</label>
+                        <input type="number" step="0.01" id="ac-value" required placeholder="10" class="w-full border px-4 py-2.5 text-sm rounded-xl outline-none focus:ring-2 focus:ring-orange-500 font-bold">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-slate-500 uppercase mb-1">Min Cart Value ($)</label>
+                        <input type="number" step="0.01" id="ac-min" placeholder="0" class="w-full border px-4 py-2.5 text-sm rounded-xl outline-none focus:ring-2 focus:ring-orange-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-slate-500 uppercase mb-1">Global Usage Limit</label>
+                        <input type="number" id="ac-limit" placeholder="Unlimited" class="w-full border px-4 py-2.5 text-sm rounded-xl outline-none focus:ring-2 focus:ring-orange-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-slate-500 uppercase mb-1">Expiry Date Limit</label>
+                        <input type="text" id="ac-expiry" placeholder="Code expiry..." class="w-full border px-4 py-2.5 text-sm rounded-xl outline-none focus:ring-2 focus:ring-orange-500 bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-slate-500 uppercase mb-1">Course Code (Optional)</label>
+                        <input type="text" id="ac-course" placeholder="Locked to Code" class="w-full border px-4 py-2.5 text-sm rounded-xl outline-none focus:ring-2 focus:ring-orange-500">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-slate-900 hover:bg-orange-600 text-white font-black text-sm py-3 rounded-xl shadow-lg transition-all mt-2">
+                    Commit Promotional Code
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===================== MODAL: EDIT COUPON ===================== -->
+    <div id="modal-edit-coupon" class="modal">
+        <div class="bg-white rounded-3xl border border-slate-100 shadow-2xl w-full max-w-md z-10 overflow-hidden animate-scale-up relative">
+            <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <div class="flex items-center gap-3 text-indigo-600">
+                    <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-black text-slate-800 text-sm leading-tight">Edit Promotional Offer</h3>
+                        <p class="text-[9px] text-slate-400 font-bold">REVISE CODE LIMITS AND CONFIG</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('modal-edit-coupon')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <form id="edit-coupon-form" onsubmit="event.preventDefault(); submitEditCoupon();" class="p-6 space-y-4">
+                <input type="hidden" id="ec-id">
+                <div>
+                    <label class="block text-[10px] font-extrabold text-slate-500 uppercase mb-1">Promotional Code Name</label>
+                    <input type="text" id="ec-name" required class="w-full border px-4 py-2.5 text-sm rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 font-bold uppercase bg-slate-50" readonly>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-slate-500 uppercase mb-1">Discount Value</label>
+                        <input type="number" step="0.01" id="ec-value" required class="w-full border px-4 py-2.5 text-sm rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-slate-500 uppercase mb-1">Global Usage Limit</label>
+                        <input type="number" id="ec-limit" placeholder="Unlimited" class="w-full border px-4 py-2.5 text-sm rounded-xl outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-slate-500 uppercase mb-1">Min Cart Value ($)</label>
+                        <input type="number" step="0.01" id="ec-min" class="w-full border px-4 py-2.5 text-sm rounded-xl outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-slate-500 uppercase mb-1">Expiry Limit</label>
+                        <input type="text" id="ec-expiry" placeholder="Expiration..." class="w-full border px-4 py-2.5 text-sm rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-slate-900 hover:bg-indigo-600 text-white font-black text-sm py-3 rounded-xl shadow-lg transition-all mt-2">
+                    Rewrite Promotion Configurations
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 1: Add Course -->
+    <div id="modal-add-course" class="modal">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in-down">
+            <div class="bg-orange-600 p-5 text-white flex justify-between items-center">
+                <h3 class="font-extrabold text-lg flex items-center gap-2"><i class="fa-solid fa-folder-plus"></i> Catalog Fresh Course</h3>
+                <button onclick="closeModal('modal-add-course')" class="text-orange-200 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <form id="add-course-form" class="p-6 space-y-4" onsubmit="event.preventDefault(); submitAddCourse();">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Internal Code Identifier</label>
+                    <input type="text" id="ac-code" required class="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none" placeholder="e.g. n8n_basics">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Catalog Title</label>
+                    <input type="text" id="ac-title" required class="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none" placeholder="e.g. Basic Workflows">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Price ($)</label>
+                        <input type="number" step="0.01" id="ac-price" class="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none" placeholder="49.00">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Duration (Text)</label>
+                        <input type="text" id="ac-duration" class="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none" placeholder="Self-paced">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Access Days</label>
+                        <input type="number" id="ac-days" class="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none" placeholder="365">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Physical Thumbnail</label>
+                        <input type="file" id="ac-image-file" accept="image/*" class="w-full border p-1.5 rounded-xl text-xs bg-slate-50 focus:ring-2">
+                        <p class="text-[10px] text-slate-400 mt-1 font-medium leading-tight">Recommended size: 1280x720 pixels (16:9 ratio)</p>
+                    </div>
+                </div>
+                <button type="submit" id="btn-add-c-submit" class="w-full bg-orange-600 hover:bg-orange-700 text-white text-sm font-extrabold py-3 rounded-xl shadow transition flex items-center justify-center gap-2">
+                    Catalog Curriculum Step
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Edit Course -->
+    <div id="modal-edit-course" class="modal">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="bg-slate-900 p-5 text-white flex justify-between items-center">
+                <h3 class="font-extrabold text-lg flex items-center gap-2"><i class="fa-solid fa-pen-to-square text-orange-500"></i> Edit Course</h3>
+                <button onclick="closeModal('modal-edit-course')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <form id="edit-course-form" class="p-6 space-y-4" onsubmit="event.preventDefault(); submitEditCourse();">
+                <input type="hidden" id="ec-id">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Title</label>
+                    <input type="text" id="ec-title" required class="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Price ($)</label>
+                        <input type="number" step="0.01" id="ec-price" required class="w-full border rounded-xl px-4 py-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Limit Days</label>
+                        <input type="number" id="ec-days" required class="w-full border rounded-xl px-4 py-2 text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Duration Text</label>
+                    <input type="text" id="ec-duration" required class="w-full border rounded-xl px-4 py-2 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Status</label>
+                    <select id="ec-status" class="w-full border rounded-xl px-4 py-2 text-sm">
+                        <option value="active">Active</option>
+                        <option value="suspended">Suspended</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-slate-900 hover:bg-black text-white text-sm font-extrabold py-3 rounded-xl transition shadow">
+                    Apply Writes
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: Manage Lessons -->
+    <div id="modal-manage-lessons" class="modal">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[85vh]">
+            <div class="bg-slate-900 p-5 text-white flex justify-between items-center shrink-0">
+                <div>
+                    <h3 class="font-extrabold text-lg"><i class="fa-solid fa-film text-orange-500 mr-1"></i> Curriculum Step Index</h3>
+                    <p class="text-xs text-slate-400" id="lesson-modal-subtitle">Loading...</p>
+                </div>
+                <button onclick="closeModal('modal-manage-lessons')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-6 space-y-6 dark-scrollbar">
+                <div class="bg-slate-50 rounded-xl border overflow-hidden">
+                    <table class="w-full text-left text-sm border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-500 text-xs font-bold uppercase border-b">
+                                <th class="px-4 py-3 w-16">Step</th>
+                                <th class="px-4 py-3">Title</th>
+                                <th class="px-4 py-3 w-32">YouTube ID</th>
+                                <th class="px-4 py-3 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lessons-table-body" class="divide-y text-slate-700">
+                            <tr><td colspan="4" class="px-4 py-6 text-center">Loading index...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="border-t pt-6">
+                    <h4 class="text-xs font-extrabold text-slate-400 uppercase mb-3">Append Fresh Step</h4>
+                    <form id="add-lesson-form" onsubmit="event.preventDefault(); submitAddLesson();" class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                        <input type="hidden" id="al-course-code">
+                        <div class="md:col-span-2">
+                            <input type="number" id="al-number" required placeholder="No." class="w-full border border-slate-200 rounded-lg p-2 text-xs focus:ring-2 outline-none">
+                        </div>
+                        <div class="md:col-span-5">
+                            <input type="text" id="al-title" required placeholder="Title" class="w-full border border-slate-200 rounded-lg p-2 text-xs focus:ring-2 outline-none">
+                        </div>
+                        <div class="md:col-span-3">
+                            <input type="text" id="al-video" required placeholder="YouTube ID" class="w-full border border-slate-200 rounded-lg p-2 text-xs focus:ring-2 outline-none">
+                        </div>
+                        <div class="md:col-span-2">
+                            <button type="submit" class="w-full bg-emerald-600 text-white font-bold text-xs py-2.5 rounded-lg transition shadow">Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: Manage Student -->
+    <div id="modal-manage-student" class="modal">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="bg-slate-900 p-5 text-white flex justify-between items-center">
+                <h3 class="font-extrabold text-lg flex items-center gap-2"><i class="fa-solid fa-user-gear text-orange-500"></i> Manage Profile</h3>
+                <button onclick="closeModal('modal-manage-student')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <form id="manage-student-form" class="p-6 space-y-5" onsubmit="event.preventDefault(); submitManageStudent();">
+                <input type="hidden" id="ms-id">
+                <div>
+                    <h4 class="text-lg font-extrabold text-slate-800" id="ms-name">Student Name</h4>
+                    <p class="text-xs font-mono text-slate-400" id="ms-email">loading@email.com</p>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Direct Course Access Vector (CSV String)</label>
+                    <input type="text" id="ms-access" required class="w-full border rounded-xl px-4 py-2 font-mono text-sm outline-none focus:ring-2 focus:ring-orange-500">
+                </div>
+                <div>
+                    <div class="flex items-center gap-4 border bg-slate-50 p-3.5 rounded-xl">
+                        <div id="suspend-badge" class="bg-emerald-100 text-emerald-600 px-2.5 py-1 text-[10px] font-black uppercase rounded-md">Active</div>
+                        <div class="flex-1">
+                            <p class="text-xs font-bold text-slate-700">Allow Login</p>
+                        </div>
+                        <div class="relative inline-block w-10 align-middle select-none">
+                            <input type="checkbox" id="ms-status-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" onchange="updateSuspendBadge(this.checked)"/>
+                            <label for="ms-status-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-slate-300 cursor-pointer"></label>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-xl shadow transition text-sm">
+                    Commit Profile Changes
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 5: Edit Workshop -->
+    <div id="modal-edit-workshop" class="modal">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="bg-slate-900 p-5 text-white flex justify-between items-center">
+                <h3 class="font-extrabold text-lg"><i class="fa-solid fa-calendar-days text-orange-500 mr-1"></i> Edit Webinar</h3>
+                <button onclick="closeModal('modal-edit-workshop')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <form id="edit-workshop-form" class="p-6 space-y-4" onsubmit="event.preventDefault(); submitEditWorkshop();">
+                <input type="hidden" id="ew-id">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Title</label>
+                    <input type="text" id="ew-title" required class="w-full border rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Meeting Address</label>
+                        <input type="text" id="ew-link" placeholder="https://..." class="w-full border rounded-xl px-4 py-2 text-sm focus:ring-2 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Status</label>
+                        <select id="ew-status" class="w-full border rounded-xl px-4 py-2 text-sm">
+                            <option value="active">Active</option>
+                            <option value="archived">Archived</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Replace Cover (Optional)</label>
+                    <input type="file" id="ew-file" accept="image/*" class="w-full border p-1.5 text-xs bg-slate-50 rounded-xl">
+                </div>
+                <button type="submit" class="w-full bg-slate-900 hover:bg-black text-white text-sm font-extrabold py-3 rounded-xl shadow transition">
+                    Rewrite Workshop Element
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= ARCHIVE WEBINAR MODAL ================= -->
+    <div id="archive-modal" class="fixed inset-0 z-[9999] hidden flex items-center justify-center px-4">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeArchiveModal()"></div>
+        <!-- Modal Panel -->
+        <div class="bg-white rounded-3xl border border-slate-100 shadow-2xl w-full max-w-md z-10 overflow-hidden animate-scale-up p-6 relative">
+            <div class="flex items-center gap-3 text-orange-600 mb-4">
+                <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-box-archive"></i>
+                </div>
+                <div>
+                    <h3 class="font-black text-slate-800 leading-tight text-sm">Archive Live Event</h3>
+                    <p class="text-[9px] text-slate-400 font-bold">CONVERT WEBINAR INTO HISTORICAL RECORD</p>
+                </div>
+            </div>
+            
+            <form id="archive-workshop-form" onsubmit="commitArchiveWorkshop(event)" class="space-y-4">
+                <input type="hidden" id="archive-w-id">
+                <div>
+                    <label class="block text-[10px] font-extrabold text-slate-500 uppercase mb-1">Paste YouTube Recording Link</label>
+                    <div class="relative flex items-center">
+                        <i class="fa-brands fa-youtube absolute left-3 text-red-500 text-base"></i>
+                        <input type="url" id="archive-w-url" required placeholder="https://www.youtube.com/watch?v=..." 
+                               class="w-full border pl-9 pr-3 py-2.5 text-xs rounded-xl outline-none focus:ring-2 focus:ring-orange-500 font-medium">
+                    </div>
+                    <p class="text-[9px] text-slate-400 mt-1.5 leading-relaxed">Saving this moves the event to the Archive vault and exposes the recording directly to student portals.</p>
+                </div>
+                
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="closeArchiveModal()" class="flex-1 bg-slate-50 hover:bg-slate-100 border text-slate-600 font-bold text-xs py-2.5 rounded-xl transition">Cancel</button>
+                    <button type="submit" class="flex-2 w-full bg-slate-900 hover:bg-orange-600 text-white font-black text-xs py-2.5 rounded-xl shadow transition">Archive Event</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- TOAST PORTAL CONTAINER -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-[99999] flex flex-col gap-3 w-80 pointer-events-none"></div>
+
+    <!-- ========================================================
+                            JS CONTROLLER
+    ======================================================== -->
+    <!-- Flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        /* ==== CACHE STATE ==== */
+        let allStudents = [];
+
+        /* ==== HEADERS ==== */
+        const getHeaders = () => {
+            const localUser = JSON.parse(localStorage.getItem('user') || '{}');
+            return {
+                'Content-Type': 'application/json',
+                'x-user-email': localUser.email || '',
+                'x-user-role': localUser.role || ''
+            };
+        };
+
+        /* ==== FLATPICKR DATA MAPPER UTILITIES ==== */
+        const getIsoFromInput = (id) => {
+            const input = document.getElementById(id);
+            if (!input || !input.value) return null;
+            if (input._flatpickr && input._flatpickr.selectedDates.length > 0) {
+                return input._flatpickr.selectedDates[0].toISOString();
+            }
+            try {
+                return new Date(input.value).toISOString();
+            } catch (err) {
+                return null;
+            }
+        };
+
+        const setFpDate = (id, val) => {
+            const input = document.getElementById(id);
+            if (!input) return;
+            if (input._flatpickr) {
+                input._flatpickr.setDate(val || '', true);
+            } else {
+                input.value = val || '';
+            }
+        };
+
+        /* ==== UNIVERSAL UPLOADER HELPER ==== */
+        async function uploadFile(inputElementId, category) {
+            const fileInput = document.getElementById(inputElementId);
+            if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+                return null; // user didn't pick a file
+            }
+            
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            // Build dynamic custom headers for Multer without overwriting default boundary
+            const headers = getHeaders();
+            delete headers['Content-Type']; 
+            
+            const res = await fetch(`/api/admin/upload/${category}`, {
+                method: 'POST',
+                headers: headers,
+                body: formData
+            });
+            const resData = await res.json();
+            if (res.ok && resData.success) {
+                return resData.data.url; // Yield relative public asset URL
+            } else {
+                throw new Error(resData.message || 'File serialization fail.');
+            }
+        }
+
+        /* ==== MODALS & TOASTS ==== */
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `transform transition duration-300 ease-out translate-y-10 opacity-0 p-4 rounded-xl shadow-2xl border flex items-center gap-3 pointer-events-auto max-w-md ${
+                type === 'success' ? 'bg-white border-emerald-100 text-slate-800' : 'bg-rose-50 border-rose-100 text-rose-950'
+            }`;
+            const iconClass = type === 'success' ? 'fa-circle-check text-emerald-500' : 'fa-triangle-exclamation text-rose-500';
+            toast.innerHTML = `<i class="fa-solid ${iconClass} text-lg shrink-0"></i><p class="text-xs font-semibold flex-1">${message}</p>`;
+            container.appendChild(toast);
+            requestAnimationFrame(() => { toast.classList.remove('translate-y-10', 'opacity-0'); });
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.classList.add('opacity-0');
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, 4000);
+        }
+
+        /* ==== TAB HUB ==== */
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            document.querySelectorAll('.sidebar-link').forEach(el => el.classList.remove('active'));
+            document.getElementById(`link-${tabName}`).classList.add('active');
+
+            const mapping = {
+                'dashboard': 'Executive Command Center',
+                'users': 'Student Clearance Register',
+                'payments': 'Accounts Receivable Hub',
+                'courses': 'Curriculum Configuration Matrix',
+                'workshops': 'Webinar Sessions Scheduler',
+                'handnotes': 'Static PDF Asset Vault',
+                'coupons': 'Checkout Promotional Campaigns',
+                'announcements': 'Super Broadcast Control Tower',
+                'reviews': 'Reviews & User Feedback Curation'
+            };
+            document.getElementById('current-header').textContent = mapping[tabName] || 'Admin Command';
+            refreshCurrentTab();
+        }
+
+        function refreshCurrentTab() {
+            const active = document.querySelector('.sidebar-link.active');
+            if (!active) return;
+            const id = active.id.replace('link-', '');
+            if (id === 'dashboard') loadDashboardStats();
+            if (id === 'users') loadStudentRegistry();
+            if (id === 'payments') loadPendingOrders();
+            if (id === 'courses') loadCoursesCatalog();
+            if (id === 'workshops') { loadWorkshops(); loadArchivedWorkshops(); }
+            if (id === 'handnotes') loadDocumentManifests();
+            if (id === 'coupons') loadPromoCampaigns();
+            if (id === 'announcements') loadAnnouncements();
+            if (id === 'reviews') loadReviews();
+        }
+
+        /* ==== A. DASHBOARD & PUSH NOTIFICATIONS ==== */
+        async function loadDashboardStats() {
+            try {
+                const res = await fetch('/api/admin/stats', { headers: getHeaders() });
+                const stats = await res.json() || {};
+                document.getElementById('stat-users').textContent = stats.total_students || 0;
+                document.getElementById('stat-courses').textContent = stats.total_courses || 0;
+                document.getElementById('stat-invoices').textContent = stats.total_pending_orders || 0;
+                document.getElementById('stat-revenue').textContent = '৳' + (stats.total_revenue || 0).toFixed(2);
+            } catch (e) { showToast('Drift.', 'error'); }
+        }
+
+        async function handleSendAnnouncement() {
+            const target = document.getElementById('notif-target').value;
+            const message = document.getElementById('notif-msg').value.trim();
+            const link = document.getElementById('notif-link').value.trim();
+
+            try {
+                const res = await fetch('/api/admin/notifications', {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ user_email: target, message, link })
+                });
+                if (res.ok) {
+                    showToast('📢 Notification broadcast queued and transmitted!');
+                    document.getElementById('notif-msg').value = '';
+                    document.getElementById('notif-link').value = '';
+                } else { showToast('Failed broadcasting signal.', 'error'); }
+            } catch (e) { showToast('Transmission crash.', 'error'); }
+        }
+
+        /* ==== B. STUDENTS REGISTER ==== */
+        async function loadStudentRegistry() {
+            try {
+                const res = await fetch('/api/admin/users', { headers: getHeaders() });
+                allStudents = await res.json() || [];
+                document.getElementById('user-count-badge').textContent = `${allStudents.length} enrolled identities`;
+                renderStudentsTable(allStudents);
+            } catch (e) { console.error(e); }
+        }
+
+        function filterStudents() {
+            const q = document.getElementById('user-search-input').value.toLowerCase().trim();
+            const f = allStudents.filter(u => (u.name||'').toLowerCase().includes(q) || (u.email||'').toLowerCase().includes(q));
+            renderStudentsTable(f);
+        }
+
+        function renderStudentsTable(list) {
+            const body = document.getElementById('users-table-body');
+            if (list.length === 0) { body.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400">No results</td></tr>`; return; }
+            body.innerHTML = list.map(u => `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="px-6 py-4 font-mono font-bold text-slate-400">#${u.id}</td>
+                    <td class="px-6 py-4">
+                        <div class="font-bold text-slate-800">${u.name}</div>
+                        <div class="text-slate-400 text-xs font-medium">${u.email}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="px-2 py-0.5 text-[10px] font-black uppercase rounded ${u.status === 'suspended' ? 'bg-rose-100 text-rose-600':'bg-emerald-100 text-emerald-600'}">${u.status || 'active'}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex flex-wrap gap-1">${(u.access||'').split(',').filter(Boolean).map(c => `<span class="bg-slate-100 text-slate-600 px-2 py-0.5 text-xs font-mono rounded">${c}</span>`).join('') || '<span class="text-slate-300 text-xs">None</span>'}</div>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <button onclick="triggerManageStudent(${u.id}, '${u.name}', '${u.email}', '${u.access || ''}', '${u.status || 'active'}')" class="bg-slate-100 border hover:bg-slate-900 hover:text-white font-bold text-xs px-3 py-1 rounded-xl transition">Manage</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function triggerManageStudent(id, name, email, access, status) {
+            document.getElementById('ms-id').value = id;
+            document.getElementById('ms-name').textContent = name;
+            document.getElementById('ms-email').textContent = email;
+            document.getElementById('ms-access').value = access;
+            const isChecked = status !== 'suspended';
+            document.getElementById('ms-status-toggle').checked = isChecked;
+            updateSuspendBadge(isChecked);
+            openModal('modal-manage-student');
+        }
+
+        function updateSuspendBadge(isAllowed) {
+            const b = document.getElementById('suspend-badge');
+            b.textContent = isAllowed ? 'Active' : 'Suspended';
+            b.className = isAllowed ? 'bg-emerald-100 text-emerald-600 px-2.5 py-1 text-[10px] font-black rounded' : 'bg-rose-100 text-rose-600 px-2.5 py-1 text-[10px] font-black rounded';
+        }
+
+        async function submitManageStudent() {
+            const id = document.getElementById('ms-id').value;
+            const access = document.getElementById('ms-access').value;
+            const status = document.getElementById('ms-status-toggle').checked ? 'active' : 'suspended';
+            try {
+                await fetch(`/api/admin/users/${id}/access`, { method: 'PUT', headers: getHeaders(), body: JSON.stringify({ access }) });
+                await fetch(`/api/admin/users/${id}/status`, { method: 'PUT', headers: getHeaders(), body: JSON.stringify({ status }) });
+                showToast('Student profile overwritten.');
+                closeModal('modal-manage-student');
+                loadStudentRegistry();
+            } catch(e) { showToast('Error.', 'error'); }
+        }
+
+        /* ==== C. TRANSACTIONS ==== */
+        async function loadPendingOrders() {
+            const body = document.getElementById('payments-table-body');
+            try {
+                const res = await fetch('/api/admin/pending-orders', { headers: getHeaders() });
+                const list = await res.json() || [];
+                if (list.length === 0) { body.innerHTML = `<tr><td colspan="6" class="py-10 text-center text-slate-400">Queue clear</td></tr>`; return; }
+                body.innerHTML = list.map(o => `
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-6 py-4 font-mono font-bold text-slate-400">#${o.id}</td>
+                        <td class="px-6 py-4"><div class="font-bold">${o.user_name}</div><div class="text-xs text-slate-400">${o.user_email}</div></td>
+                        <td class="px-6 py-4 font-bold text-orange-600 text-xs font-mono">${o.course_code}</td>
+                        <td class="px-6 py-4 font-mono text-xs font-bold">${o.transaction_id}</td>
+                        <td class="px-6 py-4 font-bold text-emerald-600">৳${parseFloat(o.total_paid).toFixed(2)}</td>
+                        <td class="px-6 py-4 text-right space-x-2 whitespace-nowrap">
+                            <button onclick="approvePayment(${o.id}, '${o.user_email}')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold px-3 py-1.5 rounded-xl transition shadow-sm shadow-emerald-500/10"><i class="fa-solid fa-check mr-1"></i> Approve</button>
+                            <button onclick="deletePayment(${o.id}, '${o.user_email}')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-extrabold px-3 py-1.5 rounded-xl border border-rose-200 transition"><i class="fa-solid fa-trash mr-1"></i> Delete</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (e) { body.innerHTML = `<tr><td colspan="6" class="text-center">Err</td></tr>`; }
+        }
+
+        async function approvePayment(id, email) {
+            if (!confirm(`Approve & unlock course access for ${email}?`)) return;
+            try {
+                const res = await fetch('/api/admin/approve-payment', { method:'POST', headers: getHeaders(), body: JSON.stringify({ order_id: id }) });
+                if (res.ok) { showToast('Enrollment license committed successfully!'); loadPendingOrders(); }
+            } catch(e) { showToast('Approval routine failed.', 'error'); }
+        }
+
+        async function deletePayment(id, email) {
+            if (!confirm(`Are you sure you want to DELETE order #${id} for ${email}? This cannot be undone.`)) return;
+            try {
+                const res = await fetch(`/api/admin/delete-order/${id}`, { method: 'DELETE', headers: getHeaders() });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showToast('Order expunged from ledger.');
+                    loadPendingOrders();
+                } else {
+                    throw new Error(data.message || 'Removal failure');
+                }
+            } catch(e) {
+                showToast(e.message || 'Failed to purge record.', 'error');
+            }
+        }
+
+        /* ==== D. CURRICULUM & UNIVERSAL UPLOAD ==== */
+        async function loadCoursesCatalog() {
+            const body = document.getElementById('courses-table-body');
+            try {
+                const res = await fetch('/api/get-all-courses');
+                const json = await res.json();
+                // Resilient parsing supporting both raw Array arrays and legacy wrapped objects
+                const list = Array.isArray(json) ? json : (json.success ? json.data : []);
+                if (list.length === 0) { body.innerHTML = `<tr><td colspan="6" class="py-10 text-center">Empty</td></tr>`; return; }
+                body.innerHTML = list.map(c => `
+                    <tr class="hover:bg-slate-50 text-sm">
+                        <td class="px-6 py-4 font-mono font-bold text-orange-600">${c.course_code}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                ${c.thumbnail_url ? `<img src="${c.thumbnail_url}" class="w-10 h-7 object-cover rounded border shadow-sm">` : '<div class="w-10 h-7 bg-slate-100 border flex items-center justify-center text-[9px] text-slate-400">No Pic</div>'}
+                                <div class="font-extrabold text-slate-800">${c.title}</div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 font-medium text-slate-500 text-xs">${c.duration_days || 365} Days</td>
+                        <td class="px-6 py-4 font-extrabold text-emerald-600">৳${parseFloat(c.price).toFixed(2)}</td>
+                        <td class="px-6 py-4">
+                            <button onclick="toggleCourseStatus(${c.id}, '${c.status||'active'}')" class="px-2.5 py-1 text-[10px] font-black border rounded tracking-wider uppercase ${c.status==='suspended'?'bg-rose-50 border-rose-200 text-rose-600':'bg-emerald-50 border-emerald-200 text-emerald-600'}">${c.status || 'active'}</button>
+                        </td>
+                        <td class="px-6 py-4 text-right space-x-1.5 whitespace-nowrap">
+                            <button onclick="triggerEditCourse(${c.id}, '${escapeHtml(c.title)}', ${c.price}, ${c.duration_days||365}, '${escapeHtml(c.duration_text||'Self-paced')}', '${c.status||'active'}')" class="bg-slate-50 hover:bg-slate-900 border text-slate-600 hover:text-white text-xs font-bold px-3 py-1 rounded shadow-sm transition">Edit</button>
+                            <button onclick="triggerManageLessons('${c.course_code}', '${escapeHtml(c.title)}')" class="bg-blue-50 hover:bg-blue-600 border text-blue-600 hover:text-white text-xs font-bold px-3 py-1 rounded shadow-sm transition">Steps</button>
+                            <button onclick="handleDeleteCourse(${c.id}, '${escapeHtml(c.title)}')" class="text-rose-500 hover:text-rose-700 px-2 py-1 text-xs"><i class="fa-solid fa-trash-can"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch(e) {}
+        }
+
+        function openAddCourseModal() {
+            document.getElementById('add-course-form').reset();
+            openModal('modal-add-course');
+        }
+
+        async function submitAddCourse() {
+            const btn = document.getElementById('btn-add-c-submit');
+            btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Uploading Physical Media...';
+            try {
+                // 1. Dynamic File upload via Multer
+                const thumbUrl = await uploadFile('ac-image-file', 'courses');
+                
+                const payload = {
+                    course_code: document.getElementById('ac-code').value.trim(),
+                    title: document.getElementById('ac-title').value.trim(),
+                    price: parseFloat(document.getElementById('ac-price').value) || 0,
+                    duration_text: document.getElementById('ac-duration').value.trim() || 'Self-paced',
+                    duration_days: parseInt(document.getElementById('ac-days').value) || 365,
+                    thumbnail_url: thumbUrl, // physical path written to db
+                    icon: 'fa-code' // fallback
+                };
+
+                const res = await fetch('/api/admin/courses', {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    showToast('Curriculum node active and physical media stored.');
+                    closeModal('modal-add-course');
+                    loadCoursesCatalog();
+                } else { showToast('Catalog reject.', 'error'); }
+            } catch(e) { showToast(e.message, 'error'); }
+            finally { btn.disabled=false; btn.textContent='Catalog Curriculum Step'; }
+        }
+
+        function triggerEditCourse(id, title, price, days, duration, status) {
+            document.getElementById('ec-id').value = id;
+            document.getElementById('ec-title').value = title;
+            document.getElementById('ec-price').value = price;
+            document.getElementById('ec-days').value = days;
+            document.getElementById('ec-duration').value = duration;
+            document.getElementById('ec-status').value = status;
+            openModal('modal-edit-course');
+        }
+
+        async function submitEditCourse() {
+            const id = document.getElementById('ec-id').value;
+            const payload = {
+                title: document.getElementById('ec-title').value.trim(),
+                price: parseFloat(document.getElementById('ec-price').value) || 0,
+                duration_days: parseInt(document.getElementById('ec-days').value) || 365,
+                duration_text: document.getElementById('ec-duration').value.trim(),
+                status: document.getElementById('ec-status').value
+            };
+            try {
+                const res = await fetch(`/api/admin/courses/${id}`, { method: 'PUT', headers: getHeaders(), body: JSON.stringify(payload) });
+                if (res.ok) { showToast('Configuration metadata updated!'); closeModal('modal-edit-course'); loadCoursesCatalog(); }
+            } catch(e) {}
+        }
+
+        async function toggleCourseStatus(id, current) {
+            const next = current === 'active' ? 'suspended' : 'active';
+            try { await fetch(`/api/admin/courses/${id}`, { method:'PUT', headers: getHeaders(), body: JSON.stringify({ status: next }) }); showToast(`Flipped to: ${next}`); loadCoursesCatalog(); } catch(e) {}
+        }
+
+        async function handleDeleteCourse(id, title) {
+            if (!confirm(`Purge ${title}?`)) return;
+            try { await fetch(`/api/admin/courses/${id}`, { method:'DELETE', headers: getHeaders() }); showToast('Purged.'); loadCoursesCatalog(); } catch(e){}
+        }
+
+        /* ==== LESSON MANAGEMENT ==== */
+        let activeCourseCode = '';
+        async function triggerManageLessons(code, title) {
+            activeCourseCode = code;
+            document.getElementById('lesson-modal-subtitle').textContent = `Editing step list for "${title}"`;
+            document.getElementById('al-course-code').value = code;
+            document.getElementById('add-lesson-form').reset();
+            fetchLessons(code);
+            openModal('modal-manage-lessons');
+        }
+        async function fetchLessons(code) {
+            const body = document.getElementById('lessons-table-body');
+            try {
+                const res = await fetch(`/api/admin/courses/${code}/lessons`, { headers: getHeaders() });
+                const list = await res.json() || [];
+                if (list.length === 0) { body.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-slate-400">Clear step index</td></tr>`; return; }
+                body.innerHTML = list.map(l => `
+                    <tr>
+                        <td class="px-4 py-2 font-mono text-xs text-center text-slate-400 font-bold">#${l.lesson_number}</td>
+                        <td class="px-4 py-2 text-xs font-extrabold text-slate-700">${l.title}</td>
+                        <td class="px-4 py-2 font-mono text-[10px] text-blue-600">${l.video_url}</td>
+                        <td class="px-4 py-2 text-right"><button onclick="handleDeleteLesson(${l.id})" class="text-rose-500"><i class="fa-solid fa-trash-can"></i></button></td>
+                    </tr>
+                `).join('');
+            } catch(e) {}
+        }
+        async function submitAddLesson() {
+            const payload = {
+                course_code: activeCourseCode,
+                lesson_number: parseInt(document.getElementById('al-number').value),
+                title: document.getElementById('al-title').value.trim(),
+                video_url: document.getElementById('al-video').value.trim(),
+                duration: 'Video Step'
+            };
+            try {
+                await fetch('/api/admin/lessons', { method: 'POST', headers: getHeaders(), body: JSON.stringify(payload) });
+                showToast('Step indexed.');
+                document.getElementById('add-lesson-form').reset();
+                fetchLessons(activeCourseCode);
+            } catch(e) {}
+        }
+        async function handleDeleteLesson(id) {
+            if (!confirm('Delete?')) return;
+            await fetch(`/api/admin/lessons/${id}`, { method: 'DELETE', headers: getHeaders() });
+            fetchLessons(activeCourseCode);
+        }
+
+        /* ==== E. WORKSHOPS MANAGER ==== */
+        async function loadWorkshops() {
+            const body = document.getElementById('workshops-table-body');
+            try {
+                const res = await fetch('/api/workshops'); // Uses the public listing but maps all active ones
+                // Wait! To show ALL including archived for Admin, let's fetch from the db natively.
+                // Wait, public `/api/workshops` only shows active. Let's add a generic SQL fetch or query.
+                // For standardizing, we'll query `/api/workshops` which fetches the list.
+                const json = await res.json();
+                const list = json.data || [];
+
+                if (list.length === 0) { body.innerHTML = `<tr><td colspan="5" class="py-10 text-center text-slate-400">No session events scheduled.</td></tr>`; return; }
+                body.innerHTML = list.map(w => {
+                    const dt = w.workshop_date ? new Date(w.workshop_date).toLocaleString() : 'Not scheduled';
+                    return `
+                        <tr class="hover:bg-slate-50">
+                            <td class="px-4 py-3">
+                                ${w.image_url ? `<img src="${w.image_url}" class="w-12 h-8 object-cover rounded border shadow-sm">` : '<div class="w-12 h-8 bg-slate-100 border rounded flex items-center justify-center text-[8px] text-slate-400">None</div>'}
+                            </td>
+                            <td class="px-4 py-3 font-extrabold text-slate-800 text-xs">${w.title}</td>
+                            <td class="px-4 py-3 text-xs text-slate-500 font-medium">${dt}</td>
+                            <td class="px-4 py-3">
+                                <span class="px-2 py-0.5 text-[9px] font-black uppercase rounded bg-emerald-100 text-emerald-600 border border-emerald-200">${w.status}</span>
+                            </td>
+                            <td class="px-4 py-3 text-right space-x-1">
+                                <button onclick="openArchiveModal(${w.id})" class="bg-orange-50 hover:bg-orange-600 border border-orange-200 hover:text-white text-orange-700 font-extrabold text-[9px] px-2 py-1 rounded-md transition">Archive</button>
+                                <button onclick="triggerEditWorkshop(${w.id}, '${escapeHtml(w.title)}', '${w.status}')" class="bg-slate-50 hover:bg-slate-900 border hover:text-white text-slate-600 font-bold text-[10px] px-2 py-1 rounded transition">Edit</button>
+                                <button onclick="deleteWorkshop(${w.id}, '${escapeHtml(w.title)}')" class="text-rose-500 hover:text-rose-700 px-1"><i class="fa-solid fa-trash-can"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (e) { body.innerHTML = `<tr><td colspan="5" class="text-center">Offline.</td></tr>`; }
+        }
+
+        async function handleCreateWorkshop() {
+            try {
+                // 1. Ingest Physical Media through dynamic uploader
+                const bannerUrl = await uploadFile('w-file', 'workshops');
+                
+                const payload = {
+                    title: document.getElementById('w-title').value.trim(),
+                    description: document.getElementById('w-desc').value.trim(),
+                    workshop_date: getIsoFromInput('w-date'),
+                    status: document.getElementById('w-status').value,
+                    meeting_link: document.getElementById('w-link').value.trim(),
+                    image_url: bannerUrl // Written back into DB
+                };
+
+                const res = await fetch('/api/admin/workshops', {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    showToast('📅 Webinar scheduled and active on dynamic grid!');
+                    document.getElementById('workshop-form').reset();
+                    setFpDate('w-date', ''); // Explicit Flatpickr Clear
+                    loadWorkshops();
+                } else { showToast('Failed booking session.', 'error'); }
+            } catch(e) { showToast(e.message, 'error'); }
+        }
+
+        function triggerEditWorkshop(id, title, status) {
+            document.getElementById('ew-id').value = id;
+            document.getElementById('ew-title').value = title;
+            document.getElementById('ew-status').value = status;
+            document.getElementById('ew-link').value = ''; // Reset meeting link field
+            openModal('modal-edit-workshop');
+        }
+
+        async function submitEditWorkshop() {
+            const id = document.getElementById('ew-id').value;
+            try {
+                const freshBanner = await uploadFile('ew-file', 'workshops');
+                const payload = {
+                    title: document.getElementById('ew-title').value.trim(),
+                    status: document.getElementById('ew-status').value
+                };
+                const meetingLink = document.getElementById('ew-link').value.trim();
+                if (meetingLink) payload.meeting_link = meetingLink;
+                if (freshBanner) payload.image_url = freshBanner;
+
+                const res = await fetch(`/api/admin/workshops/${id}`, {
+                    method: 'PUT',
+                    headers: getHeaders(),
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    showToast('Webinar configuration updated successfully.');
+                    closeModal('modal-edit-workshop');
+                    loadWorkshops();
+                } else { showToast('Apply error.', 'error'); }
+            } catch(e) { showToast('Fail.', 'error'); }
+        }
+
+        async function deleteWorkshop(id, title) {
+            if (!confirm(`Purge webinar "${title}"? Expunges registry.`)) return;
+            try {
+                await fetch(`/api/admin/workshops/${id}`, { method: 'DELETE', headers: getHeaders() });
+                showToast('Purge transaction successful.');
+                loadWorkshops();
+            } catch(e) {}
+        }
+
+        /* ==== ARCHIVE MANAGEMENT LOGIC ==== */
+        async function loadArchivedWorkshops() {
+            const body = document.getElementById('archived-workshops-table-body');
+            if (!body) return;
+            try {
+                const res = await fetch('/api/workshops/archives');
+                const json = await res.json();
+                const list = json.data || [];
+
+                if (list.length === 0) {
+                    body.innerHTML = `<tr><td colspan="5" class="py-10 text-center text-slate-400 font-medium">No archived webinar history cataloged.</td></tr>`;
+                    return;
+                }
+
+                body.innerHTML = list.map(w => {
+                    const dt = w.workshop_date ? new Date(w.workshop_date).toLocaleDateString() : 'N/A';
+                    const youtubeHtml = w.recording_url 
+                        ? `<a href="${w.recording_url}" target="_blank" class="text-blue-600 hover:underline flex items-center gap-1 font-medium"><i class="fa-brands fa-youtube text-red-500"></i> Direct Watch</a>` 
+                        : `<span class="text-rose-500 font-black italic text-[10px]">NO LINK ATTACHED</span>`;
+
+                    return `
+                        <tr class="hover:bg-slate-50 transition">
+                            <td class="px-6 py-3.5">
+                                ${w.image_url ? `<img src="${w.image_url}" class="w-12 h-8 object-cover rounded-lg border shadow-sm">` : '<div class="w-12 h-8 bg-slate-100 border rounded-lg flex items-center justify-center text-[8px] text-slate-400">None</div>'}
+                            </td>
+                            <td class="px-6 py-3.5 font-black text-slate-800 text-xs">${w.title}</td>
+                            <td class="px-6 py-3.5 text-xs font-medium text-slate-500">${dt}</td>
+                            <td class="px-6 py-3.5 text-xs">${youtubeHtml}</td>
+                            <td class="px-6 py-3.5 text-right space-x-1.5">
+                                <button onclick="editArchivedRecording(${w.id}, '${escapeHtml(w.recording_url || '')}')" 
+                                        class="bg-slate-50 hover:bg-orange-600 border border-slate-200 hover:border-orange-600 hover:text-white text-slate-600 font-bold text-[10px] px-2.5 py-1.5 rounded-xl transition">Edit Record</button>
+                                <button onclick="deleteWorkshop(${w.id}, '${escapeHtml(w.title)}')" class="text-rose-500 hover:text-rose-700 px-1.5 transition"><i class="fa-regular fa-trash-can"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (e) {
+                body.innerHTML = `<tr><td colspan="5" class="text-center text-red-400 font-bold py-6">Registry error.</td></tr>`;
+            }
+        }
+
+        function openArchiveModal(id) {
+            document.getElementById('archive-w-id').value = id;
+            document.getElementById('archive-w-url').value = '';
+            document.getElementById('archive-modal').classList.remove('hidden');
+        }
+
+        function closeArchiveModal() {
+            document.getElementById('archive-modal').classList.add('hidden');
+            document.getElementById('archive-workshop-form').reset();
+        }
+
+        async function commitArchiveWorkshop(e) {
+            e.preventDefault();
+            const id = document.getElementById('archive-w-id').value;
+            const url = document.getElementById('archive-w-url').value.trim();
+
+            try {
+                const res = await fetch(`/api/admin/workshops/${id}`, {
+                    method: 'PUT',
+                    headers: getHeaders(),
+                    body: JSON.stringify({
+                        status: 'archived',
+                        recording_url: url
+                    })
+                });
+                
+                if (res.ok) {
+                    showToast('📦 Workshop securely archived and recorded committed!');
+                    closeArchiveModal();
+                    loadWorkshops();
+                    loadArchivedWorkshops();
+                } else {
+                    showToast('Could not commit archival archive.', 'error');
+                }
+            } catch (e) {
+                showToast(e.message, 'error');
+            }
+        }
+
+        async function editArchivedRecording(id, currentUrl) {
+            const newUrl = prompt('✏️ Update YouTube Recording URL for this event:', currentUrl);
+            if (newUrl === null) return; // user cancelled
+            
+            try {
+                const res = await fetch(`/api/admin/workshops/${id}`, {
+                    method: 'PUT',
+                    headers: getHeaders(),
+                    body: JSON.stringify({
+                        recording_url: newUrl.trim()
+                    })
+                });
+                if (res.ok) {
+                    showToast('✅ Recording link successfully updated!');
+                    loadArchivedWorkshops();
+                } else {
+                    showToast('Update failed.', 'error');
+                }
+            } catch (e) {
+                showToast(e.message, 'error');
+            }
+        }
+
+        /* ==== F. STATIC PDF MANIFEST ==== */
+        async function loadDocumentManifests() {
+            const body = document.getElementById('handnotes-table-body');
+            try {
+                const res = await fetch('/api/get-hand-notes');
+                const json = await res.json();
+                const notes = json.success ? json.data : [];
+                if (notes.length === 0) { body.innerHTML = `<tr><td colspan="5" class="py-10 text-center text-slate-400">Empty</td></tr>`; return; }
+                body.innerHTML = notes.map(n => `
+                    <tr class="hover:bg-slate-50 font-medium">
+                        <td class="px-6 py-4 font-mono text-xs text-slate-400">#${n.id}</td>
+                        <td class="px-6 py-4 font-mono text-xs font-bold text-orange-600">${n.course_code || 'ALL'}</td>
+                        <td class="px-6 py-4 font-extrabold text-slate-800">${n.title}</td>
+                        <td class="px-6 py-4 font-mono text-xs text-blue-600 hover:underline truncate max-w-xs">
+                            <a href="reader.html?file=${encodeURIComponent(n.filename)}" target="_blank" class="flex items-center gap-1.5 hover:text-orange-600 transition">
+                                <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i> ${n.filename}
+                            </a>
+                        </td>
+                        <td class="px-6 py-4 text-right"><button onclick="deleteHandnote(${n.id})" class="text-rose-500 hover:text-rose-700"><i class="fa-regular fa-trash-can"></i></button></td>
+                    </tr>
+                `).join('');
+            } catch(e){}
+        }
+
+        async function handleCreateHandnote() {
+            try {
+                // 1. Validate presence of picking physical PDF via DOM
+                const pdfInput = document.getElementById('hn-file');
+                if (!pdfInput.files || pdfInput.files.length === 0) {
+                    showToast('Please pick a physical PDF file!', 'error'); 
+                    return;
+                }
+                
+                const file = pdfInput.files[0];
+                const courseCode = document.getElementById('hn-course-code').value.trim();
+                const title = document.getElementById('hn-title').value.trim();
+                
+                if (!title) {
+                    showToast('Please provide a title for this handnote!', 'error');
+                    return;
+                }
+                
+                // 2. Assemble unified Multipart FormData payload
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('course_code', courseCode);
+                formData.append('title', title);
+                
+                // Strip default JSON header to allow browser-native boundary generation
+                const headers = getHeaders();
+                delete headers['Content-Type'];
+                
+                showToast('Synchronizing PDF with Cloud Storage...', 'success');
+                
+                // 3. Execute atomic single-request upload & registration
+                const res = await fetch('/api/admin/upload/handnotes', {
+                    method: 'POST',
+                    headers: headers,
+                    body: formData
+                });
+                
+                const resData = await res.json();
+                
+                if (res.ok && resData.success) {
+                    showToast('📄 PDF asset uploaded to Supabase and cataloged!');
+                    document.getElementById('handnote-form').reset();
+                    loadDocumentManifests();
+                } else { 
+                    showToast(resData.message || 'Failed to upload or catalog PDF.', 'error'); 
+                }
+            } catch(e) { 
+                showToast('Stream transmission failure: ' + e.message, 'error'); 
+            }
+        }
+
+        async function deleteHandnote(id) {
+            if (!confirm('Expunge?')) return;
+            try { await fetch(`/api/admin/handnotes/${id}`, { method:'DELETE', headers: getHeaders() }); showToast('Expunged.'); loadDocumentManifests(); } catch(e){}
+        }
+
+        /* ==== H. CHECKOUT PROMOTION CAMPAIGNS ==== */
+        function generateRandomPromoCode() {
+            const prefix = "CP-";
+            const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // Exclude confusing chars
+            let code = "";
+            for (let i = 0; i < 6; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            document.getElementById('ac-name').value = prefix + code;
+        }
+
+        async function loadPromoCampaigns() {
+            const body = document.getElementById('coupons-table-body');
+            if (!body) return;
+            
+            try {
+                const res = await fetch('/api/admin/coupons', { headers: getHeaders() });
+                const json = await res.json();
+                const list = json.success ? json.data : [];
+
+                if (!list || list.length === 0) {
+                    body.innerHTML = `<tr><td colspan="7" class="px-6 py-12 text-center text-slate-400"><i class="fa-solid fa-ticket text-3xl opacity-20 mb-2 block"></i>No active promotional campaigns minted yet.</td></tr>`;
+                    return;
+                }
+
+                body.innerHTML = list.map(c => {
+                    const hasExpiry = c.expires_at ? true : false;
+                    const expiryStr = hasExpiry ? new Date(c.expires_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Permanent (No Guard)';
+                    const minReq = parseFloat(c.min_purchase || 0);
+                    const usageLim = (c.usage_limit !== null && c.usage_limit > 0) ? parseInt(c.usage_limit) : '∞ Unlimited';
+                    
+                    // Compute state
+                    let isExpired = false;
+                    if (hasExpiry && new Date(c.expires_at) < new Date()) isExpired = true;
+                    
+                    let isFullyUsed = false;
+                    if (c.usage_limit > 0 && c.usage_count >= c.usage_limit) isFullyUsed = true;
+
+                    let statusBadgeHtml = '';
+                    if (!c.is_active) {
+                        statusBadgeHtml = `<span class="px-2 py-0.5 rounded bg-slate-100 text-slate-500 border text-[9px] font-black tracking-wide uppercase">Suspended</span>`;
+                    } else if (isExpired) {
+                        statusBadgeHtml = `<span class="px-2 py-0.5 rounded bg-red-50 text-red-500 border border-red-100 text-[9px] font-black tracking-wide uppercase">Expired</span>`;
+                    } else if (isFullyUsed) {
+                        statusBadgeHtml = `<span class="px-2 py-0.5 rounded bg-orange-50 text-orange-600 border border-orange-100 text-[9px] font-black tracking-wide uppercase">Max Limit</span>`;
+                    } else {
+                        statusBadgeHtml = `<span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-600 border border-emerald-100 text-[9px] font-black tracking-wide uppercase">Active</span>`;
+                    }
+
+                    const typeLabel = c.discount_type === 'fixed' ? 'Fixed Cash' : 'Percentage';
+                    const displayVal = c.discount_type === 'fixed' ? `৳${parseFloat(c.discount_value || 0).toFixed(2)}` : `${parseFloat(c.discount_value || 0)}%`;
+                    const courseBadge = c.course_code ? `<span class="ml-1 px-1.5 py-0.5 bg-blue-50 text-blue-600 border border-blue-100 rounded text-[9px] font-bold">Lock: ${c.course_code}</span>` : '';
+
+                    // Safely escape coupon for serialization
+                    const cleanStringify = escapeHtml(JSON.stringify(c));
+
+                    return `
+                        <tr class="hover:bg-slate-50/50 transition-colors">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-tag text-slate-300"></i>
+                                    <div>
+                                        <div class="font-extrabold text-slate-800 text-[13px] uppercase tracking-wider flex items-center gap-1">${c.coupon_name} ${courseBadge}</div>
+                                        <div class="text-[9px] text-slate-400 font-bold">ID: #${c.id} &bull; Added ${new Date(c.created_at).toLocaleDateString()}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 font-black text-slate-900 text-[13px]">
+                                ${displayVal} <span class="text-[9px] text-slate-400 font-bold ml-0.5 lowercase">(${typeLabel})</span>
+                            </td>
+                            <td class="px-6 py-4 text-xs font-bold text-slate-600">
+                                Min: ৳${minReq.toFixed(2)}
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-extrabold text-slate-800 text-[13px]">${c.usage_count || 0}</span>
+                                    <span class="text-[10px] text-slate-400">/ ${usageLim}</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-xs font-medium ${isExpired ? 'text-red-400' : 'text-slate-500'}">
+                                ${expiryStr}
+                            </td>
+                            <td class="px-6 py-4">
+                                ${statusBadgeHtml}
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <div class="flex items-center justify-end gap-1.5">
+                                    <button onclick="togglePromoStatus(${c.id}, ${c.is_active ? 1 : 0})" class="p-1.5 bg-slate-50 hover:bg-slate-800 text-slate-500 hover:text-white border border-slate-200 rounded-lg shadow-sm transition" title="Toggle Pause/Resume">
+                                        <i class="fa-solid ${c.is_active ? 'fa-pause' : 'fa-play'} text-xs"></i>
+                                    </button>
+                                    <button onclick="triggerEditPromo('${cleanStringify}')" class="p-1.5 bg-slate-50 hover:bg-indigo-600 text-indigo-600 hover:text-white border border-slate-200 rounded-lg shadow-sm transition" title="Edit Configurations">
+                                        <i class="fa-solid fa-pen-to-square text-xs"></i>
+                                    </button>
+                                    <button onclick="expungePromo(${c.id}, '${c.coupon_name}')" class="p-1.5 bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white border border-rose-100 rounded-lg shadow-sm transition" title="Delete Permanently">
+                                        <i class="fa-solid fa-trash-can text-xs"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (error) {
+                body.innerHTML = `<tr><td colspan="7" class="text-center text-red-500 py-8 font-black">Database query sync failure.</td></tr>`;
+            }
+        }
+
+        async function submitAddCoupon() {
+            const payload = {
+                coupon_name: document.getElementById('ac-name').value.trim().toUpperCase(),
+                discount_type: document.getElementById('ac-type').value,
+                discount_value: parseFloat(document.getElementById('ac-value').value) || 0,
+                min_purchase: parseFloat(document.getElementById('ac-min').value) || 0,
+                usage_limit: document.getElementById('ac-limit').value ? parseInt(document.getElementById('ac-limit').value) : null,
+                expires_at: getIsoFromInput('ac-expiry'),
+                course_code: document.getElementById('ac-course').value.trim() || null
+            };
+
+            try {
+                const res = await fetch('/api/admin/coupons', {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify(payload)
+                });
+                const json = await res.json();
+                if (json.success) {
+                    showToast(`Promotional code "${payload.coupon_name}" created successfully.`);
+                    closeModal('modal-add-coupon');
+                    document.getElementById('add-coupon-form').reset();
+                    setFpDate('ac-expiry', ''); // Flatpickr clear
+                    loadPromoCampaigns();
+                } else {
+                    showToast(json.message || 'Creation failed', 'error');
+                }
+            } catch (error) {
+                showToast('Server communication sync loss.', 'error');
+            }
+        }
+
+        function triggerEditPromo(jsonStr) {
+            try {
+                const text = document.createElement('textarea');
+                text.innerHTML = jsonStr;
+                const coupon = JSON.parse(text.value);
+
+                document.getElementById('ec-id').value = coupon.id;
+                document.getElementById('ec-name').value = coupon.coupon_name;
+                document.getElementById('ec-value').value = coupon.discount_value;
+                document.getElementById('ec-min').value = coupon.min_purchase || 0;
+                document.getElementById('ec-limit').value = coupon.usage_limit || '';
+                
+                setFpDate('ec-expiry', coupon.expires_at); // Multi-compatible loader
+
+                openModal('modal-edit-coupon');
+            } catch (e) {
+                showToast('Failed unpacking data payload.', 'error');
+            }
+        }
+
+        async function submitEditCoupon() {
+            const id = document.getElementById('ec-id').value;
+            const payload = {
+                discount_value: parseFloat(document.getElementById('ec-value').value) || 0,
+                min_purchase: parseFloat(document.getElementById('ec-min').value) || 0,
+                usage_limit: document.getElementById('ec-limit').value ? parseInt(document.getElementById('ec-limit').value) : null,
+                expires_at: getIsoFromInput('ec-expiry')
+            };
+
+            try {
+                const res = await fetch(`/api/admin/coupons/${id}`, {
+                    method: 'PUT',
+                    headers: getHeaders(),
+                    body: JSON.stringify(payload)
+                });
+                const json = await res.json();
+                if (json.success) {
+                    showToast('Promotion configurations rewritten successfully.');
+                    closeModal('modal-edit-coupon');
+                    loadPromoCampaigns();
+                } else {
+                    showToast(json.message || 'Apply aborted', 'error');
+                }
+            } catch (error) {
+                showToast('Fault committing revisions.', 'error');
+            }
+        }
+
+        async function togglePromoStatus(id, isCurrentlyActive) {
+            try {
+                const res = await fetch(`/api/admin/coupons/${id}`, {
+                    method: 'PUT',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ is_active: isCurrentlyActive === 1 ? false : true })
+                });
+                if (res.ok) {
+                    showToast('Coupon dynamic state flipped successfully.');
+                    loadPromoCampaigns();
+                }
+            } catch (e) {}
+        }
+
+        async function expungePromo(id, name) {
+            if (!confirm(`Expunge promotional campaign "${name}" permanently? Action is absolute.`)) return;
+            try {
+                const res = await fetch(`/api/admin/coupons/${id}`, {
+                    method: 'DELETE',
+                    headers: getHeaders()
+                });
+                if (res.ok) {
+                    showToast('Campaign records expunged successfully.');
+                    loadPromoCampaigns();
+                }
+            } catch (e) {}
+        }
+
+        /* ============================================================
+           📣 DYNAMIC SUPER BROADCAST CONTROLLER
+           ============================================================ */
+        function updateAnnPreview() {
+            const title = document.getElementById('ann-title').value;
+            const message = document.getElementById('ann-message').value;
+            const url = document.getElementById('ann-url').value;
+
+            document.getElementById('prev-title').textContent = title || 'Title Preview';
+            document.getElementById('prev-desc').textContent = message || 'Live message preview will load here dynamically as you type inside the inputs.';
+            
+            const cta = document.getElementById('prev-cta-box');
+            if (url) {
+                cta.style.opacity = '1';
+            } else {
+                cta.style.opacity = '0.3';
+            }
+        }
+
+        function handleAnnFilePreview(event) {
+            const file = event.target.files[0];
+            const previewImg = document.getElementById('prev-img-tag');
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    previewImg.classList.remove('opacity-0');
+                    previewImg.classList.add('opacity-100');
+                }
+                reader.readAsDataURL(file);
+            } else {
+                previewImg.classList.add('opacity-0');
+                previewImg.classList.remove('opacity-100');
+            }
+        }
+
+        async function handleCreateAnnouncement() {
+            const form = document.getElementById('announcement-form');
+            const title = document.getElementById('ann-title').value.trim();
+            const message = document.getElementById('ann-message').value.trim();
+            const start = getIsoFromInput('ann-start');
+            const end = getIsoFromInput('ann-end');
+            const url = document.getElementById('ann-url').value.trim();
+            const fileInput = document.getElementById('ann-file');
+
+            if (!start || !end) {
+                showToast('Please specify valid start and expiration dates.', 'warning');
+                return;
+            }
+
+            if (new Date(start) >= new Date(end)) {
+                showToast('Expiration moment must occur after initiation start moment.', 'warning');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('message', message);
+            formData.append('start_date', start);
+            formData.append('end_date', end);
+            if (url) formData.append('action_url', url);
+            if (fileInput.files[0]) {
+                formData.append('file', fileInput.files[0]);
+                formData.append('type', 'announcements');
+            }
+
+            try {
+                const headers = getHeaders();
+                delete headers['Content-Type'];
+
+                const res = await fetch('/api/admin/announcements', {
+                    method: 'POST',
+                    headers: headers,
+                    body: formData
+                });
+
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showToast('Super Broadcast instantiated successfully and synced to notifications!');
+                    form.reset();
+                    setFpDate('ann-start', ''); // Flatpickr wipe
+                    setFpDate('ann-end', ''); // Flatpickr wipe
+                    document.getElementById('prev-img-tag').classList.add('opacity-0');
+                    updateAnnPreview();
+                    loadAnnouncements();
+                } else {
+                    showToast(data.message || 'Creation failed.', 'error');
+                }
+            } catch (err) {
+                showToast('Failed transmitting payload.', 'error');
+            }
+        }
+
+        async function loadAnnouncements() {
+            const body = document.getElementById('announcements-table-body');
+            try {
+                const res = await fetch('/api/admin/announcements', { headers: getHeaders() });
+                const json = await res.json();
+                
+                if (!res.ok || !json.success) {
+                    body.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-rose-500 font-bold">Remote registry synchronization loss.</td></tr>`;
+                    return;
+                }
+
+                const items = json.data || [];
+                if (items.length === 0) {
+                    body.innerHTML = `<tr><td colspan="5" class="py-12 text-center text-slate-400 font-medium">No historical broadcast campaigns configured.</td></tr>`;
+                    return;
+                }
+
+                const now = new Date();
+                body.innerHTML = items.map(ann => {
+                    const start = new Date(ann.start_date);
+                    const end = new Date(ann.end_date);
+                    
+                    let stateLabel = 'Active';
+                    let stateClass = 'bg-emerald-100 text-emerald-700 border-emerald-200';
+                    
+                    if (ann.status === 'inactive') {
+                        stateLabel = 'Suspended';
+                        stateClass = 'bg-slate-100 text-slate-500 border-slate-200';
+                    } else if (now < start) {
+                        stateLabel = 'Pending';
+                        stateClass = 'bg-blue-100 text-blue-600 border-blue-200';
+                    } else if (now > end) {
+                        stateLabel = 'Expired';
+                        stateClass = 'bg-rose-100 text-rose-600 border-rose-200';
+                    }
+
+                    const displayImg = ann.image_url 
+                        ? `<img src="${ann.image_url}" class="w-16 h-9 rounded-lg object-cover border shadow-sm bg-slate-50">` 
+                        : `<div class="w-16 h-9 bg-slate-100 text-slate-300 rounded-lg border flex items-center justify-center"><i class="fa-solid fa-image"></i></div>`;
+
+                    return `
+                        <tr class="hover:bg-slate-50/50 transition text-[11px]">
+                            <td class="px-5 py-4">${displayImg}</td>
+                            <td class="px-5 py-4">
+                                <div class="font-bold text-slate-800 text-xs truncate max-w-[180px]">${escapeHtml(ann.title)}</div>
+                                <div class="text-slate-400 line-clamp-1 max-w-[180px] mt-0.5">${escapeHtml(ann.message)}</div>
+                                ${ann.action_url ? `<div class="text-[9px] text-orange-500 font-bold truncate max-w-[180px] mt-0.5"><i class="fa-solid fa-link"></i> ${ann.action_url}</div>` : ''}
+                            </td>
+                            <td class="px-5 py-4 font-medium text-slate-500">
+                                <div class="flex items-center gap-1"><span class="w-1 h-1 rounded-full bg-blue-500"></span> In: ${new Date(ann.start_date).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</div>
+                                <div class="flex items-center gap-1 mt-1"><span class="w-1 h-1 rounded-full bg-rose-500"></span> Out: ${new Date(ann.end_date).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</div>
+                            </td>
+                            <td class="px-5 py-4">
+                                <span class="px-2 py-0.5 border text-[9px] font-black uppercase rounded-full ${stateClass}">${stateLabel}</span>
+                            </td>
+                            <td class="px-5 py-4 text-right whitespace-nowrap">
+                                <div class="flex items-center justify-end gap-2">
+                                    <button onclick="toggleAnnStatus(${ann.id}, '${ann.status}')" class="px-2.5 py-1 font-bold rounded-lg border bg-white hover:bg-slate-900 hover:text-white transition ${ann.status === 'active' ? 'text-amber-600 border-amber-200 hover:border-slate-900' : 'text-emerald-600 border-emerald-200 hover:border-slate-900'}">
+                                        ${ann.status === 'active' ? '<i class="fa-solid fa-pause mr-1"></i> Halt' : '<i class="fa-solid fa-play mr-1"></i> Resume'}
+                                    </button>
+                                    <button onclick="expungeAnnouncement(${ann.id})" class="p-1 px-2 border border-rose-200 text-rose-500 bg-white hover:bg-rose-600 hover:text-white hover:border-rose-600 rounded-lg transition">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+
+            } catch (e) {
+                body.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-rose-500">Registry network collision.</td></tr>`;
+            }
+        }
+
+        async function toggleAnnStatus(id, currentStatus) {
+            const nextStatus = currentStatus === 'active' ? 'inactive' : 'active';
+            try {
+                const res = await fetch(`/api/admin/announcements/${id}`, {
+                    method: 'PUT',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ status: nextStatus })
+                });
+                if (res.ok) {
+                    showToast(`Super Broadcast status shifted to ${nextStatus === 'active' ? 'Active' : 'Suspended'}.`);
+                    loadAnnouncements();
+                }
+            } catch (err) { showToast('Command rejected.', 'error'); }
+        }
+
+        async function expungeAnnouncement(id) {
+            if (!confirm('Expunge this system broadcast permanently from physical records? Handled assets will be deleted.')) return;
+            try {
+                const res = await fetch(`/api/admin/announcements/${id}`, {
+                    method: 'DELETE',
+                    headers: getHeaders()
+                });
+                if (res.ok) {
+                    showToast('Super Broadcast expunged successfully.');
+                    loadAnnouncements();
+                }
+            } catch (err) { showToast('Destruction failed.', 'error'); }
+        }
+
+        async function loadReviews() {
+            const container = document.getElementById('reviews-table-body');
+            if (!container) return;
+
+            try {
+                const response = await fetch('/api/admin/reviews');
+                let reviews = await response.json();
+                
+                // If the backend wrapped it in an object, extract the array
+                if (reviews && reviews.data) reviews = reviews.data;
+                
+                if (!Array.isArray(reviews) || reviews.length === 0) {
+                    container.innerHTML = '<tr><td colspan="6" class="text-center py-10 text-gray-400">No course feedback submissions found.</td></tr>';
+                    return;
+                }
+
+                container.innerHTML = reviews.map(rev => `
+                    <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 text-sm font-medium text-gray-800">${rev.user_email || 'Unknown'}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500">${rev.course_code || 'N/A'}</td>
+                        <td class="px-6 py-4 text-sm text-yellow-500">${'★'.repeat(rev.rating || 0)}${'☆'.repeat(5-(rev.rating || 0))}</td>
+                        <td class="px-6 py-4 text-sm text-gray-600">${rev.comment || '-'}</td>
+                        <td class="px-6 py-4 text-sm text-blue-600 italic font-medium">${rev.suggestions || 'No ideas'}</td>
+                        <td class="px-6 py-4 text-sm text-gray-400">${rev.created_at ? new Date(rev.created_at).toLocaleDateString() : '-'}</td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error('Error rendering reviews:', err);
+                container.innerHTML = '<tr><td colspan="6" class="text-center py-10 text-red-400">Failed to render reviews.</td></tr>';
+            }
+        }
+
+        async function toggleFeatureReview(reviewId, shouldFeature) {
+            try {
+                const res = await fetch(`/api/admin/reviews/${reviewId}/toggle-featured`, {
+                    method: 'PATCH',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ is_featured: !!shouldFeature })
+                });
+                if (res.ok) {
+                    showToast(shouldFeature ? '🎉 Review successfully featured as active Testimonial!' : 'Review withdrawn from staged listings.', 'success');
+                    loadReviews();
+                } else {
+                    showToast('Commit rejected by backplane.', 'error');
+                }
+            } catch (err) {
+                showToast('Toggle action error.', 'error');
+            }
+        }
+
+        /* ==== ENGINE INIT ==== */
+        document.addEventListener('DOMContentLoaded', () => {
+            const u = JSON.parse(localStorage.getItem('user') || '{}');
+            document.getElementById('admin-name').textContent = u.name || 'Administrator';
+            document.getElementById('admin-avatar').textContent = (u.name || 'A').charAt(0).toUpperCase();
+            
+            // Initialize Flatpickr widgets with 12-hour AM/PM selection interface
+            const fpConfig = {
+                enableTime: true,
+                dateFormat: "Y-m-d h:i K", // Consistent 12-hour formatting
+                allowInput: true
+            };
+            flatpickr("#w-date", fpConfig);
+            flatpickr("#ann-start", fpConfig);
+            flatpickr("#ann-end", fpConfig);
+            flatpickr("#ac-expiry", fpConfig);
+            flatpickr("#ec-expiry", fpConfig);
+
+            loadDashboardStats();
+        });
+
+        function adminLogout() { localStorage.removeItem('user'); window.location.href = 'index.html'; }
+        function escapeHtml(str) { if(!str)return ''; return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
+    </script>
+</body>
+</html>
