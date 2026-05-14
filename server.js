@@ -205,15 +205,22 @@ app.get('/', (req, res) => {
 
 // Middleware: Restrict Access to Admins only
 const isAdmin = async (req, res, next) => {
-    // Force real-time cryptographic relation lookup directly on database.
-    // Eliminated legacy client-side x-user-role header bypass.
-    const email = req.headers['x-user-email'] || req.body.email || req.query.email;
+    // Robust multi-vector email extraction (header, body, or query) to bypass Vercel environment transformations!
+    const email = (
+        req.headers['x-user-email'] || 
+        req.headers['x-email'] || 
+        req.body?.user_email || 
+        req.body?.email || 
+        req.query?.user_email || 
+        req.query?.email || 
+        ''
+    ).toString().trim();
     
     if (email) {
         try {
             const { data: users, error } = await db.from('users')
                 .select('role')
-                .eq('email', email.trim());
+                .eq('email', email);
                 
             if (error) throw error;
 
@@ -225,18 +232,28 @@ const isAdmin = async (req, res, next) => {
         }
     }
 
-    // Force fallback to empty array 200 OK to prevent client-side SyntaxError crashes
+    // Force fallback to empty array 200 OK to prevent client-side SyntaxError crashes in static dashboards
     res.status(200).json([]);
 };
 
 // Middleware: Restrict Access to Logged-In Users (Standard Clearance)
 const isLoggedIn = async (req, res, next) => {
-    const email = req.headers['x-user-email'] || req.query.email;
+    // Robust multi-vector email extraction to guarantee secure validation loops
+    const email = (
+        req.headers['x-user-email'] || 
+        req.headers['x-email'] || 
+        req.body?.user_email || 
+        req.body?.email || 
+        req.query?.user_email || 
+        req.query?.email || 
+        ''
+    ).toString().trim();
+
     if (!email) {
-        return res.status(401).json({ success: false, message: 'Access Denied: Direct request identity verification failed.' });
+        return res.status(401).json({ success: false, message: 'Access Denied: Identity verification failed (missing token).' });
     }
     try {
-        const { data: users, error } = await db.from('users').select('id, status').eq('email', email.trim());
+        const { data: users, error } = await db.from('users').select('id, status').eq('email', email);
         if (error) throw error;
 
         if (users && users.length > 0) {
@@ -248,7 +265,8 @@ const isLoggedIn = async (req, res, next) => {
     } catch (e) {
         console.error('[isLoggedIn] Session validation drift:', e.message);
     }
-    return res.status(401).json({ success: false, message: 'Access Denied: Session record not found.' });
+    
+    return res.status(401).json({ success: false, message: 'Access Denied: Valid session not found.' });
 };
 
 // ---- Basic Connection Verification Endpoint ----
@@ -775,7 +793,8 @@ app.post('/api/auth', async (req, res) => {
                 return res.status(400).json({ success: false, message: `Unknown action handler: ${action}` });
         }
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Authentication request failed.', error: error.message });
+        console.error('[FATAL ERROR /api/auth]:', error);
+        return res.status(500).json({ success: false, message: 'Internal Server Error', debug: error.message });
     }
 });
 
@@ -2988,7 +3007,8 @@ app.post('/api/workshops/check-access', async (req, res) => {
             meeting_link: workshop.meeting_link
         });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Gate check crash.' });
+        console.error('[FATAL ERROR /api/workshops/check-access]:', error);
+        return res.status(500).json({ success: false, message: 'Internal Server Error', debug: error.message });
     }
 });
 
