@@ -360,7 +360,7 @@ window.renderWorkshops = async () => {
                             ${active.description || 'Master essential future-proof automation workflows and accelerate your career path.'}
                         </p>
                         <div class="flex flex-col sm:flex-row gap-4 pt-4">
-                            <a href="workshops.html" class="btn btn-primary btn-lg shadow-xl shadow-orange-500/10 group font-black tracking-wide">
+                            <a href="/workshops.html" class="btn btn-primary btn-lg shadow-xl shadow-orange-500/10 group font-black tracking-wide">
                                 Register / Join <i class="fa-solid fa-chevron-right ml-2 group-hover:translate-x-1 transition"></i>
                             </a>
                         </div>
@@ -377,7 +377,7 @@ window.renderWorkshops = async () => {
                         <div class="relative rounded-3xl overflow-hidden shadow-2xl shadow-black/50 border border-slate-800 group aspect-video bg-slate-950">
                             ${active.image_url ? `<img src="${active.image_url}" alt="Workshop" class="w-full h-full object-cover transform group-hover:scale-105 transition duration-700 opacity-85">` : `<div class="w-full h-full flex items-center justify-center text-slate-700 bg-slate-900 font-black text-lg">NO BANNER</div>`}
                             <div class="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent flex items-center justify-center">
-                                <a href="workshops.html" class="w-16 h-16 rounded-full bg-orange-600 text-white flex items-center justify-center shadow-2xl shadow-orange-500/30 hover:scale-110 transition animate-bounce-slow flex">
+                                <a href="/workshops.html" class="w-16 h-16 rounded-full bg-orange-600 text-white flex items-center justify-center shadow-2xl shadow-orange-500/30 hover:scale-110 transition animate-bounce-slow flex">
                                     <i class="fa-solid fa-play text-xl ml-1"></i>
                                 </a>
                             </div>
@@ -910,11 +910,11 @@ async function loadHeroWorkshopBanner() {
                         </div>
                     </div>
 
-                    <!-- Direct Modal Dispatch -->
+                    <!-- Direct Workshop Redirect -->
                     <div class="w-full lg:w-auto shrink-0">
-                        <button onclick="openWorkshopModal(${active.id}, '${titleAttr}')" class="w-full lg:w-auto px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-black text-xs tracking-wider rounded-xl shadow-xl hover:shadow-orange-500/20 uppercase transition-all duration-300 flex items-center justify-center gap-2 group/btn">
+                        <a href="/workshops.html" class="w-full lg:w-auto px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-black text-xs tracking-wider rounded-xl shadow-xl hover:shadow-orange-500/20 uppercase transition-all duration-300 flex items-center justify-center gap-2 group/btn no-underline">
                             Secure Free Seat <i class="fa-solid fa-arrow-right text-[10px] group-hover/btn:translate-x-1 transition"></i>
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>

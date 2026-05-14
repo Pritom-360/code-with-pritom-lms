@@ -470,10 +470,11 @@ body {
 
     /* Modal Mobile Fixes */
     .course-modal {
-        width: 100%;
-        height: 100%;
-        max-height: 100%;
-        border-radius: 0;
+        width: 90% !important;
+        height: auto !important;
+        max-height: 90vh !important;
+        border-radius: var(--radius-xl) !important;
+        margin: auto;
     }
 
     .modal-container {
@@ -3784,3 +3785,24 @@ body {
     opacity: 1;
     transform: translateY(0);
 }
+
+/* ============================================
+   GLOBAL PREMIUM INTERACTIVE TRANSITIONS (Senior UI/UX Audit)
+   ============================================ */
+.btn {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+.btn:hover {
+    transform: translateY(-2px) scale(1.03) !important;
+    box-shadow: 0 12px 24px -8px rgba(234, 88, 12, 0.35), 0 4px 12px -2px rgba(0, 0, 0, 0.12) !important;
+}
+.btn:active {
+    transform: translateY(0) scale(0.96) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+.btn:disabled {
+    transform: none !important;
+    box-shadow: none !important;
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+}
