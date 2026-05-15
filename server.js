@@ -2597,6 +2597,122 @@ app.get('/api/workshops/all', async (req, res) => {
   }
 });
 
+// GET /api/cron/workshop-reminders — Secure automated transactional cron for upcoming sessions
+app.get('/api/cron/workshop-reminders', async (req, res) => {
+    // 1. Perimeter Security Check
+    if (req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {
+        console.warn('⚠️ [Cron Unauthorized Attempt]: Invalid authorization header token.');
+        return res.status(401).end();
+    }
+
+    try {
+        const supabase = db;
+        const now = new Date();
+        const windowStart = new Date(now.getTime() + 30 * 60 * 1000); // +30 Minutes
+        const windowEnd = new Date(now.getTime() + 35 * 60 * 1000);   // +35 Minutes
+
+        // 2. Query workshops scheduled in the next 30 to 35 minutes
+        const { data: approachingWorkshops, error: wsErr } = await supabase
+            .from('workshops')
+            .select('*')
+            .gte('workshop_date', windowStart.toISOString())
+            .lte('workshop_date', windowEnd.toISOString());
+
+        if (wsErr) throw wsErr;
+
+        if (!approachingWorkshops || approachingWorkshops.length === 0) {
+            return res.json({ success: true, message: 'No active sessions detected in the 30-35 minute cron window.', sentCount: 0 });
+        }
+
+        const adminEmail = 'arupbhowmikpritom@gmail.com';
+        const systemEmail = process.env.SMTP_USER || process.env.FROM_EMAIL || adminEmail;
+        let dispatchedCount = 0;
+
+        // 3. Dispatch transactional clusters sequentially
+        for (const ws of approachingWorkshops) {
+            // Locate all users with unfulfilled notifications
+            const { data: registrations, error: regErr } = await supabase
+                .from('workshop_registrations')
+                .select('*')
+                .eq('workshop_id', ws.id)
+                .eq('reminder_sent', false);
+
+            if (regErr) {
+                console.error(`❌ [Cron DB Trace] Error reading attendees for workshop ${ws.id}:`, regErr.message);
+                continue;
+            }
+
+            if (!registrations || registrations.length === 0) continue;
+
+            // Parse time for email injection
+            const eventTime = new Date(ws.workshop_date).toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                timeZoneName: 'short'
+            });
+
+            for (const record of registrations) {
+                try {
+                    const mailOptions = {
+                        from: `"Code With Pritom Academy" <${systemEmail}>`,
+                        to: record.email.trim(),
+                        replyTo: adminEmail,
+                        subject: `⏰ Starting in 30 Mins: ${ws.title}`,
+                        html: `
+                            <div style="font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; color: #1e293b;">
+                                <div style="text-align: center; margin-bottom: 20px;">
+                                    <span style="font-size: 36px;">⏰</span>
+                                </div>
+                                <h2 style="text-align: center; color: #ea580c; font-size: 22px; font-weight: 800; margin-bottom: 10px;">Session Starting Shortly!</h2>
+                                <p style="text-align: center; font-size: 15px; color: #64748b; margin-bottom: 30px;">Your secured masterclass is commencing in approximately 30 minutes.</p>
+                                
+                                <div style="background-color: #f8fafc; border: 1px solid #f1f5f9; padding: 24px; border-radius: 12px; margin-bottom: 30px;">
+                                    <h3 style="margin: 0 0 12px 0; color: #0f172a; font-size: 18px; font-weight: 700; line-height: 1.4;">${ws.title}</h3>
+                                    <p style="margin: 0 0 8px 0; font-size: 14px; color: #334155;"><strong>📅 Start Time:</strong> ${eventTime}</p>
+                                    <p style="margin: 0 0 16px 0; font-size: 14px; color: #334155;"><strong>🔗 Secure Gate:</strong> Join directly via the official meeting gateway below.</p>
+                                    
+                                    <div style="margin-top: 20px; text-align: center;">
+                                        <a href="${ws.meeting_link || '#'}" target="_blank" style="display: inline-block; background-color: #ea580c; color: #ffffff; font-weight: 700; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; box-shadow: 0 4px 6px -1px rgba(234, 88, 12, 0.2);">
+                                            🚀 Enter Webinar Gateway
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <hr style="border: none; border-top: 1px solid #f1f5f9; margin: 25px 0;" />
+                                <p style="text-align: center; font-size: 11px; color: #94a3b8; line-height: 1.5;">
+                                    © ${new Date().getFullYear()} Code With Pritom Academy. This is a transactional notification.<br/>
+                                    You received this because you secured a seat for this session.
+                                </p>
+                            </div>
+                        `
+                    };
+
+                    // Deliver Payload
+                    await transporter.sendMail(mailOptions);
+
+                    // Update Index Vector in DB to prevent re-sending
+                    const { error: upErr } = await supabase
+                        .from('workshop_registrations')
+                        .update({ reminder_sent: true })
+                        .eq('id', record.id);
+
+                    if (upErr) console.error(`⚠️ [Cron DB Error] Failed to update flag for registration ID ${record.id}:`, upErr.message);
+
+                    dispatchedCount++;
+                } catch (emailErr) {
+                    console.error(`❌ [Cron Dispatch failure] Unable to deliver mail to ${record.email}:`, emailErr.message);
+                }
+            }
+        }
+
+        res.json({ success: true, message: 'Reminder notifications workflow completed successfully.', sentCount: dispatchedCount });
+
+    } catch (err) {
+        console.error('❌ [CRITICAL CRON FAILURE /api/cron/workshop-reminders]:', err);
+        res.status(500).json({ success: false, message: 'Internal System Engine Drift', error: err.message });
+    }
+});
+
 // POST /api/workshops/access-resource — Secure resource distributor for logged in attendees
 // POST /api/workshops/access-resource — Secure resource distributor for logged in attendees
 app.post('/api/workshops/access-resource', async (req, res) => {
